@@ -14,7 +14,7 @@ curiosity, creativity, and a little joy in a busy day.
 
 - **Next.js 16** (App Router) + TypeScript
 - **Tailwind CSS** for the paper/ink visual style
-- **SQLite via Prisma 6** for real, server-side persistence (see
+- **Postgres via Prisma 6** for real, server-side persistence (see
   [Persistence & identity](#persistence--identity)) — content itself stays
   generated deterministically per calendar date (see
   [Content model](#content-model)); the database holds per-user state
@@ -23,22 +23,28 @@ curiosity, creativity, and a little joy in a busy day.
 
 ## Getting started
 
+You need a Postgres database to point at — either one running locally, or
+a free hosted one (see [Deploying](#deploying-a-public-instance) below;
+the same connection string works for local dev too).
+
 ```bash
-npm install               # also runs `prisma generate` via postinstall
-npx prisma migrate dev    # creates prisma/dev.db and applies the schema
-npm run db:seed           # seeds the 8 interest tags + 15 quiz questions
+npm install                                # also runs `prisma generate`
+echo 'DATABASE_URL="postgresql://user:pass@host:5432/daybook"' > .env
+npm run build                              # applies migrations, then builds
+npm run db:seed                            # seeds the 8 interest tags + 15 quiz questions
 npm run dev
 ```
+
+(`npm run build` isn't required before `dev` — it's just the easiest way
+to run `prisma migrate deploy` once. `npx prisma migrate dev --name init`
+does the same thing and is the more typical dev-loop command if you'll be
+changing `schema.prisma` yourself.)
 
 Visit `http://localhost:3000`. First visit prompts you to pick a few
 interests (Art, Music, Travel, Nature, Sports, Books, Science, Food) —
 skippable, changeable anytime from the "Interests" link in the header. Use
 the arrows next to the date to browse other days — every calendar date
 (past, present, or future) resolves to a valid, stable bundle.
-
-`.env` already points `DATABASE_URL` at a local SQLite file
-(`prisma/dev.db`, gitignored) so the whole thing runs with zero external
-services.
 
 ## Sections & sourcing
 
@@ -88,8 +94,8 @@ caption edits for that day.
 There's no signup flow — a visitor is identified by a random id in an
 httpOnly cookie (`lib/auth.ts`), mirrored as a `User` row the first time
 they're seen. That's enough for real, durable, per-browser persistence
-(everything below actually round-trips through SQLite, not `localStorage`)
-without the overhead of an account system:
+(everything below actually round-trips through Postgres, not
+`localStorage`) without the overhead of an account system:
 
 - `PromptEdit` / `SectionEdit` — a user's rewritten text for one of the
   day's five prompts, or for a field of any other section (poem lines, a
@@ -150,11 +156,40 @@ next step before this ships to real users.
   change.
 - **Archive browsing** — date navigation already works for any date; a
   proper "past days" gallery view would be a nice Premium feature.
-- **Production database** — SQLite is a local file, fine for one dev
-  instance but not for a multi-instance deploy (e.g. serverless). Swapping
-  `datasource.provider` in `prisma/schema.prisma` to `postgresql` and
-  pointing `DATABASE_URL` at a hosted Postgres (Vercel Postgres, Neon,
-  Supabase, ...) is the whole migration — the Prisma models don't change.
+
+## Deploying a public instance
+
+The app is deploy-ready for Vercel; you just need a Postgres database it
+can reach (any provider works — these instructions use Vercel's own, but
+Neon and Supabase both have equally simple free tiers).
+
+1. **Push this repo to your own GitHub account** if you haven't already
+   (fork it, or just use this one — it's already there).
+2. **Create the database.** In the Vercel dashboard: Storage → Create
+   Database → Postgres (or do the equivalent in Neon/Supabase and skip to
+   step 4).
+3. **Import the project.** Add New → Project → import the repo. Vercel
+   auto-detects Next.js; no build-command changes are needed — `npm run
+   build` already runs `prisma migrate deploy` before `next build` (see
+   `package.json`), so the schema applies itself on first deploy.
+4. **Connect the database to the project.** If you created a Vercel
+   Postgres database, its dashboard has a "Connect to Project" button that
+   sets the right env vars automatically — but our schema reads
+   specifically `DATABASE_URL`, so also add a `DATABASE_URL` project env
+   var (Settings → Environment Variables) set to that database's
+   connection string (Vercel Postgres exposes it as `POSTGRES_PRISMA_URL`
+   or `POSTGRES_URL` — copy that value in). For Neon/Supabase, copy their
+   connection string directly into `DATABASE_URL`.
+5. **Deploy.** First deploy applies the migration and builds. Once it's
+   live, run `npm run db:seed` once **against that same `DATABASE_URL`**
+   (from your own machine: `DATABASE_URL="<the same string>" npm run
+   db:seed`) to load the 8 interest tags and 15 quiz questions — the app
+   works without this, but Interests and the Daily Quiz will be empty
+   until you do.
+
+You'll get a `*.vercel.app` URL that's the real, live, shareable app —
+editing, the to-do list, the quiz, and interests all persist for real,
+for every visitor.
 
 ## Project layout
 

@@ -5,7 +5,7 @@
   "description": "A small daily almanac of news bites, a mini crossword, a comic break, a poem, an art spotlight, a travel vignette, a book recommendation, and five hobby prompts — one bundle per day of the year.",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma migrate deploy && next build",
     "start": "next start",
     "lint": "next lint",
     "db:seed": "tsx prisma/seed.ts",
