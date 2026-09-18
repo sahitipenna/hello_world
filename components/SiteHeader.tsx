@@ -1,16 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Plan } from "@/lib/storage";
+import { Plan } from "@/lib/types";
 
 export default function SiteHeader({
   plan,
   onOpenCustomize,
   onOpenUpgrade,
+  onOpenInterests,
 }: {
   plan: Plan;
   onOpenCustomize: () => void;
   onOpenUpgrade: () => void;
+  onOpenInterests: () => void;
 }) {
   return (
     <header className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 pb-4 flex items-center justify-between">
@@ -27,6 +29,12 @@ export default function SiteHeader({
         </span>
       </Link>
       <div className="flex items-center gap-2 sm:gap-3">
+        <button
+          onClick={onOpenInterests}
+          className="text-sm font-medium text-ink/70 hover:text-ink px-2 py-1.5 rounded-md hover:bg-ink/5 transition-colors hidden sm:inline-block"
+        >
+          Interests
+        </button>
         <button
           onClick={onOpenCustomize}
           className="text-sm font-medium text-ink/70 hover:text-ink px-2 py-1.5 rounded-md hover:bg-ink/5 transition-colors hidden sm:inline-block"
@@ -45,6 +53,13 @@ export default function SiteHeader({
             Premium
           </span>
         )}
+        <button
+          onClick={onOpenInterests}
+          aria-label="Your interests"
+          className="sm:hidden w-8 h-8 rounded-full border border-ink/15 flex items-center justify-center"
+        >
+          {"❤"}
+        </button>
         <button
           onClick={onOpenCustomize}
           aria-label="Customize sections"

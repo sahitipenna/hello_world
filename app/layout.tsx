@@ -24,7 +24,7 @@ const workSans = Work_Sans({
 export const metadata: Metadata = {
   title: "Daybook — one small, curious day at a time",
   description:
-    "A daily almanac: news bites, a mini crossword, a comic break, a poem, an art spotlight, a travel vignette, a book recommendation, and five prompts for your hobbies — for every day of the year.",
+    "A daily almanac: a mini crossword, a comic break, a poem, an art spotlight, a travel vignette, a book recommendation, a 15-question quiz, your own to-do list, and five editable hobby prompts — personalized to your interests, for every day of the year.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

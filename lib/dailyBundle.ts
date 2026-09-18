@@ -1,9 +1,9 @@
 import { DailyBundle } from "./types";
-import { dayOfYear, parseISODate, pickIndex, pickIndices } from "./dateUtils";
-import { ART_QUERIES, BOOKS, HISTORY_BITES, POEMS, TODO_POOL, TRAVEL_VIGNETTES, TRIVIA_BITES } from "./contentBank";
-import { pickCrosswordTheme } from "./crosswordBanks";
+import { dayOfYear, parseISODate, pickIndex, pickIndices, hashString } from "./dateUtils";
+import { ART_QUERIES, BOOKS, POEMS, TODO_POOL, TRAVEL_VIGNETTES } from "./contentBank";
+import { CROSSWORD_THEMES } from "./crosswordBanks";
 import { generateBestCrossword } from "./crosswordGen";
-import { hashString } from "./dateUtils";
+import { pickWeightedIndex } from "./personalize";
 
 function comicArchiveUrl(dateISO: string): string {
   const [y, m, d] = dateISO.split("-");
@@ -12,19 +12,24 @@ function comicArchiveUrl(dateISO: string): string {
   return `https://www.gocomics.com/calvinandhobbes/${y}/${m}/${d}`;
 }
 
-export function buildDailyBundle(dateISO: string): DailyBundle {
+/**
+ * Builds one day's content. `weights` is a map of interest-tag slug ->
+ * weight (higher = more likely); an empty map behaves like a uniform pick,
+ * so every day of the year still gets a valid bundle for a first-time
+ * visitor who hasn't chosen any interests yet.
+ */
+export function buildDailyBundle(dateISO: string, weights: Record<string, number> = {}): DailyBundle {
   const date = parseISODate(dateISO);
   const doy = dayOfYear(date);
 
-  const historyIdx = pickIndices(dateISO, "history", HISTORY_BITES.length, 3).sort((a, b) => a - b);
-  const triviaIdx = pickIndex(dateISO, "trivia", TRIVIA_BITES.length);
-  const poemIdx = pickIndex(dateISO, "poem", POEMS.length);
-  const travelIdx = pickIndex(dateISO, "travel", TRAVEL_VIGNETTES.length);
-  const bookIdx = pickIndex(dateISO, "book", BOOKS.length);
+  const poemIdx = pickWeightedIndex(POEMS.map((p) => p.category), dateISO, "poem", weights);
+  const travelIdx = pickWeightedIndex(TRAVEL_VIGNETTES.map((v) => v.category), dateISO, "travel", weights);
+  const bookIdx = pickWeightedIndex(BOOKS.map((b) => b.category), dateISO, "book", weights);
   const artIdx = pickIndex(dateISO, "art", ART_QUERIES.length);
   const todoIdx = pickIndices(dateISO, "todos", TODO_POOL.length, 5);
 
-  const theme = pickCrosswordTheme(doy);
+  const themeIdx = pickWeightedIndex(CROSSWORD_THEMES.map((t) => t.category), dateISO, "crossword", weights);
+  const theme = CROSSWORD_THEMES[themeIdx];
   const crossword = generateBestCrossword(
     `${theme.id}-${dateISO}`,
     theme.title,
@@ -35,10 +40,6 @@ export function buildDailyBundle(dateISO: string): DailyBundle {
   return {
     dateISO,
     dayOfYear: doy,
-    bites: {
-      history: historyIdx.map((i) => HISTORY_BITES[i]),
-      trivia: TRIVIA_BITES[triviaIdx],
-    },
     comic: {
       label: "Calvin and Hobbes",
       url: comicArchiveUrl(dateISO),

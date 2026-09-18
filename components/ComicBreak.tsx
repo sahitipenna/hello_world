@@ -1,6 +1,24 @@
-export default function ComicBreak({ label, url, dateISO }: { label: string; url: string; dateISO: string }) {
+"use client";
+
+import { useEditableSection } from "@/lib/useEditableSection";
+import EditPencil from "./EditPencil";
+
+export default function ComicBreak({
+  dateISO,
+  label,
+  url,
+}: {
+  dateISO: string;
+  label: string;
+  url: string;
+}) {
+  const { editing, values, setValue, toggle, saving } = useEditableSection(dateISO, "comic", { label });
+
   return (
     <div className="text-center py-4">
+      <div className="flex justify-end -mt-3 mb-1">
+        <EditPencil editing={editing} onClick={toggle} label="Comic Break" disabled={saving} />
+      </div>
       <div className="mx-auto w-16 h-16 rounded-full bg-paper2 border-2 border-dashed border-ink/20 flex items-center justify-center mb-3">
         <svg viewBox="0 0 24 24" className="w-8 h-8 text-terracotta" fill="none">
           <path
@@ -14,9 +32,21 @@ export default function ComicBreak({ label, url, dateISO }: { label: string; url
           <circle cx="17" cy="11" r="1" fill="currentColor" />
         </svg>
       </div>
-      <p className="text-sm text-ink/70 mb-3">
-        Today&apos;s <span className="font-medium">{label}</span> strip, straight from the official archive.
-      </p>
+      {editing ? (
+        <div className="space-y-2 max-w-xs mx-auto">
+          <p className="text-xs font-semibold text-terracotta">Editing this label — check to save.</p>
+          <input
+            type="text"
+            value={values.label}
+            onChange={(e) => setValue("label", e.target.value)}
+            className="w-full rounded-md border border-dashed border-ink/30 bg-paper px-2 py-1.5 text-sm text-center outline-none focus:border-terracotta"
+          />
+        </div>
+      ) : (
+        <p className="text-sm text-ink/70 mb-3">
+          Today&apos;s <span className="font-medium">{values.label}</span> strip, straight from the official archive.
+        </p>
+      )}
       <a
         href={url}
         target="_blank"

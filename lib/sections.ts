@@ -2,7 +2,8 @@ import { SectionMeta } from "./types";
 
 export const SECTIONS: SectionMeta[] = [
   { id: "todos", title: "Five for Today", tagline: "small prompts for a fuller day", premium: false },
-  { id: "bites", title: "Curiosity Bites", tagline: "a fact and a question to chew on", premium: false },
+  { id: "todolist", title: "My To-Do List", tagline: "add and track your own tasks", premium: false },
+  { id: "quiz", title: "Daily Quiz", tagline: "15 quick questions, one at a time", premium: false },
   { id: "poem", title: "A Few Lines", tagline: "a short poem, always public domain", premium: false },
   { id: "book", title: "Shelf Recommendation", tagline: "one book worth your evening", premium: false },
   { id: "crossword", title: "Mini Crossword", tagline: "a quick puzzle, easy to medium", premium: true },

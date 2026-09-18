@@ -1,6 +1,6 @@
 "use client";
 
-import { SectionMeta } from "@/lib/types";
+import { SectionId, SectionMeta } from "@/lib/types";
 
 export default function SectionCustomizer({
   open,
@@ -14,14 +14,14 @@ export default function SectionCustomizer({
   open: boolean;
   onClose: () => void;
   sections: SectionMeta[];
-  order: string[];
-  hidden: string[];
-  onReorder: (order: string[]) => void;
-  onToggleHidden: (id: string) => void;
+  order: SectionId[];
+  hidden: SectionId[];
+  onReorder: (order: SectionId[]) => void;
+  onToggleHidden: (id: SectionId) => void;
 }) {
   if (!open) return null;
 
-  function move(id: string, dir: -1 | 1) {
+  function move(id: SectionId, dir: -1 | 1) {
     const idx = order.indexOf(id);
     const newIdx = idx + dir;
     if (newIdx < 0 || newIdx >= order.length) return;

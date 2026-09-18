@@ -3,6 +3,7 @@ import { WordClue } from "./crosswordGen";
 export interface CrosswordTheme {
   id: string;
   title: string;
+  category: string;
   words: WordClue[];
 }
 
@@ -10,6 +11,7 @@ export const CROSSWORD_THEMES: CrosswordTheme[] = [
   {
     id: "morning",
     title: "Morning Routine",
+    category: "food",
     words: [
       { word: "TOAST", clue: "Breakfast slice, often buttered" },
       { word: "ALARM", clue: "Wakes you up, rudely" },
@@ -26,6 +28,7 @@ export const CROSSWORD_THEMES: CrosswordTheme[] = [
   {
     id: "ocean",
     title: "By the Sea",
+    category: "nature",
     words: [
       { word: "WAVE", clue: "Rolls onto the shore" },
       { word: "SHELL", clue: "Home for a hermit crab" },
@@ -42,6 +45,7 @@ export const CROSSWORD_THEMES: CrosswordTheme[] = [
   {
     id: "kitchen",
     title: "In the Kitchen",
+    category: "food",
     words: [
       { word: "WHISK", clue: "For beating eggs" },
       { word: "OVEN", clue: "Bakes your bread" },
@@ -58,6 +62,7 @@ export const CROSSWORD_THEMES: CrosswordTheme[] = [
   {
     id: "garden",
     title: "In the Garden",
+    category: "nature",
     words: [
       { word: "ROSE", clue: "Thorny, fragrant flower" },
       { word: "SOIL", clue: "What roots grow in" },
@@ -74,6 +79,7 @@ export const CROSSWORD_THEMES: CrosswordTheme[] = [
   {
     id: "music",
     title: "A Little Music",
+    category: "music",
     words: [
       { word: "PIANO", clue: "88 keys, black and white" },
       { word: "TEMPO", clue: "Speed of a piece of music" },
@@ -90,6 +96,7 @@ export const CROSSWORD_THEMES: CrosswordTheme[] = [
   {
     id: "weather",
     title: "Weather Watch",
+    category: "nature",
     words: [
       { word: "CLOUD", clue: "Floats in the sky, holds rain" },
       { word: "STORM", clue: "Thunder and lightning event" },
@@ -106,6 +113,7 @@ export const CROSSWORD_THEMES: CrosswordTheme[] = [
   {
     id: "travel",
     title: "Getting Away",
+    category: "travel",
     words: [
       { word: "TICKET", clue: "You need one to board" },
       { word: "MAP", clue: "Helps you find your way" },
@@ -122,6 +130,7 @@ export const CROSSWORD_THEMES: CrosswordTheme[] = [
   {
     id: "reading",
     title: "Bookish",
+    category: "books",
     words: [
       { word: "NOVEL", clue: "A long work of fiction" },
       { word: "CHAPTER", clue: "A section of a book" },
@@ -135,8 +144,55 @@ export const CROSSWORD_THEMES: CrosswordTheme[] = [
       { word: "READER", clue: "Someone turning these very pages" },
     ],
   },
+  {
+    id: "sports",
+    title: "Game Day",
+    category: "sports",
+    words: [
+      { word: "GOAL", clue: "What a striker is aiming for" },
+      { word: "COURT", clue: "Where basketball is played" },
+      { word: "REFEREE", clue: "Blows the whistle" },
+      { word: "SERVE", clue: "Starts a point in tennis" },
+      { word: "MEDAL", clue: "Podium reward" },
+      { word: "SPRINT", clue: "A short, fast race" },
+      { word: "COACH", clue: "Trains the team" },
+      { word: "STADIUM", clue: "Where the crowd gathers" },
+      { word: "RACKET", clue: "Swung in tennis or badminton" },
+      { word: "JERSEY", clue: "Team shirt with a number" },
+    ],
+  },
+  {
+    id: "museum",
+    title: "At the Museum",
+    category: "art",
+    words: [
+      { word: "CANVAS", clue: "What a painter paints on" },
+      { word: "SKETCH", clue: "A quick, rough drawing" },
+      { word: "EASEL", clue: "Holds the canvas upright" },
+      { word: "GALLERY", clue: "Room full of art" },
+      { word: "PALETTE", clue: "Where paint colors are mixed" },
+      { word: "FRESCO", clue: "Painted straight onto wet plaster" },
+      { word: "SCULPTOR", clue: "Carves or molds a statue" },
+      { word: "MURAL", clue: "A painting on a wall" },
+      { word: "HUE", clue: "Another word for a color" },
+      { word: "FRAME", clue: "Borders a painting" },
+    ],
+  },
+  {
+    id: "nightsky",
+    title: "Night Sky",
+    category: "science",
+    words: [
+      { word: "COMET", clue: "Icy visitor with a tail" },
+      { word: "ORBIT", clue: "A planet's path around the sun" },
+      { word: "GALAXY", clue: "A vast collection of stars" },
+      { word: "TELESCOPE", clue: "Brings distant stars closer" },
+      { word: "ECLIPSE", clue: "When one body blocks another's light" },
+      { word: "NEBULA", clue: "A cloud of gas and dust in space" },
+      { word: "METEOR", clue: "A shooting star" },
+      { word: "LUNAR", clue: "Relating to the moon" },
+      { word: "ASTEROID", clue: "A rocky body orbiting the sun" },
+      { word: "GRAVITY", clue: "Keeps your feet on the ground" },
+    ],
+  },
 ];
-
-export function pickCrosswordTheme(dayOfYear: number): CrosswordTheme {
-  return CROSSWORD_THEMES[dayOfYear % CROSSWORD_THEMES.length];
-}

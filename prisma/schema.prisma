@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A visitor of the app. Anonymous by default, identified by a random id
+/// stored in an httpOnly cookie (see lib/auth.ts) — no signup/password yet.
+model User {
+  id             String   @id
+  createdAt      DateTime @default(now())
+  plan           String   @default("free") // "free" | "premium" (demo toggle, no real billing yet)
+  sectionOrder   String? // JSON-encoded string[] of section ids
+  hiddenSections String? // JSON-encoded string[] of section ids
+
+  interests   UserInterest[]
+  todoChecks  DailyTodoCheck[]
+  promptEdits PromptEdit[]
+  sectionEdits SectionEdit[]
+  todoItems   TodoListItem[]
+  quizEdits   QuizEdit[]
+}
+
+/// The fixed set of interest categories users can pick from
+/// (art, music, travel, nature, sports, books, science, food).
+model InterestTag {
+  id       String  @id @default(cuid())
+  slug     String  @unique
+  label    String
+  emoji    String  @default("")
+
+  users UserInterest[]
+}
+
+model UserInterest {
+  userId String
+  tagId  String
+  weight Int    @default(1)
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tag  InterestTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tagId])
+}
+
+/// Checkbox state for the "Five for Today" prompts, per user per calendar day.
+model DailyTodoCheck {
+  id      String  @id @default(cuid())
+  userId  String
+  dateISO String
+  index   Int
+  done    Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dateISO, index])
+}
+
+/// User's own rewritten text for one of that day's five prompts.
+model PromptEdit {
+  id      String @id @default(cuid())
+  userId  String
+  dateISO String
+  index   Int
+  text    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dateISO, index])
+}
+
+/// Generic per-user text override for a field of a given day's section
+/// (poem lines, book reason, travel body, crossword title, ...).
+model SectionEdit {
+  id        String @id @default(cuid())
+  userId    String
+  dateISO   String
+  sectionId String
+  field     String
+  value     String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dateISO, sectionId, field])
+}
+
+/// The user's own standing to-do list — separate from the daily prompts,
+/// not tied to a calendar date.
+model TodoListItem {
+  id        String   @id @default(cuid())
+  userId    String
+  text      String
+  done      Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// The master bank of 15 daily-quiz questions, seeded once.
+model QuizQuestion {
+  id       String @id @default(cuid())
+  index    Int    @unique
+  question String
+  answer   String
+  category String @default("science")
+}
+
+/// A user's own rewritten question/answer for one quiz slot.
+model QuizEdit {
+  id            String @id @default(cuid())
+  userId        String
+  questionIndex Int
+  question      String
+  answer        String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionIndex])
+}

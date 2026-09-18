@@ -1,12 +1,13 @@
 export type SectionId =
-  | "bites"
+  | "todos"
+  | "todolist"
+  | "quiz"
   | "crossword"
   | "comic"
   | "poem"
   | "art"
   | "travel"
-  | "book"
-  | "todos";
+  | "book";
 
 export interface SectionMeta {
   id: SectionId;
@@ -15,33 +16,28 @@ export interface SectionMeta {
   premium: boolean;
 }
 
-export interface HistoryBite {
-  year: string;
-  text: string;
-}
-
-export interface TriviaBite {
-  question: string;
-  answer: string;
-}
+export type Plan = "free" | "premium";
 
 export interface Poem {
   title: string;
   poet: string;
   year?: string;
   lines: string[];
+  category: string;
 }
 
 export interface TravelVignette {
   title: string;
   place: string;
   body: string;
+  category: string;
 }
 
 export interface BookRec {
   title: string;
   author: string;
   reason: string;
+  category: string;
 }
 
 export interface CrosswordEntry {
@@ -64,10 +60,6 @@ export interface CrosswordPuzzle {
 export interface DailyBundle {
   dateISO: string;
   dayOfYear: number;
-  bites: {
-    history: HistoryBite[];
-    trivia: TriviaBite;
-  };
   comic: {
     label: string;
     url: string;
@@ -78,4 +70,31 @@ export interface DailyBundle {
   todos: string[];
   crossword: CrosswordPuzzle;
   artQuery: string;
+}
+
+/** What GET /api/daily actually returns: the bundle plus per-user state. */
+export interface DailyBundleResponse extends DailyBundle {
+  plan: Plan;
+  todoChecks: Record<number, boolean>;
+}
+
+export interface QuizQuestion {
+  index: number;
+  question: string;
+  answer: string;
+  category: string;
+}
+
+export interface InterestTag {
+  id: string;
+  slug: string;
+  label: string;
+  emoji: string;
+}
+
+export interface UserPreferences {
+  plan: Plan;
+  sectionOrder: SectionId[];
+  hiddenSections: SectionId[];
+  interests: { slug: string; weight: number }[];
 }

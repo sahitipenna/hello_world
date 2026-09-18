@@ -2,13 +2,20 @@
 
 import { useMemo, useRef, useState } from "react";
 import { CrosswordPuzzle as Puzzle } from "@/lib/types";
+import { useEditableSection } from "@/lib/useEditableSection";
+import EditPencil from "./EditPencil";
 
 interface Cell {
   answer: string;
   number: number | null;
 }
 
-export default function CrosswordPuzzle({ puzzle }: { puzzle: Puzzle }) {
+export default function CrosswordPuzzle({ dateISO, puzzle }: { dateISO: string; puzzle: Puzzle }) {
+  const { editing, values: titleValues, setValue: setTitleValue, toggle: toggleEdit, saving } = useEditableSection(
+    dateISO,
+    "crossword",
+    { title: puzzle.title }
+  );
   const grid = useMemo(() => {
     const g: (Cell | null)[][] = Array.from({ length: puzzle.rows }, () =>
       Array.from({ length: puzzle.cols }, () => null)
@@ -76,7 +83,19 @@ export default function CrosswordPuzzle({ puzzle }: { puzzle: Puzzle }) {
 
   return (
     <div>
-      <p className="text-sm text-ink/60 mb-3">{puzzle.title}</p>
+      <div className="flex items-center justify-between mb-3 gap-2">
+        {editing ? (
+          <input
+            type="text"
+            value={titleValues.title}
+            onChange={(e) => setTitleValue("title", e.target.value)}
+            className="flex-1 min-w-0 rounded-md border border-dashed border-ink/30 bg-paper px-2 py-1 text-sm outline-none focus:border-terracotta"
+          />
+        ) : (
+          <p className="text-sm text-ink/60">{titleValues.title}</p>
+        )}
+        <EditPencil editing={editing} onClick={toggleEdit} label="Mini Crossword" disabled={saving} />
+      </div>
       <div
         className="grid gap-[2px] bg-ink/15 border border-ink/15 rounded-md overflow-hidden mb-4 max-w-sm mx-auto sm:mx-0"
         style={{ gridTemplateColumns: `repeat(${puzzle.cols}, minmax(0, 1fr))` }}

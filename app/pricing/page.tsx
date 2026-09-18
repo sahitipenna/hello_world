@@ -1,6 +1,13 @@
 import Link from "next/link";
 
-const FREE_FEATURES = ["Five hobby prompts a day", "Curiosity bites & trivia", "A short poem", "One book recommendation"];
+const FREE_FEATURES = [
+  "Five editable hobby prompts a day",
+  "Your own standing to-do list",
+  "A 15-question daily quiz",
+  "A short poem",
+  "One book recommendation",
+  "Interests-based personalization",
+];
 const PREMIUM_FEATURES = [
   "Everything in Free",
   "Mini crossword (easy to medium)",

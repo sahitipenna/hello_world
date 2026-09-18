@@ -1,10 +1,11 @@
-import { HistoryBite, TriviaBite, Poem, TravelVignette, BookRec } from "./types";
+import { Poem, TravelVignette, BookRec } from "./types";
 
 // All poems below are in the public domain (poets died before 1955 / works pre-1929).
 export const POEMS: Poem[] = [
   {
     title: "“Hope” is the thing with feathers",
     poet: "Emily Dickinson",
+    category: "books",
     lines: [
       "“Hope” is the thing with feathers -",
       "That perches in the soul -",
@@ -16,6 +17,7 @@ export const POEMS: Poem[] = [
     title: "The Road Not Taken",
     poet: "Robert Frost",
     year: "1916",
+    category: "nature",
     lines: [
       "Two roads diverged in a yellow wood,",
       "And sorry I could not travel both",
@@ -26,6 +28,7 @@ export const POEMS: Poem[] = [
   {
     title: "Song of Myself (1)",
     poet: "Walt Whitman",
+    category: "books",
     lines: [
       "I celebrate myself, and sing myself,",
       "And what I assume you shall assume,",
@@ -35,6 +38,7 @@ export const POEMS: Poem[] = [
   {
     title: "The Tyger",
     poet: "William Blake",
+    category: "art",
     lines: [
       "Tyger Tyger, burning bright,",
       "In the forests of the night;",
@@ -45,11 +49,13 @@ export const POEMS: Poem[] = [
   {
     title: "An old silent pond",
     poet: "Matsuo Bashō",
+    category: "nature",
     lines: ["An old silent pond", "A frog jumps into the pond—", "Splash! Silence again."],
   },
   {
     title: "I Am the Great Sun",
     poet: "Charles Causley",
+    category: "books",
     lines: [
       "I am the great sun, but you do not see me,",
       "I am your husband, but you turn away.",
@@ -59,6 +65,7 @@ export const POEMS: Poem[] = [
     title: "Fog",
     poet: "Carl Sandburg",
     year: "1916",
+    category: "nature",
     lines: [
       "The fog comes",
       "on little cat feet.",
@@ -71,6 +78,7 @@ export const POEMS: Poem[] = [
   {
     title: "A Dream Within a Dream",
     poet: "Edgar Allan Poe",
+    category: "books",
     lines: [
       "Take this kiss upon the brow!",
       "And, in parting from you now,",
@@ -82,6 +90,7 @@ export const POEMS: Poem[] = [
   {
     title: "Where the Mind is Without Fear",
     poet: "Rabindranath Tagore",
+    category: "books",
     lines: [
       "Where the mind is without fear and the head is held high;",
       "Where knowledge is free;",
@@ -93,11 +102,13 @@ export const POEMS: Poem[] = [
     title: "In a Station of the Metro",
     poet: "Ezra Pound",
     year: "1913",
+    category: "art",
     lines: ["The apparition of these faces in the crowd;", "Petals on a wet, black bough."],
   },
   {
     title: "Dreams",
     poet: "Langston Hughes",
+    category: "books",
     lines: [
       "Hold fast to dreams",
       "For if dreams die",
@@ -108,6 +119,7 @@ export const POEMS: Poem[] = [
   {
     title: "The Sun Rising (opening)",
     poet: "John Donne",
+    category: "nature",
     lines: [
       "Busy old fool, unruly sun,",
       "Why dost thou thus,",
@@ -121,110 +133,72 @@ export const TRAVEL_VIGNETTES: TravelVignette[] = [
   {
     title: "The 6:12 to Nowhere in Particular",
     place: "A commuter train, somewhere",
+    category: "travel",
     body: "There is a particular kind of joy in boarding a train with no destination written on your ticket — only a direction. The window fogs at the corners. A stranger reads a paperback with a cracked spine, thumb marking the page like a small anchor. Somewhere past the third stop, the tracks curve toward hills nobody photographs, and for a moment the ordinary become unbearably beautiful, the way ordinary things do when you finally have nowhere else to be.",
   },
   {
     title: "Market Morning, Old Quarter",
     place: "A hill town market",
+    category: "food",
     body: "By seven the stalls are already loud with bargaining, the smell of frying dough competing with cardamom and wet stone. An old woman sells exactly eleven tomatoes a day — no more, no less — because eleven is what her garden gives her, and she has never once wished for twelve. I bought two, mostly to hear her laugh at my terrible attempt to haggle in a language I was still borrowing.",
   },
   {
     title: "The Lighthouse Keeper's Directions",
     place: "A rocky northern coast",
+    category: "nature",
     body: "“You can't get lost,” he said, pointing at a coastline with exactly one road. “The sea is always on your left going out, and on your right coming back.” It was the kind of instruction that sounded too simple to be useful, and turned out to be the only navigation I needed for three days, through fog that swallowed the horizon whole.",
   },
   {
     title: "Letters I Never Sent from the Overnight Ferry",
     place: "A night crossing",
+    category: "travel",
     body: "The deck was cold enough to see your breath, and the water below was the colour of pencil lead. Someone had brought a guitar and played badly, cheerfully, to an audience of three sleepy strangers wrapped in the same wool blanket. I wrote you a postcard I never mailed, because some things are truer left unsent, folded into a pocket, carried home instead of posted.",
   },
   {
     title: "Bread, Twice a Day",
     place: "A village bakery",
+    category: "food",
     body: "The baker opens at five and again at four in the afternoon, because bread, he insists, should never be more than a few hours old when it meets your hands. I learned to time my walks around the second batch — the smell would reach the church steps a full two streets before the loaves did, an early warning system for anyone paying attention.",
   },
   {
     title: "The Silence After the Waterfall",
     place: "A rainforest trail",
+    category: "nature",
     body: "It roars for three hours of hiking and then, when you finally stand beneath it, the sound is so total it becomes a kind of silence — a white noise so complete that your own thoughts go quiet too. Afterward, back on the trail, the ordinary forest sounds felt almost too loud, as if the birds had gotten braver in your absence.",
   },
   {
     title: "A Desert at Nine P.M.",
     place: "An open desert camp",
+    category: "nature",
     body: "Nobody warns you how loud the stars are. Not literally — obviously — but there is a hush that comes with that much sky, a sense of being gently outnumbered. Someone in the group pointed out constellations with more confidence than accuracy, and nobody corrected him, because being slightly wrong under that many stars felt like the least important thing in the world.",
   },
   {
     title: "The Café That Only Serves Regulars Opinions",
     place: "A corner café, somewhere with good coffee",
+    category: "food",
     body: "Ask for a recommendation and the owner will simply bring you what he thinks you need that day, no menu required. On a grey Tuesday, mine arrived as a small, dense chocolate cake and a black coffee I hadn't ordered, with the explanation: “You looked like today was long.” It was. The cake helped.",
   },
 ];
 
 export const BOOKS: BookRec[] = [
-  { title: "Braiding Sweetgrass", author: "Robin Wall Kimmerer", reason: "A gentle, curious meditation on plants, gratitude, and paying attention — perfect for a slow morning." },
-  { title: "The Housekeeper and the Professor", author: "Yoko Ogawa", reason: "A quiet, tender novel about memory and numbers that turns arithmetic into something like poetry." },
-  { title: "Wind, Sand and Stars", author: "Antoine de Saint-Exupéry", reason: "A pilot's memoir of the desert and the sky, full of wonder about ordinary courage." },
-  { title: "H is for Hawk", author: "Helen Macdonald", reason: "Grief, falconry, and the natural world, written with ferocious attention to detail." },
-  { title: "The Elegance of the Hedgehog", author: "Muriel Barbery", reason: "Two unlikely philosophers hiding in a Paris apartment building — funny, sad, curious." },
-  { title: "Steppenwolf", author: "Hermann Hesse", reason: "A restless, strange novel about the many selves inside one person." },
-  { title: "A Short History of Nearly Everything", author: "Bill Bryson", reason: "The whole of science, told like your funniest, most curious friend is explaining it over dinner." },
-  { title: "Travels with Charley", author: "John Steinbeck", reason: "A road trip across America with a poodle and a healthy amount of self-doubt." },
-  { title: "The Sense of Wonder", author: "Rachel Carson", reason: "A short, luminous essay on keeping a child's curiosity about the natural world alive." },
-  { title: "Letters to a Young Poet", author: "Rainer Maria Rilke", reason: "Short, warm letters of encouragement to anyone trying to make something honest." },
-  { title: "In Patagonia", author: "Bruce Chatwin", reason: "Restless travel writing that reads like a string of very good short stories." },
-  { title: "The Overstory", author: "Richard Powers", reason: "Nine lives entwined with trees — ambitious, strange, and quietly urgent." },
-  { title: "Cheerfulness Breaks In", author: "Angela Thirkell", reason: "Gentle English comedy of manners, ideal for a rainy afternoon and a cup of tea." },
-  { title: "The Art of Travel", author: "Alain de Botton", reason: "An essayistic guide to why we travel and what we're actually looking for." },
-  { title: "Gilead", author: "Marilynne Robinson", reason: "A dying preacher's letter to his young son — patient, luminous prose." },
-  { title: "The Left Hand of Darkness", author: "Ursula K. Le Guin", reason: "A cold, strange, deeply humane planet, and one of the great thought experiments in fiction." },
-  { title: "Consider the Lobster", author: "David Foster Wallace", reason: "Essays that turn a state fair, a cruise ship, or a lobster pot into something worth thinking hard about." },
-  { title: "The Snow Leopard", author: "Peter Matthiessen", reason: "A Himalayan trek in search of an elusive animal, and something harder to name." },
-];
-
-// General-knowledge curiosity facts — not tied to a specific calendar date, chosen at random per day.
-export const HISTORY_BITES: HistoryBite[] = [
-  { year: "—", text: "Honey found in ancient Egyptian tombs is still perfectly edible thousands of years later — it almost never spoils." },
-  { year: "—", text: "Octopuses have three hearts, and two of them stop beating when the octopus swims, which is part of why they prefer crawling." },
-  { year: "—", text: "The shortest war in recorded history, between Britain and Zanzibar in 1896, lasted roughly 38 minutes." },
-  { year: "—", text: "Venice is built on more than 100 small islands, connected by over 400 footbridges." },
-  { year: "—", text: "A single cloud can weigh over a million pounds — water droplets are just spread thin enough to float." },
-  { year: "—", text: "The word “quarantine” comes from the Venetian “quaranta giorni,” meaning forty days, the isolation period for ships." },
-  { year: "—", text: "Bananas are botanically classified as berries; strawberries, oddly, are not." },
-  { year: "—", text: "The Great Wall of China is not, contrary to popular myth, visible to the naked eye from space." },
-  { year: "—", text: "Sea otters hold hands while sleeping so they don't drift apart from each other in the water." },
-  { year: "—", text: "The first postcard was sent in the 1840s, and people worried it would destroy the art of letter-writing." },
-  { year: "—", text: "Iceland has no mosquitoes — one of the only inhabited places on Earth where this is true." },
-  { year: "—", text: "A day on Venus is longer than a year on Venus, because it spins so slowly on its axis." },
-  { year: "—", text: "The Eiffel Tower grows about 15 centimetres taller in summer, as the iron expands in the heat." },
-  { year: "—", text: "Wombats produce cube-shaped droppings, believed to help mark territory without rolling away." },
-  { year: "—", text: "The longest recorded flight of a chicken is about 13 seconds — they can fly, just not very far." },
-  { year: "—", text: "Finland has more saunas than cars, with roughly one sauna for every two people." },
-  { year: "—", text: "The dot over a lowercase “i” or “j” has a name: a tittle." },
-  { year: "—", text: "A group of flamingos is called a “flamboyance.”" },
-  { year: "—", text: "The Library of Alexandria is believed to have had a policy of copying books from every ship that docked in its port." },
-  { year: "—", text: "Butterflies taste with their feet, using sensors that detect sugar in the plants they land on." },
-  { year: "—", text: "The Antikythera mechanism, a 2,000-year-old Greek device, could predict eclipses using dozens of interlocking bronze gears." },
-  { year: "—", text: "Mount Everest grows about 4 millimetres taller each year as tectonic plates continue to collide." },
-  { year: "—", text: "Notre-Dame's bells were, for centuries, rung by hand — a job so physically demanding it shaped the bell-ringer's whole life." },
-  { year: "—", text: "A bolt of lightning is roughly five times hotter than the surface of the sun." },
-  { year: "—", text: "The first known recipe for a written cookbook dates back to Mesopotamia, inscribed in cuneiform on clay tablets." },
-];
-
-export const TRIVIA_BITES: TriviaBite[] = [
-  { question: "What do you call a group of crows?", answer: "A murder." },
-  { question: "Which planet spins on nearly its side relative to the sun?", answer: "Uranus." },
-  { question: "What everyday spice is made from the dried stigmas of a crocus flower?", answer: "Saffron." },
-  { question: "What is the only mammal capable of true flight?", answer: "The bat." },
-  { question: "In music, what Italian word means “gradually louder”?", answer: "Crescendo." },
-  { question: "What is the tallest grass in the world?", answer: "Bamboo." },
-  { question: "Which country has the most time zones?", answer: "France (thanks to its overseas territories)." },
-  { question: "What is a baby rabbit called?", answer: "A kit, or kitten." },
-  { question: "Which artist cut off part of his own ear?", answer: "Vincent van Gogh." },
-  { question: "What is the smallest bone in the human body?", answer: "The stapes, in the ear." },
-  { question: "What natural phenomenon is measured on the Beaufort scale?", answer: "Wind speed." },
-  { question: "What was the first fruit eaten on the moon?", answer: "The peach (in a dried food pack, Apollo 11)." },
-  { question: "What language has the most native speakers worldwide?", answer: "Mandarin Chinese." },
-  { question: "What do you call a fear of long words?", answer: "Hippopotomonstrosesquippedaliophobia." },
+  { title: "Braiding Sweetgrass", author: "Robin Wall Kimmerer", category: "nature", reason: "A gentle, curious meditation on plants, gratitude, and paying attention — perfect for a slow morning." },
+  { title: "The Housekeeper and the Professor", author: "Yoko Ogawa", category: "books", reason: "A quiet, tender novel about memory and numbers that turns arithmetic into something like poetry." },
+  { title: "Wind, Sand and Stars", author: "Antoine de Saint-Exupéry", category: "travel", reason: "A pilot's memoir of the desert and the sky, full of wonder about ordinary courage." },
+  { title: "H is for Hawk", author: "Helen Macdonald", category: "nature", reason: "Grief, falconry, and the natural world, written with ferocious attention to detail." },
+  { title: "The Elegance of the Hedgehog", author: "Muriel Barbery", category: "books", reason: "Two unlikely philosophers hiding in a Paris apartment building — funny, sad, curious." },
+  { title: "Steppenwolf", author: "Hermann Hesse", category: "books", reason: "A restless, strange novel about the many selves inside one person." },
+  { title: "A Short History of Nearly Everything", author: "Bill Bryson", category: "science", reason: "The whole of science, told like your funniest, most curious friend is explaining it over dinner." },
+  { title: "Travels with Charley", author: "John Steinbeck", category: "travel", reason: "A road trip across America with a poodle and a healthy amount of self-doubt." },
+  { title: "The Sense of Wonder", author: "Rachel Carson", category: "nature", reason: "A short, luminous essay on keeping a child's curiosity about the natural world alive." },
+  { title: "Letters to a Young Poet", author: "Rainer Maria Rilke", category: "art", reason: "Short, warm letters of encouragement to anyone trying to make something honest." },
+  { title: "In Patagonia", author: "Bruce Chatwin", category: "travel", reason: "Restless travel writing that reads like a string of very good short stories." },
+  { title: "The Overstory", author: "Richard Powers", category: "nature", reason: "Nine lives entwined with trees — ambitious, strange, and quietly urgent." },
+  { title: "Cheerfulness Breaks In", author: "Angela Thirkell", category: "books", reason: "Gentle English comedy of manners, ideal for a rainy afternoon and a cup of tea." },
+  { title: "The Art of Travel", author: "Alain de Botton", category: "travel", reason: "An essayistic guide to why we travel and what we're actually looking for." },
+  { title: "Gilead", author: "Marilynne Robinson", category: "books", reason: "A dying preacher's letter to his young son — patient, luminous prose." },
+  { title: "The Left Hand of Darkness", author: "Ursula K. Le Guin", category: "science", reason: "A cold, strange, deeply humane planet, and one of the great thought experiments in fiction." },
+  { title: "Consider the Lobster", author: "David Foster Wallace", category: "food", reason: "Essays that turn a state fair, a cruise ship, or a lobster pot into something worth thinking hard about." },
+  { title: "The Snow Leopard", author: "Peter Matthiessen", category: "travel", reason: "A Himalayan trek in search of an elusive animal, and something harder to name." },
 ];
 
 export const TODO_POOL: string[] = [
@@ -271,6 +245,7 @@ export const TODO_POOL: string[] = [
 ];
 
 // Search terms for the Met Museum's Open Access collection (public domain / CC0 artworks).
+// This whole bank is inherently "art" category content.
 export const ART_QUERIES: string[] = [
   "Van Gogh wheat field",
   "Hokusai wave",
