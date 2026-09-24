@@ -9,12 +9,14 @@ datasource db {
 
 /// A visitor of the app. Anonymous by default, identified by a random id
 /// stored in an httpOnly cookie (see lib/auth.ts) — no signup/password yet.
+/// See ARCHITECTURE.md §4 for why this is the deliberate MVP choice.
 model User {
-  id             String   @id
-  createdAt      DateTime @default(now())
-  plan           String   @default("free") // "free" | "premium" (demo toggle, no real billing yet)
-  sectionOrder   String? // JSON-encoded string[] of section ids
-  hiddenSections String? // JSON-encoded string[] of section ids
+  id                String   @id
+  createdAt         DateTime @default(now())
+  plan              String   @default("free") // "free" | "premium" (demo toggle, no real billing yet)
+  timeBudgetMinutes Int? // 5 | 15 | 30 | 45 — personalization from onboarding
+  sectionOrder      String? // JSON-encoded string[] of section keys
+  hiddenSections    String? // JSON-encoded string[] of section keys
 
   interests    UserInterest[]
   todoChecks   DailyTodoCheck[]
@@ -23,15 +25,162 @@ model User {
   todoItems    TodoListItem[]
   quizEdits    QuizEdit[]
   quizProgress QuizProgress[]
+  bookmarks    Bookmark[]
 }
 
-/// The fixed set of interest categories users can pick from
-/// (art, music, travel, nature, sports, books, science, food).
+// ---------------------------------------------------------------------------
+// Section configuration — the core "change it without redeploying" table.
+// The daily-edition page renders exactly these rows, in this order, gating
+// premium ones for free users. Adding, renaming, reordering, enabling, or
+// re-pricing a section is a row edit via /admin, not a code change.
+// ---------------------------------------------------------------------------
+
+model Section {
+  id               String  @id @default(cuid())
+  key              String  @unique // "know" | "play" | "look" | "read" | "wander" | "readnext" | "wonder" | "do" | ...
+  eyebrow          String // small-caps label shown above the title, e.g. "KNOW"
+  title            String // e.g. "5 things happening in the world"
+  tagline          String
+  order            Int     @default(0)
+  premium          Boolean @default(false)
+  enabled          Boolean @default(true)
+  minTimeMinutes   Int     @default(5) // shown expanded once the user's time budget reaches this
+}
+
+// ---------------------------------------------------------------------------
+// Content pools. Every row optionally carries a `scheduledDate` — if set,
+// that item is used for that exact date (real editorial control); if not,
+// the app deterministically rotates through the unscheduled pool so every
+// date still resolves to a complete edition. See ARCHITECTURE.md §2.
+// ---------------------------------------------------------------------------
+
+/// KNOW — short, accessible items about the world. Editorially written or
+/// summarized, never scraped/reproduced wire copy (see rightsStatus).
+model NewsItem {
+  id              String    @id @default(cuid())
+  title           String
+  summary         String
+  source          String
+  sourceUrl       String?
+  category        String    @default("world")
+  readingTimeMin  Int       @default(1)
+  scheduledDate   String?
+  createdAt       DateTime  @default(now())
+}
+
+/// LOOK — one artwork, with an interpretive write-up, not just metadata.
+model Artwork {
+  id            String   @id @default(cuid())
+  title         String
+  artist        String
+  year          String   @default("")
+  medium        String   @default("")
+  museum        String   @default("")
+  image         String? // URL; if empty, the Met search query below is used live
+  metQuery      String? // fallback: live-search the Met's Open Access API
+  description   String // the 100–250 word "notice how..." interpretation
+  sourceUrl     String?
+  category      String   @default("art")
+  scheduledDate String?
+  createdAt     DateTime @default(now())
+}
+
+/// READ — a short literary excerpt. rightsStatus governs what's shown:
+/// "public_domain" or "editorial" may show a real excerpt; "licensed" or
+/// "summary_only" must not reproduce protected text (see the app's use).
+model LiteraryItem {
+  id            String   @id @default(cuid())
+  author        String
+  work          String
+  excerpt       String
+  context       String
+  source        String
+  sourceUrl     String?
+  rightsStatus  String   @default("public_domain") // "public_domain" | "editorial" | "licensed" | "summary_only"
+  category      String   @default("books")
+  scheduledDate String?
+  createdAt     DateTime @default(now())
+}
+
+/// WANDER — a short travel piece, original editorial writing by default.
+model TravelItem {
+  id              String   @id @default(cuid())
+  location        String
+  title           String
+  text            String
+  authorOrSource  String   @default("Go Dilly")
+  sourceUrl       String?
+  category        String   @default("travel")
+  scheduledDate   String?
+  createdAt       DateTime @default(now())
+}
+
+/// READ NEXT — one book recommendation, personal in tone.
+model Book {
+  id                     String   @id @default(cuid())
+  title                  String
+  author                 String
+  cover                  String?
+  description            String
+  whyRead                String
+  genre                  String   @default("")
+  estimatedReadingTime   String   @default("")
+  category               String   @default("books")
+  scheduledDate          String?
+  createdAt              DateTime @default(now())
+}
+
+/// WONDER — one fascinating, verifiable "wait, really?" fact.
+model Wonder {
+  id            String   @id @default(cuid())
+  title         String
+  body          String
+  category      String   @default("science")
+  source        String   @default("")
+  scheduledDate String?
+  createdAt     DateTime @default(now())
+}
+
+/// DO — small, optional, non-productivity activities. Pooled and drawn 5 at
+/// a time per ISO week (not per day), same rotation as before.
+model DailyTask {
+  id        String   @id @default(cuid())
+  title     String
+  category  String   @default("")
+  createdAt DateTime @default(now())
+}
+
+/// PLAY — the crossword is still generated (constraint solver, unchanged);
+/// only the themed word banks move into the database.
+model CrosswordTheme {
+  id       String @id @default(cuid())
+  title    String
+  category String @default("")
+  words    Json // [{ word: string, clue: string }]
+}
+
+/// Comic of the day — architecture placeholder only (see ARCHITECTURE.md
+/// §2 / PRD §13). Disabled by default until a real license exists; when one
+/// does, this becomes a real scheduled content pool like the others.
+model Comic {
+  id            String  @id @default(cuid())
+  label         String  @default("Comic of the Day")
+  note          String // e.g. "Licensing pending — this is a placeholder."
+  externalUrl   String?
+  scheduledDate String?
+}
+
+// ---------------------------------------------------------------------------
+// Personalization
+// ---------------------------------------------------------------------------
+
+/// The fixed set of interest categories users can pick from during onboarding.
 model InterestTag {
-  id       String  @id @default(cuid())
-  slug     String  @unique
-  label    String
-  emoji    String  @default("")
+  id    String @id @default(cuid())
+  slug  String @unique
+  label String
+  emoji String @default("")
+  order Int    @default(0)
 
   users UserInterest[]
 }
@@ -47,11 +196,48 @@ model UserInterest {
   @@id([userId, tagId])
 }
 
-/// Checkbox state for the "Five for Today" prompts, per user per calendar day.
+// ---------------------------------------------------------------------------
+// Pricing — copy and price live here, not in a component.
+// ---------------------------------------------------------------------------
+
+model PricingPlan {
+  id          String   @id @default(cuid())
+  key         String   @unique // "free" | "premium"
+  name        String
+  priceINR    Int      @default(0)
+  priceUSD    Int      @default(0)
+  interval    String   @default("month")
+  features    Json // string[]
+  order       Int      @default(0)
+}
+
+// ---------------------------------------------------------------------------
+// Save / bookmark — one generic table covers every content type.
+// ---------------------------------------------------------------------------
+
+model Bookmark {
+  id          String   @id @default(cuid())
+  userId      String
+  contentType String // "news" | "artwork" | "literary" | "travel" | "book" | "wonder"
+  contentId   String
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentType, contentId])
+}
+
+// ---------------------------------------------------------------------------
+// Per-user state for the DO section (weekly, not date-scoped) and any
+// section's inline edit — kept from the earlier build for the "extra"
+// personal sections (My To-Do List, Write Something) that stay in the
+// system but are disabled by default in favor of the PRD's 8 sections.
+// ---------------------------------------------------------------------------
+
 model DailyTodoCheck {
   id      String  @id @default(cuid())
   userId  String
-  dateISO String
+  dateISO String // actually an ISO-week key ("2026-W39") for the DO section
   index   Int
   done    Boolean @default(false)
 
@@ -60,7 +246,6 @@ model DailyTodoCheck {
   @@unique([userId, dateISO, index])
 }
 
-/// User's own rewritten text for one of that day's five prompts.
 model PromptEdit {
   id      String @id @default(cuid())
   userId  String
@@ -73,8 +258,6 @@ model PromptEdit {
   @@unique([userId, dateISO, index])
 }
 
-/// Generic per-user text override for a field of a given day's section
-/// (poem lines, book reason, travel body, crossword title, ...).
 model SectionEdit {
   id        String @id @default(cuid())
   userId    String
@@ -88,8 +271,6 @@ model SectionEdit {
   @@unique([userId, dateISO, sectionId, field])
 }
 
-/// The user's own standing to-do list — separate from the daily prompts,
-/// not tied to a calendar date.
 model TodoListItem {
   id        String   @id @default(cuid())
   userId    String
@@ -101,7 +282,6 @@ model TodoListItem {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-/// The fixed set of quiz genres users can choose from.
 model QuizGenre {
   id    String @id @default(cuid())
   slug  String @unique
@@ -110,19 +290,17 @@ model QuizGenre {
   order Int    @default(0)
 }
 
-/// The master bank of quiz questions, seeded once: 15 per (genre, difficulty).
 model QuizQuestion {
   id         String @id @default(cuid())
   genre      String
-  difficulty String @default("easy") // "easy" | "medium" | "hard"
-  index      Int // 0-14 within that genre+difficulty
+  difficulty String @default("easy")
+  index      Int
   question   String
   answer     String
 
   @@unique([genre, difficulty, index])
 }
 
-/// A user's own rewritten question/answer for one quiz slot.
 model QuizEdit {
   id            String @id @default(cuid())
   userId        String
@@ -137,13 +315,11 @@ model QuizEdit {
   @@unique([userId, genre, difficulty, questionIndex])
 }
 
-/// Marks a (genre, difficulty) tier as completed by a user, which is what
-/// unlocks the next difficulty tier for that genre. Easy is always unlocked.
 model QuizProgress {
-  id         String @id @default(cuid())
-  userId     String
-  genre      String
-  difficulty String
+  id          String   @id @default(cuid())
+  userId      String
+  genre       String
+  difficulty  String
   completedAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
