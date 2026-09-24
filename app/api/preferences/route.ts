@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOrCreateUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { DEFAULT_SECTION_ORDER } from "@/lib/sections";
+import { getDefaultSectionOrder } from "@/lib/sections";
 
 function parseJsonArray(raw: string | null): string[] | null {
   if (!raw) return null;
@@ -15,15 +15,19 @@ function parseJsonArray(raw: string | null): string[] | null {
 
 export async function GET() {
   const user = await getOrCreateUser();
+  const defaultOrder = await getDefaultSectionOrder();
   return NextResponse.json(
     {
       plan: user.plan,
-      sectionOrder: parseJsonArray(user.sectionOrder) ?? DEFAULT_SECTION_ORDER,
+      sectionOrder: parseJsonArray(user.sectionOrder) ?? defaultOrder,
       hiddenSections: parseJsonArray(user.hiddenSections) ?? [],
+      timeBudgetMinutes: user.timeBudgetMinutes ?? null,
     },
     { headers: { "Cache-Control": "private, no-store" } }
   );
 }
+
+const VALID_TIME_BUDGETS = [5, 15, 30, 45];
 
 export async function PATCH(req: NextRequest) {
   const user = await getOrCreateUser();
@@ -32,7 +36,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "invalid body" }, { status: 400 });
   }
 
-  const data: { plan?: string; sectionOrder?: string; hiddenSections?: string } = {};
+  const data: { plan?: string; sectionOrder?: string; hiddenSections?: string; timeBudgetMinutes?: number | null } = {};
 
   if (body.plan === "free" || body.plan === "premium") {
     data.plan = body.plan;
@@ -43,16 +47,21 @@ export async function PATCH(req: NextRequest) {
   if (Array.isArray(body.hiddenSections) && body.hiddenSections.every((s: unknown) => typeof s === "string")) {
     data.hiddenSections = JSON.stringify(body.hiddenSections);
   }
+  if (body.timeBudgetMinutes === null || VALID_TIME_BUDGETS.includes(body.timeBudgetMinutes)) {
+    data.timeBudgetMinutes = body.timeBudgetMinutes;
+  }
 
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ error: "nothing to update" }, { status: 400 });
   }
 
   const updated = await prisma.user.update({ where: { id: user.id }, data });
+  const defaultOrder = await getDefaultSectionOrder();
 
   return NextResponse.json({
     plan: updated.plan,
-    sectionOrder: parseJsonArray(updated.sectionOrder) ?? DEFAULT_SECTION_ORDER,
+    sectionOrder: parseJsonArray(updated.sectionOrder) ?? defaultOrder,
     hiddenSections: parseJsonArray(updated.hiddenSections) ?? [],
+    timeBudgetMinutes: updated.timeBudgetMinutes ?? null,
   });
 }

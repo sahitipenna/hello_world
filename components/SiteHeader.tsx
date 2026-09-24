@@ -25,7 +25,7 @@ export default function SiteHeader({
           className="font-serif text-2xl"
           style={{ fontFamily: "var(--font-caveat), cursive" }}
         >
-          Daybook
+          Go Dilly
         </span>
       </Link>
       <div className="flex items-center gap-2 sm:gap-3">

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { DailyBundleResponse, Plan, SectionId } from "@/lib/types";
-import { SECTIONS, DEFAULT_SECTION_ORDER, sectionMeta } from "@/lib/sections";
+import { DailyEditionResponse, EditionSection, Plan, SectionMeta } from "@/lib/types";
+import { accentForKey } from "@/lib/accent";
 import { toISODate } from "@/lib/dateUtils";
 
 import SiteHeader from "@/components/SiteHeader";
@@ -13,28 +13,13 @@ import SectionCustomizer from "@/components/SectionCustomizer";
 import UpgradeModal from "@/components/UpgradeModal";
 import OnboardingModal from "@/components/OnboardingModal";
 import TodoList from "@/components/TodoList";
-import TodoListPersonal from "@/components/TodoListPersonal";
-import DailyQuiz from "@/components/DailyQuiz";
+import KnowSection from "@/components/KnowSection";
+import WonderCard from "@/components/WonderCard";
 import PoemCard from "@/components/PoemCard";
-import WritingPromptCard from "@/components/WritingPromptCard";
 import BookRecommendation from "@/components/BookRecommendation";
 import ArtSpotlight from "@/components/ArtSpotlight";
 import TravelVignetteCard from "@/components/TravelVignetteCard";
-import ComicBreak from "@/components/ComicBreak";
 import CrosswordPuzzle from "@/components/CrosswordPuzzle";
-
-const ACCENTS: Record<string, string> = {
-  todos: "sage",
-  todolist: "sky",
-  quiz: "terracotta",
-  poem: "plum",
-  writing: "mustard",
-  book: "terracotta",
-  crossword: "mustard",
-  comic: "terracotta",
-  art: "plum",
-  travel: "sky",
-};
 
 interface Tag {
   id: string;
@@ -46,10 +31,11 @@ interface Tag {
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [dateISO, setDateISO] = useState<string>("");
-  const [bundle, setBundle] = useState<DailyBundleResponse | null>(null);
+  const [bundle, setBundle] = useState<DailyEditionResponse | null>(null);
   const [plan, setPlanState] = useState<Plan>("free");
-  const [order, setOrder] = useState<SectionId[]>(DEFAULT_SECTION_ORDER);
-  const [hidden, setHidden] = useState<SectionId[]>([]);
+  const [order, setOrder] = useState<string[]>([]);
+  const [hidden, setHidden] = useState<string[]>([]);
+  const [timeBudget, setTimeBudget] = useState<number | null>(null);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
@@ -66,6 +52,7 @@ export default function Home() {
         setPlanState(p.plan);
         setOrder(p.sectionOrder);
         setHidden(p.hiddenSections);
+        setTimeBudget(p.timeBudgetMinutes ?? null);
       })
       .catch(() => {});
 
@@ -94,11 +81,14 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ plan: "premium" }),
     });
-    if (res.ok) setPlanState("premium");
+    if (res.ok) {
+      setPlanState("premium");
+      if (dateISO) fetch(`/api/daily?date=${dateISO}`).then((r) => r.json()).then(setBundle).catch(() => {});
+    }
     setUpgradeOpen(false);
   }
 
-  async function handleReorder(next: SectionId[]) {
+  async function handleReorder(next: string[]) {
     setOrder(next);
     await fetch("/api/preferences", {
       method: "PATCH",
@@ -107,8 +97,8 @@ export default function Home() {
     });
   }
 
-  async function handleToggleHidden(id: SectionId) {
-    const next = hidden.includes(id) ? hidden.filter((h) => h !== id) : [...hidden, id];
+  async function handleToggleHidden(key: string) {
+    const next = hidden.includes(key) ? hidden.filter((h) => h !== key) : [...hidden, key];
     setHidden(next);
     await fetch("/api/preferences", {
       method: "PATCH",
@@ -117,23 +107,23 @@ export default function Home() {
     });
   }
 
-  async function handleSaveInterests(slugs: string[]) {
-    const res = await fetch("/api/interests", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slugs }),
-    });
-    if (res.ok) {
-      setSelectedInterests(slugs);
-      setOnboardingOpen(false);
-      // Interests change what today's picks weight toward — refetch.
-      if (dateISO) {
-        fetch(`/api/daily?date=${dateISO}`)
-          .then((r) => r.json())
-          .then(setBundle)
-          .catch(() => {});
-      }
-    }
+  async function handleSaveOnboarding(slugs: string[], timeBudgetMinutes: number | null) {
+    await Promise.all([
+      fetch("/api/interests", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slugs }),
+      }),
+      fetch("/api/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ timeBudgetMinutes }),
+      }),
+    ]);
+    setSelectedInterests(slugs);
+    setTimeBudget(timeBudgetMinutes);
+    setOnboardingOpen(false);
+    if (dateISO) fetch(`/api/daily?date=${dateISO}`).then((r) => r.json()).then(setBundle).catch(() => {});
   }
 
   function handleTodoChecksChange(checks: Record<number, boolean>) {
@@ -143,6 +133,9 @@ export default function Home() {
   if (!mounted) {
     return <div className="min-h-screen" />;
   }
+
+  const sectionsByKey = new Map((bundle?.sections ?? []).map((s) => [s.key, s]));
+  const visibleOrder = order.length > 0 ? order : (bundle?.sections ?? []).map((s) => s.key);
 
   return (
     <div className="pb-20">
@@ -155,7 +148,7 @@ export default function Home() {
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         <p className="text-center text-ink/60 text-sm sm:text-base mb-6 max-w-md mx-auto">
-          A small bundle of curiosity, creativity, and joy &mdash; one page for today, out of 365.
+          Good morning. Here&apos;s a little something for you &mdash; a handful of good things for your day.
         </p>
         <div className="flex justify-center mb-8">
           {bundle && <DateNav dateISO={bundle.dateISO} dayOfYear={bundle.dayOfYear} onChange={setDateISO} />}
@@ -168,34 +161,35 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <div className="columns-1 sm:columns-2 gap-6">
-            {order
-              .filter((id) => !hidden.includes(id))
-              .map((id) => {
-                const meta = sectionMeta(id);
-                if (!meta) return null;
-                const locked = meta.premium && plan === "free";
-                return (
-                  <SectionCard
-                    key={id}
-                    meta={meta}
-                    locked={locked}
-                    onUnlockClick={() => setUpgradeOpen(true)}
-                    accent={ACCENTS[id]}
-                  >
-                    {renderSection(id, bundle, handleTodoChecksChange)}
-                  </SectionCard>
-                );
-              })}
-          </div>
+          <>
+            <div className="columns-1 sm:columns-2 gap-6">
+              {visibleOrder
+                .filter((key) => !hidden.includes(key) && sectionsByKey.has(key))
+                .map((key) => {
+                  const section = sectionsByKey.get(key)!;
+                  return (
+                    <SectionCard
+                      key={key}
+                      meta={section}
+                      locked={section.locked}
+                      collapsed={section.collapsed}
+                      onUnlockClick={() => setUpgradeOpen(true)}
+                      accent={accentForKey(key)}
+                    >
+                      {renderSection(section, bundle, handleTodoChecksChange, () => setUpgradeOpen(true))}
+                    </SectionCard>
+                  );
+                })}
+            </div>
+            <p className="text-center text-ink/50 text-sm mt-4 mb-2">That&apos;s enough for today. Go have a life.</p>
+          </>
         )}
       </div>
 
       <footer className="max-w-3xl mx-auto px-4 sm:px-6 mt-10 pt-6 border-t border-ink/10 text-center text-xs text-ink/40 space-y-2">
         <p>
-          Poems come from classic, freely available writers. Art comes from the Met Museum&apos;s Open Access
-          collection. The comic links to the official GoComics archive rather than reproducing it. Travel
-          vignettes are original, written for Daybook.
+          Literary excerpts come from public-domain writers. Art comes from the Met Museum&apos;s Open Access
+          collection. Travel pieces are original, written for Go Dilly.
         </p>
         <p>
           <Link href="/pricing" className="underline decoration-dotted underline-offset-4">
@@ -207,8 +201,8 @@ export default function Home() {
       <SectionCustomizer
         open={customizeOpen}
         onClose={() => setCustomizeOpen(false)}
-        sections={SECTIONS}
-        order={order}
+        sections={bundle?.sections.map(sectionMetaOf) ?? []}
+        order={visibleOrder}
         hidden={hidden}
         onReorder={handleReorder}
         onToggleHidden={handleToggleHidden}
@@ -218,53 +212,55 @@ export default function Home() {
         open={onboardingOpen}
         tags={tags}
         initialSelected={selectedInterests}
+        initialTimeBudget={timeBudget}
         onClose={() => setOnboardingOpen(false)}
-        onSave={handleSaveInterests}
+        onSave={handleSaveOnboarding}
       />
     </div>
   );
 }
 
+function sectionMetaOf(s: EditionSection): SectionMeta {
+  return { key: s.key, eyebrow: s.eyebrow, title: s.title, tagline: s.tagline, premium: s.premium, minTimeMinutes: s.minTimeMinutes };
+}
+
 function renderSection(
-  id: SectionId,
-  bundle: DailyBundleResponse,
-  onTodoChecksChange: (checks: Record<number, boolean>) => void
+  section: EditionSection,
+  bundle: DailyEditionResponse,
+  onTodoChecksChange: (checks: Record<number, boolean>) => void,
+  onUnlockClick: () => void
 ) {
-  switch (id) {
-    case "todos":
+  const content = section.content;
+  if (!content) return null;
+
+  switch (content.kind) {
+    case "know":
+      return <KnowSection items={content.items} totalCount={content.totalCount} onUnlockClick={onUnlockClick} />;
+    case "play":
+      return <CrosswordPuzzle dateISO={bundle.dateISO} puzzle={content.puzzle} />;
+    case "look":
+      return <ArtSpotlight query={content.query} analysis={content.analysis} dateISO={bundle.dateISO} />;
+    case "read":
+      return <PoemCard dateISO={bundle.dateISO} poem={content.poem} />;
+    case "wander":
+      return <TravelVignetteCard dateISO={bundle.dateISO} vignette={content.travel} />;
+    case "readnext":
+      return <BookRecommendation dateISO={bundle.dateISO} book={content.book} />;
+    case "wonder":
+      return <WonderCard dateISO={bundle.dateISO} wonder={content.wonder} />;
+    case "do":
       return (
         <TodoList
-          weekKey={bundle.weekKey}
-          todos={bundle.todos}
+          dateKey={bundle.dateISO}
+          todos={content.tasks}
           checks={bundle.todoChecks}
           onChecksChange={onTodoChecksChange}
+          label="Five little things"
+          period="today"
+          hiddenCount={content.totalCount - content.tasks.length}
+          onUnlockClick={onUnlockClick}
         />
       );
-    case "todolist":
-      return <TodoListPersonal />;
-    case "quiz":
-      return <DailyQuiz />;
-    case "poem":
-      return <PoemCard dateISO={bundle.dateISO} poem={bundle.poem} />;
-    case "writing":
-      return <WritingPromptCard dateISO={bundle.dateISO} writing={bundle.writing} />;
-    case "book":
-      return <BookRecommendation dateISO={bundle.dateISO} book={bundle.book} />;
-    case "crossword":
-      return <CrosswordPuzzle dateISO={bundle.dateISO} puzzle={bundle.crossword} />;
-    case "comic":
-      return (
-        <ComicBreak
-          dateISO={bundle.dateISO}
-          label={bundle.comic.label}
-          url={bundle.comic.url}
-          insight={bundle.comic.insight}
-        />
-      );
-    case "art":
-      return <ArtSpotlight query={bundle.artQuery} analysis={bundle.artAnalysis} dateISO={bundle.dateISO} />;
-    case "travel":
-      return <TravelVignetteCard dateISO={bundle.dateISO} vignette={bundle.travel} />;
     default:
       return null;
   }

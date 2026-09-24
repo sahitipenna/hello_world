@@ -1,6 +1,6 @@
 "use client";
 
-import { SectionId, SectionMeta } from "@/lib/types";
+import { SectionMeta } from "@/lib/types";
 
 export default function SectionCustomizer({
   open,
@@ -14,15 +14,15 @@ export default function SectionCustomizer({
   open: boolean;
   onClose: () => void;
   sections: SectionMeta[];
-  order: SectionId[];
-  hidden: SectionId[];
-  onReorder: (order: SectionId[]) => void;
-  onToggleHidden: (id: SectionId) => void;
+  order: string[];
+  hidden: string[];
+  onReorder: (order: string[]) => void;
+  onToggleHidden: (key: string) => void;
 }) {
   if (!open) return null;
 
-  function move(id: SectionId, dir: -1 | 1) {
-    const idx = order.indexOf(id);
+  function move(key: string, dir: -1 | 1) {
+    const idx = order.indexOf(key);
     const newIdx = idx + dir;
     if (newIdx < 0 || newIdx >= order.length) return;
     const next = [...order];
@@ -46,13 +46,13 @@ export default function SectionCustomizer({
           Reorder sections or hide the ones that aren&apos;t for you today.
         </p>
         <ul className="space-y-2">
-          {order.map((id, i) => {
-            const meta = sections.find((s) => s.id === id);
+          {order.map((key, i) => {
+            const meta = sections.find((s) => s.key === key);
             if (!meta) return null;
-            const isHidden = hidden.includes(id);
+            const isHidden = hidden.includes(key);
             return (
               <li
-                key={id}
+                key={key}
                 className={`flex items-center gap-2 rounded-lg border border-ink/10 p-2.5 bg-white ${
                   isHidden ? "opacity-45" : ""
                 }`}
@@ -60,7 +60,7 @@ export default function SectionCustomizer({
                 <div className="flex flex-col">
                   <button
                     disabled={i === 0}
-                    onClick={() => move(id, -1)}
+                    onClick={() => move(key, -1)}
                     className="text-ink/50 hover:text-ink disabled:opacity-20 text-xs leading-none px-1"
                     aria-label="Move up"
                   >
@@ -68,7 +68,7 @@ export default function SectionCustomizer({
                   </button>
                   <button
                     disabled={i === order.length - 1}
-                    onClick={() => move(id, 1)}
+                    onClick={() => move(key, 1)}
                     className="text-ink/50 hover:text-ink disabled:opacity-20 text-xs leading-none px-1"
                     aria-label="Move down"
                   >
@@ -80,7 +80,7 @@ export default function SectionCustomizer({
                   <p className="text-xs text-ink/45 truncate">{meta.tagline}</p>
                 </div>
                 <button
-                  onClick={() => onToggleHidden(id)}
+                  onClick={() => onToggleHidden(key)}
                   className="text-xs font-medium rounded-full px-2.5 py-1 border border-ink/15 hover:bg-ink/5 shrink-0"
                 >
                   {isHidden ? "Show" : "Hide"}

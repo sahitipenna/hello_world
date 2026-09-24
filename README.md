@@ -1,26 +1,25 @@
-# Daybook
+# Go Dilly
 
-A small daily almanac, personalized to your interests: five editable weekly
-prompts, your own standing to-do list, a genre-based trivia quiz with
-difficulty tiers, a short poem, a writing prompt, a book recommendation, a
-mini crossword, a Calvin-and-Hobbes-themed curiosity break, a closer look at
-a piece of art, and a short travel vignette — one bundle per day of the
-year. Built as a lightweight freemium web app with customizable, editable
-sections and a real (if minimal) database behind it.
+A beautifully curated daily cultural ritual: five things happening in the
+world, an artwork looked at closely, a short literary excerpt, a place
+worth getting lost in, a book recommendation, a fascinating fact, a mini
+crossword, and five small, optional things to do — one edition per day of
+the year, personalized to your interests.
 
-The goal isn't news or productivity — it's a two-minute ritual that sparks
-curiosity, creativity, and a little joy in a busy day.
+The product bet isn't content volume — it's a small daily ritual that
+leaves you a little more curious, inspired, and alive than a scroll
+through social media would. See `AGENTS.md`'s companion PRD (in the
+project's task history) and `ARCHITECTURE.md` for the full product and
+technical rationale this build is against.
 
 ## Stack
 
 - **Next.js 16** (App Router) + TypeScript
-- **Tailwind CSS** for the paper/ink visual style
-- **Postgres via Prisma 6** for real, server-side persistence (see
-  [Persistence & identity](#persistence--identity)) — content itself stays
-  generated deterministically per calendar date (see
-  [Content model](#content-model)); the database holds per-user state
-  (edits, checkmarks, the personal to-do list, quiz overrides, interests,
-  plan).
+- **Tailwind CSS** for the paper/ink editorial visual style
+- **Postgres via Prisma 6** — both content *and* the sections/pricing that
+  organize it live in the database (see [Content architecture](#content-architecture)
+  below), not hardcoded in TypeScript. Per-user state (edits, checkmarks,
+  interests, plan) is layered on top the same way as before.
 
 ## Getting started
 
@@ -30,228 +29,181 @@ the same connection string works for local dev too).
 
 ```bash
 npm install                                # also runs `prisma generate`
-echo 'DATABASE_URL="postgresql://user:pass@host:5432/daybook"' > .env
+cp .env.example .env                       # then fill in DATABASE_URL and ADMIN_SECRET
 npm run build                              # applies migrations, then builds
-npm run db:seed                            # seeds the 8 interest tags + 15 quiz questions
+npm run db:seed                            # seeds sections, content pools, interests, pricing
 npm run dev
 ```
 
-(`npm run build` isn't required before `dev` — it's just the easiest way
-to run `prisma migrate deploy` once. `npx prisma migrate dev --name init`
-does the same thing and is the more typical dev-loop command if you'll be
-changing `schema.prisma` yourself.)
-
 Visit `http://localhost:3000`. First visit prompts you to pick a few
-interests (Art, Music, Travel, Nature, Sports, Books, Science, Food) —
-skippable, changeable anytime from the "Interests" link in the header. Use
-the arrows next to the date to browse other days — every calendar date
-(past, present, or future) resolves to a valid, stable bundle.
+interests and a time budget — skippable, changeable anytime from the
+"Interests" link in the header. Use the arrows next to the date to browse
+other days — every calendar date (past, present, or future) resolves to a
+valid, stable edition.
 
-## Sections & sourcing
+Visit `http://localhost:3000/admin` and sign in with your `ADMIN_SECRET`
+to manage sections, content, and pricing (see
+[Admin / content management](#admin--content-management)).
 
-Content licensing was a first-class constraint, not an afterthought:
+## The daily edition
 
-| Section | Source | Notes |
+Eight canonical sections, matching the product brief:
+
+| Eyebrow | Section | Source |
 |---|---|---|
-| **This Week** | Original prompt bank (`lib/contentBank.ts`) | Hobby/creativity/joy micro-prompts, 5 picked deterministically per **ISO week** (not per day), so they stay put Monday-to-Sunday. Text is editable per user. |
-| **My To-Do List** | User-authored, stored in the database | A genuinely separate, ordinary to-do list — add, check off, delete, rename. Not date-scoped. |
-| **Daily Quiz** | Seeded question bank (`prisma/seed.ts`) | Pick a genre (Geography, History, Harry Potter, Music, Pop Culture, Tech, Sports, Hollywood, Bollywood, General Trivia), then a difficulty tier. Type an answer and check it (lenient matching), or edit a question in place. Finishing a 15-question tier unlocks the next difficulty for that genre — see [Quiz architecture](#quiz-architecture). |
-| **A Few Lines** (poem) | Public-domain poets only (pre-1929 works / poets long deceased) | Dickinson, Whitman, Blake, Bashō, Frost, etc. Tagged by category for interest weighting. |
-| **Write Something** | Original prompts written for Daybook (`lib/contentBank.ts`) | A short poem- or story-starter, picked deterministically per day. |
-| **Shelf Recommendation** | Curated book list + [Open Library](https://openlibrary.org/) cover/link lookup | Open Library's API is free and built for exactly this. |
-| **Mini Crossword** | Generated at request time from themed word banks (`lib/crosswordGen.ts`, `lib/crosswordBanks.ts`) | A small constraint-solving generator places as many themed words as it can into a valid grid; deterministic per date + user, so the puzzle stays stable across a reload. |
-| **Comic Break** | A curated bank of real, recurring Calvin and Hobbes themes (`lib/contentBank.ts`) | Leads with a genuine tidbit about the theme and honest connections to other books/work exploring the same idea — the link to the actual strip on **GoComics** is secondary, at the bottom. We deliberately do **not** scrape or host the strip itself; it's copyrighted (Bill Watterson / Andrews McMeel). |
-| **Art Spotlight** | [The Met's Open Access API](https://metmuseum.github.io/) for the image, paired with a curated analysis bank (`lib/contentBank.ts`) | Public-domain, CC0-licensed artworks, fetched live server-side by a themed search query; the accompanying write-up speaks to the artist's technique, perspective, and intent, since the API itself only returns metadata. |
-| **A Postcard** (travel vignette) | Original short vignettes written for the product | Not excerpts of any published travel writer — avoids attribution/copyright issues entirely while keeping a distinct authorial voice. |
+| **KNOW** | 5 things happening in the world | `NewsItem` pool — editorial, never scraped wire copy |
+| **PLAY** | Today's crossword | Generated at request time from a `CrosswordTheme`'s word bank |
+| **LOOK** | Artwork of the day | [The Met's Open Access API](https://metmuseum.github.io/) for the image, paired with an `Artwork` row's interpretive write-up |
+| **READ** | A literary moment | `LiteraryItem` pool — public-domain or original editorial excerpts only (see `rightsStatus`) |
+| **WANDER** | A place worth getting lost in | `TravelItem` pool — original vignettes, not excerpts of published travel writers |
+| **READ NEXT** | One book | `Book` pool, paired with [Open Library](https://openlibrary.org/) for a cover/link |
+| **WONDER** | Something you'll want to tell someone | `Wonder` pool — one verifiable "wait, really?" fact |
+| **DO** | Five little things | `DailyTask` pool — small, optional, not productivity |
 
-Every section above (except the two that are inherently user-authored) has a
-**pencil icon** that switches it into an inline edit mode — rewrite the text,
-tap the checkmark, and it's saved server-side for that section on that day.
+Most single-item sections (READ, LOOK, READ NEXT, WANDER, WONDER, PLAY)
+have a pencil icon for an inline per-user rewrite, saved via the generic
+`/api/section-edit` endpoint — separate from the admin content pools
+below, which change what every visitor sees.
 
-## Quiz architecture
+## Content architecture
 
-The quiz is genre-first, not one fixed list: `QuizGenre` holds the 10
-selectable genres, and `QuizQuestion` rows are keyed by `(genre, difficulty,
-index)` rather than a single global index. A user picks a genre, then a
-difficulty tier:
+The product's hard requirement — *change sections, content, pricing, and
+personalization without rewriting the application* — means two things
+live in the database, not in TypeScript:
 
-- **Easy is always unlocked.** Medium unlocks once a user finishes all 15
-  Easy questions for that genre (tracked in `QuizProgress`); Hard unlocks
-  the same way after Medium. This is per-user, per-genre — finishing Easy
-  in Geography doesn't unlock Medium in History.
-- Every genre currently ships with a full, real 15-question **Easy** tier
-  (150 questions total). Medium and Hard tiers are intentionally empty for
-  now — the UI shows a plain "coming soon" state for an unlocked-but-empty
-  tier rather than faking content. Adding a Medium or Hard tier is a
-  content-only change: add rows to `EASY_QUESTIONS`-style objects in
-  `prisma/seed.ts` under the right genre, keyed `medium`/`hard`, and
-  re-seed — no code changes needed.
-- Answers are typed, not just revealed: `components/DailyQuiz.tsx` does a
-  lenient normalized-substring match (case/punctuation-insensitive) so
-  close-enough phrasing still counts, and always shows the real answer
-  after checking either way.
+1. **Which sections exist, in what order, under what name, free or
+   premium, and how many items free users see.** The `Section` table.
+   `lib/sections.ts` reads it; the daily-edition page renders exactly
+   those rows, in `order`, skipping disabled ones and locking/truncating
+   premium ones for free users. Adding a ninth section, renaming "WONDER"
+   to "MARVEL," making PLAY premium, or changing KNOW's free-tier count
+   from 3 to 4 is an `/admin` edit, not a deploy.
+2. **What the content actually is.** Each section type has its own
+   content pool table (`NewsItem`, `Artwork`, `LiteraryItem`, ...). An
+   editor adds/edits/deletes rows via `/admin`; the app never needs new
+   code to show a new poem or a new artwork.
 
-## Content model
+**Selection model:** every content row has an optional `scheduledDate`. If
+a row is scheduled for a given date, it's used — real editorial control.
+If nothing is scheduled, `lib/contentPicker.ts` deterministically rotates
+through the unscheduled pool for that section (a seeded hash of the date),
+weighted toward a visitor's chosen interest categories. That means the
+whole archive — every day of the year, going backward and forward —
+already has a complete, real edition without anyone hand-curating it, and
+an editor can override any specific day at any time.
 
-`lib/dailyBundle.ts` builds a full day's content from a given ISO date using
-a **seeded deterministic picker** (`lib/dateUtils.ts`, `lib/personalize.ts`):
-the date string is hashed and used to seed a small PRNG, which then indexes
-into each content bank — weighted, when the visitor has chosen interests,
-toward items whose `category` matches. That means:
+`lib/dailyBundle.ts`'s `buildEdition(dateISO, weights)` is where this
+happens: it reads the enabled `Section` rows and, for each one, resolves
+its content from that section's pool. `/api/daily` calls it, then layers
+in a signed-in visitor's saved edits, that day's checkmarks, their
+interest weights and time budget, and free-plan truncation.
 
-- Every one of the 365 (or 366) days of the year gets a complete, valid
-  bundle — nothing is hand-authored per date.
-- With no interests chosen, every category has equal weight — behavior is
-  identical to a plain uniform pick, so a first-time visitor still gets a
-  fully valid, varied bundle.
-- Growing a content bank (more poems, more travel vignettes, more crossword
-  themes...) automatically enriches every future day.
+## Admin / content management
 
-The `/api/daily?date=YYYY-MM-DD` route assembles the deterministic bundle,
-then layers in that user's saved edits, that day's to-do checkmarks, and
-their interest weights, all read from the database. `/api/art` and
-`/api/book` are thin server-side proxies to the Met and Open Library APIs
-(keeps API keys/CORS off the client) and also merge in the user's saved
-caption edits for that day.
+`/admin`, gated by the `ADMIN_SECRET` env var (a shared secret, not a
+per-user account — set something long and random before deploying
+publicly). Three tabs:
+
+- **Sections** — reorder (drag via up/down), rename (eyebrow/title/
+  tagline), toggle enabled/premium, set the minimum time budget that keeps
+  a section expanded by default, and set the free-plan item cap for
+  multi-item sections (KNOW, DO).
+- **Pricing** — edit the Free/Premium plan copy and price; feeds
+  `/pricing` directly, no copy lives in code.
+- **Content** — add/edit/delete rows in any of the eight content pools,
+  including an optional `scheduledDate` for real editorial control over a
+  specific day. One generic screen (`components/admin/ContentAdmin.tsx`)
+  serves all eight types, driven by field definitions in
+  `lib/adminContent.ts` — adding a ninth pool type is a config entry, not
+  a new screen.
+
+No rich text editor or image upload pipeline for v1 — image fields take a
+URL, same as the product brief's admin spec calls for.
+
+## Personalization
+
+Onboarding asks two things, both skippable and changeable anytime from
+the header's "Interests" link:
+
+- **What would you like more of** — any of the 18 interest tags from the
+  brief. Chosen tags weight the deterministic pick toward matching
+  categories (`lib/personalize.ts`); an empty selection behaves like a
+  uniform pick, so a first-time visitor still gets a complete, varied
+  edition.
+- **How much time do you have** — 5 / 15 / 30 / 45+ minutes. A section
+  whose `minTimeMinutes` exceeds the visitor's budget collapses to a
+  one-line teaser they can still tap open — nothing is hidden, just paced.
+
+## Freemium & customization
+
+Free users get the full edition, with two caps: `Section.premium`
+sections (WANDER, by default) are fully locked behind a blurred
+"Premium" panel, and multi-item sections (KNOW, DO) show only
+`Section.freeCount` items with an inline "+N more with Premium" nudge —
+both configured via `/admin`, not code. The "Go Premium" flow is a
+**demo toggle only** (`app/api/preferences/route.ts` /
+`components/UpgradeModal.tsx`) — it flips `User.plan` so you can see the
+full layout, but takes no payment.
 
 ## Persistence & identity
 
 There's no signup flow — a visitor is identified by a random id in an
 httpOnly cookie (`lib/auth.ts`), mirrored as a `User` row the first time
 they're seen. That's enough for real, durable, per-browser persistence
-(everything below actually round-trips through Postgres, not
-`localStorage`) without the overhead of an account system:
+without the overhead of an account system — see the schema comments in
+`prisma/schema.prisma` for the full per-user tables (edits, checkmarks,
+interests, plan, time budget, section order/visibility).
 
-- `PromptEdit` / `SectionEdit` — a user's rewritten text for one of the
-  day's five prompts, or for a field of any other section (poem lines, a
-  book's reason, a travel vignette's body, ...). Generic and keyed by
-  `(user, date, section, field)`, so every editable section shares one
-  `/api/section-edit` route.
-- `DailyTodoCheck` — checkbox state for the five daily prompts, per user
-  per day.
-- `TodoListItem` — the personal, not-date-scoped to-do list.
-- `QuizQuestion` / `QuizEdit` — the master 15-question bank, and a user's
-  own rewrite of any question/answer.
-- `UserInterest` — a user's chosen interest tags (from the fixed
-  `InterestTag` set) and their weight.
-- `User.plan` / `.sectionOrder` / `.hiddenSections` — the freemium plan
-  and the section-customizer's show/hide + reorder preferences.
-
-**What this is not**: real accounts. There's no email/password, no way to
-log back in from a second device, and no recovery if cookies are cleared.
-Adding real auth (email/password or OAuth) on top of the same `User` table
-is the natural next step — everything else already hangs off `userId`, so
-it wouldn't require reshaping the schema.
-
-## Freemium & customization
-
-`lib/sections.ts` marks each section `premium: true/false`. Free users get
-the five prompts, the personal to-do list, the daily quiz, the poem, and
-the book recommendation; Premium unlocks the crossword, comic break, art
-spotlight, travel vignette, and the ability to reorder/hide sections
-(`components/SectionCustomizer.tsx`).
-
-This MVP's "Go Premium" flow is a **demo toggle only** (see
-`app/api/preferences/route.ts` / `components/UpgradeModal.tsx`) — it flips
-`User.plan` in the database so you can see the full layout, but takes no
-payment. Wiring up real billing (Stripe Checkout + webhooks) is the natural
-next step before this ships to real users.
-
-## What's stubbed / next steps
-
-- **Real accounts** — see [Persistence & identity](#persistence--identity).
-  The anonymous-cookie model is durable per-browser but doesn't sync across
-  devices or survive a cleared cookie jar.
-- **Real billing** — swap the demo toggle for Stripe Checkout + a
-  subscription webhook.
-- **Behavioral personalization** — interests are currently self-selected
-  tags, chosen deliberately over pulling YouTube/Instagram activity: that
-  would need OAuth scopes those platforms are restrictive about granting
-  for this exact use case, plus a privacy review, before it could ship.
-  Self-selected tags get the "leans toward what you care about" effect
-  today; importing real signal is a natural (bigger) next step.
-- **News bites** — intentionally left out in favor of the "Daily Quiz"
-  (evergreen, editable questions rather than time-sensitive headlines).
-  Wiring up a real news API (e.g. NewsAPI/GNews) for headline+link teasers
-  would be a good Premium add-on; reproducing full article text would not
-  be (copyright).
-- **More crossword themes / poems / vignettes / quiz questions** — the
-  content banks in `lib/contentBank.ts`, `lib/crosswordBanks.ts`, and
-  `prisma/seed.ts` are designed to be grown freely; nothing else needs to
-  change.
-- **Archive browsing** — date navigation already works for any date; a
-  proper "past days" gallery view would be a nice Premium feature.
+**What this is not**: real accounts (no email/password, no cross-device
+sync), real billing (Stripe/Razorpay checkout + webhooks), or a licensed
+daily comic (the `Comic` model and disabled "comic" section are an
+architecture placeholder only — see `ARCHITECTURE.md` and the product
+brief's own note on Calvin & Hobbes licensing).
 
 ## Deploying a public instance
 
 The app is deploy-ready for Vercel; you just need a Postgres database it
-can reach (any provider works — these instructions use Vercel's own, but
-Neon and Supabase both have equally simple free tiers).
+can reach (any provider works).
 
-1. **Push this repo to your own GitHub account** if you haven't already
-   (fork it, or just use this one — it's already there).
-2. **Create the database.** In the Vercel dashboard: Storage → Create
-   Database → Postgres (or do the equivalent in Neon/Supabase and skip to
-   step 4).
-3. **Import the project.** Add New → Project → import the repo. Vercel
-   auto-detects Next.js; no build-command changes are needed — `npm run
-   build` already runs `prisma migrate deploy` before `next build` (see
-   `package.json`), so the schema applies itself on first deploy.
-4. **Connect the database to the project.** If you created a Vercel
-   Postgres database, its dashboard has a "Connect to Project" button that
-   sets the right env vars automatically — but our schema reads
-   specifically `DATABASE_URL`, so also add a `DATABASE_URL` project env
-   var (Settings → Environment Variables) set to that database's
-   connection string (Vercel Postgres exposes it as `POSTGRES_PRISMA_URL`
-   or `POSTGRES_URL` — copy that value in). For Neon/Supabase, copy their
-   connection string directly into `DATABASE_URL`.
-5. **Deploy.** First deploy applies the migration and builds. Once it's
-   live, run `npm run db:seed` once **against that same `DATABASE_URL`**
-   (from your own machine: `DATABASE_URL="<the same string>" npm run
-   db:seed`) to load the 8 interest tags, 10 quiz genres, and 150 quiz
-   questions — the app works without this, but Interests and the Daily
-   Quiz will be empty until you do.
-
-You'll get a `*.vercel.app` URL that's the real, live, shareable app —
-editing, the to-do list, the quiz, and interests all persist for real,
-for every visitor.
+1. **Push this repo to your own GitHub account.**
+2. **Create the database** (Vercel Postgres, Neon, Supabase, ...).
+3. **Import the project** on Vercel — it auto-detects Next.js; `npm run
+   build` already runs `prisma migrate deploy` before `next build`.
+4. **Set env vars**: `DATABASE_URL` (the connection string) and
+   `ADMIN_SECRET` (a long random string — this is what gates `/admin`).
+5. **Deploy**, then run `npm run db:seed` once against that same
+   `DATABASE_URL` to load the sections, content pools, interest tags, and
+   pricing plans — the app works without this, but every section will be
+   empty until you do.
 
 ## Project layout
 
 ```
 app/
-  page.tsx                  main daily view (client component)
-  pricing/page.tsx           pricing page
-  api/daily/route.ts          assembles + personalizes a day's content bundle
-  api/art/route.ts             proxies the Met Museum Open Access API
-  api/book/route.ts            proxies Open Library for a cover + link
-  api/section-edit/route.ts    generic per-user text override, any section/field
-  api/todos/checks/route.ts    checkbox state for the five daily prompts
-  api/todos/edit/route.ts      rewritten text for one of the five daily prompts
-  api/todolist/route.ts        the personal to-do list (GET/POST)
-  api/todolist/[id]/route.ts    one to-do item (PATCH/DELETE)
-  api/quiz/route.ts             questions for a chosen genre+difficulty, with edit overrides
-  api/quiz/genres/route.ts       genre list + this user's unlocked difficulty tiers
-  api/quiz/complete/route.ts     marks a (genre, difficulty) tier finished, unlocking the next
-  api/interests/route.ts        interest tags + a user's selection
-  api/preferences/route.ts      plan + section order/visibility
-components/                  one component per section, plus header/nav/drawer/modals
+  page.tsx                     main daily view (client component, renders by section key)
+  admin/page.tsx                 gated admin shell (sections / pricing / content tabs)
+  pricing/page.tsx                reads PricingPlan straight from the DB
+  api/daily/route.ts               assembles + personalizes a day's edition
+  api/art/route.ts                  proxies the Met Museum Open Access API
+  api/book/route.ts                  proxies Open Library for a cover + link
+  api/section-edit/route.ts          generic per-user text override, any section/field
+  api/preferences/route.ts           plan, section order/visibility, time budget
+  api/interests/route.ts             interest tags + a user's selection
+  api/admin/sections, /pricing, /content/[type]   admin CRUD (ADMIN_SECRET-gated)
+components/
+  KnowSection.tsx, WonderCard.tsx, ...  one component per section type
+  admin/                                 SectionsAdmin, PricingAdmin, ContentAdmin
 lib/
-  types.ts                    shared types
-  dateUtils.ts                  day-of-year, ISO-week key, seeded deterministic picking
-  personalize.ts                 weighted deterministic picking (interest tags)
-  contentBank.ts                 poems, travel/writing prompts, books, art analysis, comic themes
-  crosswordGen.ts                small crossword placement generator
-  crosswordBanks.ts              themed word banks for the crossword
-  dailyBundle.ts                 composes one day's DailyBundle
-  sections.ts                    section metadata + free/premium flags
-  auth.ts                        anonymous cookie identity
-  db.ts                          Prisma client singleton
-  userOverlay.ts                 reads a user's edits/checks for a given day/week
-  interests.ts                   reads a user's interest weights
-  quizProgress.ts                 computes a user's unlocked quiz difficulty tiers
-  useEditableSection.ts           shared "pencil to edit" React hook
+  types.ts                     shared types (EditionSection, per-section content shapes)
+  dailyBundle.ts                 buildEdition(): resolves each section's content from the DB
+  contentPicker.ts                the hybrid scheduled/rotating selection model
+  sections.ts                     DB-backed section list + default order
+  adminContent.ts                  field definitions driving the generic content CRUD
+  personalize.ts                   weighted deterministic picking (interest tags)
+  dateUtils.ts                     day-of-year, seeded deterministic picking
+  auth.ts                          anonymous cookie identity
+  adminAuth.ts                     shared-secret cookie gate for /admin
 prisma/
-  schema.prisma                the database schema
-  seed.ts                       seeds interest tags, quiz genres, and quiz questions
+  schema.prisma                the database schema (Section + 8 content pools + pricing)
+  seed.ts                       seeds sections, content pools, interest tags, pricing plans
 ```

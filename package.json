@@ -1,8 +1,8 @@
 {
-  "name": "daybook",
+  "name": "go-dilly",
   "version": "0.1.0",
   "private": true,
-  "description": "A small daily almanac of news bites, a mini crossword, a comic break, a poem, an art spotlight, a travel vignette, a book recommendation, and five hobby prompts — one bundle per day of the year.",
+  "description": "Go Dilly: a beautifully curated daily cultural ritual — world curiosities, art, literature, travel writing, a book recommendation, a puzzle, and five little things to do — personalized, config-driven, one edition per day of the year.",
   "scripts": {
     "dev": "next dev",
     "build": "prisma migrate deploy && next build",

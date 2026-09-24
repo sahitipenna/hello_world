@@ -45,6 +45,7 @@ model Section {
   premium          Boolean @default(false)
   enabled          Boolean @default(true)
   minTimeMinutes   Int     @default(5) // shown expanded once the user's time budget reaches this
+  freeCount        Int? // for multi-item sections (KNOW, DO): how many items free users see; null = all
 }
 
 // ---------------------------------------------------------------------------

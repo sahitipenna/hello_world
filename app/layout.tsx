@@ -22,9 +22,9 @@ const workSans = Work_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Daybook — one small, curious day at a time",
+  title: "Go Dilly — a few good things for your day",
   description:
-    "A daily almanac: a mini crossword, a comic break, a poem, an art spotlight, a travel vignette, a book recommendation, a 15-question quiz, your own to-do list, and five editable hobby prompts — personalized to your interests, for every day of the year.",
+    "A daily cultural daybook: world curiosities, an artwork looked at closely, a literary moment, a place worth getting lost in, a book recommendation, a fascinating fact, a mini crossword, and five little things to do — personalized to your interests, for every day of the year.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

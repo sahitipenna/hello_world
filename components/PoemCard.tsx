@@ -57,6 +57,17 @@ export default function PoemCard({ dateISO, poem }: { dateISO: string; poem: Poe
             {values.poet}
             {poem.year ? `, ${poem.year}` : ""}
           </p>
+          {poem.context && <p className="mt-1 text-xs text-ink/45">{poem.context}</p>}
+          {poem.sourceUrl && (
+            <a
+              href={poem.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-2 text-sm text-sky underline decoration-dotted underline-offset-4"
+            >
+              Read the full work
+            </a>
+          )}
         </>
       )}
     </div>

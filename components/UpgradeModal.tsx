@@ -21,12 +21,13 @@ export default function UpgradeModal({
         >
           {"×"}
         </button>
-        <p className="text-xs font-semibold uppercase tracking-wide text-mustard mb-2">Daybook Premium</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-mustard mb-2">Go Dilly Premium</p>
         <h2 className="font-serif text-2xl mb-3" style={{ fontFamily: "var(--font-fraunces), serif" }}>
           More to look forward to, every day
         </h2>
         <ul className="text-sm text-ink/80 space-y-1.5 mb-5">
-          <li>{"•"} Mini crossword, comic break, art spotlight, and travel postcard</li>
+          <li>{"•"} All 5 world stories, and all 5 little things to do</li>
+          <li>{"•"} A place worth getting lost in, every day</li>
           <li>{"•"} Reorder and hide sections to fit your day</li>
           <li>{"•"} Full archive of past days</li>
         </ul>

@@ -1,4 +1,4 @@
-import { Poem, TravelVignette, BookRec, WritingPrompt, ArtSpotlightEntry, ComicInsight } from "./types";
+import { Poem, TravelVignette, BookRec, ArtSpotlightEntry } from "./types";
 
 // All poems below are in the public domain (poets died before 1955 / works pre-1929).
 export const POEMS: Poem[] = [
@@ -128,7 +128,7 @@ export const POEMS: Poem[] = [
   },
 ];
 
-// Original short vignettes written for Daybook — not excerpts of any published author.
+// Original short vignettes written for Go Dilly — not excerpts of any published author.
 export const TRAVEL_VIGNETTES: TravelVignette[] = [
   {
     title: "The 6:12 to Nowhere in Particular",
@@ -242,126 +242,6 @@ export const TODO_POOL: string[] = [
   "Practice a magic trick, badly, in the mirror.",
   "Trace your day back to one small decision that shaped it.",
   "Write a thank-you note you'll actually send.",
-];
-
-// Real recurring Calvin and Hobbes themes, each with genuine background and
-// honest connections to other work exploring similar ideas — shown before
-// (not instead of) the link to the actual strip, so the section leads with
-// curiosity rather than a redirect.
-export const COMIC_INSIGHTS: ComicInsight[] = [
-  {
-    theme: "Imagination as a Survival Tool",
-    category: "books",
-    tidbit:
-      "Hobbes looks like a stuffed tiger to every adult in the strip, and fully alive to Calvin — and Bill Watterson deliberately never resolved which one is “real.” He wanted that ambiguity to be the actual point: reality is partly a matter of who's looking.",
-    connections: [
-      { work: "Winnie-the-Pooh (A.A. Milne)", note: "a stuffed animal as a fully realized companion, not a prop" },
-      { work: "The Velveteen Rabbit (Margery Williams)", note: "a toy that becomes real through being loved" },
-    ],
-  },
-  {
-    theme: "Calvinball: A Game With No Rules",
-    category: "sports",
-    tidbit:
-      "Calvinball's only fixed rule is that you can never play it the same way twice — Watterson invented it partly as a jab at the rigid, over-organized adult sports (Little League especially) that he felt drained the joy out of play.",
-    connections: [
-      { work: "Alice's Adventures in Wonderland", note: "the chaotic croquet match with flamingos for mallets" },
-      { work: "John Cage's chance-based compositions", note: "music built to resist ever repeating itself" },
-    ],
-  },
-  {
-    theme: "Watterson's Refusal to Merchandise",
-    category: "books",
-    tidbit:
-      "Watterson turned down every offer to license Calvin and Hobbes — no toys, no ads, no animated series — because he believed selling out the characters would betray the strip's own argument about not exploiting childhood and imagination for profit. It remains one of the most principled stands in comics history.",
-    connections: [
-      { work: "J.D. Salinger's reclusiveness", note: "a comparably firm line against commercializing one's own work" },
-    ],
-  },
-  {
-    theme: "The Cardboard Box That Becomes Everything",
-    category: "science",
-    tidbit:
-      "A plain cardboard box turns into a time machine, a transmogrifier, or a duplicator — whatever Calvin needs it to be, with no special effects except belief. It's arguably the strip's clearest visual argument that imagination doesn't need expensive toys to work.",
-    connections: [
-      { work: "Child-development research on play", note: "children often preferring the box a toy came in to the toy itself" },
-    ],
-  },
-  {
-    theme: "Six-Year-Old Philosophy, Delivered While Sledding",
-    category: "books",
-    tidbit:
-      "Some of the strip's most quoted lines — on death, meaning, free will — arrive mid-sentence while Calvin and Hobbes are hurtling down a hill on a sled. Watterson studied political science and had a real philosophical streak, and used the absurd delivery to smuggle in questions a comic strip “for kids” wasn't supposed to ask.",
-    connections: [
-      { work: "The Little Prince (Antoine de Saint-Exupéry)", note: "real philosophical weight voiced through a child" },
-    ],
-  },
-  {
-    theme: "The Recurring, Oddly Gruesome Snowmen",
-    category: "art",
-    tidbit:
-      "Calvin's snowmen are often depicted mid-catastrophe — melting in agony, decapitated, on fire — a strangely dark running gag in an otherwise warm family strip. Watterson used it to test how much absurdist, almost morbid comedy a “cute” strip could get away with.",
-    connections: [
-      { work: "Edward Gorey's illustrated verse", note: "gentle-looking art hiding genuinely dark comic instincts" },
-    ],
-  },
-  {
-    theme: "Spaceman Spiff and the Boring Planet Called School",
-    category: "science",
-    tidbit:
-      "When class gets unbearable, Calvin becomes Spaceman Spiff, battling hostile alien terrain that's actually just his own desk or backyard. The fantasy sequences are modeled directly on the 1950s pulp science-fiction comics and serials Watterson loved growing up.",
-    connections: [
-      { work: "Flash Gordon serials", note: "the pulp adventure look Spiff's panels are drawn to evoke" },
-    ],
-  },
-  {
-    theme: "Susie Derkins: Order Against Chaos",
-    category: "books",
-    tidbit:
-      "Calvin's classmate Susie is everything he isn't — organized, rule-following, unimpressed — and their constant bickering has a will-they-won't-they undertone that Watterson noted but kept firmly, deliberately unresolved.",
-    connections: [
-      { work: "His Girl Friday (screwball comedy tradition)", note: "antagonistic banter that reads as mutual respect" },
-    ],
-  },
-  {
-    theme: "A Whole World, Contained in One Backyard",
-    category: "nature",
-    tidbit:
-      "Almost the entire strip takes place within a few blocks — home, school, the woods out back — loosely modeled on Chagrin Falls, Ohio, where Watterson grew up. He kept the real-world setting deliberately small and ordinary, so the extraordinary would have to come from imagination, not location.",
-    connections: [
-      { work: "My Neighbor Totoro (Hayao Miyazaki)", note: "an ordinary rural setting made vast by a child's perception" },
-      { work: "The Hundred Acre Wood (A.A. Milne)", note: "a small real place turned mythic through play" },
-    ],
-  },
-  {
-    theme: "The Nine-Month Sabbatical That Changed the Strip's Shape",
-    category: "art",
-    tidbit:
-      "In 1991, Watterson took a nine-month break from the strip largely over creative-control disputes with his syndicate. He returned with contractual freedom over panel layout that most comic strips never get — which is part of why Sunday Calvin and Hobbes pages could sprawl into full-page, unconventional compositions.",
-    connections: [
-      { work: "Little Nemo in Slumberland (Winsor McCay)", note: "one of the few earlier strips to treat the Sunday page as open visual space rather than a fixed grid" },
-    ],
-  },
-];
-
-// Original prompts written for Daybook, to spark a few minutes of writing.
-export const WRITING_PROMPTS: WritingPrompt[] = [
-  { kind: "story", prompt: "Someone finds a key that doesn't fit any lock they own. Write what they do with it." },
-  { kind: "poem", prompt: "Write a poem made only of things you can see without turning your head." },
-  { kind: "story", prompt: "Two strangers keep ending up in the same place, days apart. Neither has noticed yet." },
-  { kind: "poem", prompt: "Write a poem addressed to a season that hasn't arrived yet." },
-  { kind: "story", prompt: "A character discovers their neighbor has been leaving them tiny, anonymous gifts for years." },
-  { kind: "poem", prompt: "Describe your hometown as if explaining it to someone who will never visit." },
-  { kind: "story", prompt: "Write the last five minutes of an ordinary day that turns out to matter enormously, later." },
-  { kind: "poem", prompt: "Write a poem that never uses the word “love,” but is clearly about it." },
-  { kind: "story", prompt: "A letter arrives forty years late. Who sent it, and what does it say?" },
-  { kind: "poem", prompt: "Write six lines about the last meal you'll remember, whether or not you know it yet." },
-  { kind: "story", prompt: "Someone is trying to teach a skill to a person who insists they don't need it." },
-  { kind: "poem", prompt: "Write a poem structured as directions to a place that only exists in memory." },
-  { kind: "story", prompt: "Write the moment two old friends realize they've become strangers, without saying so out loud." },
-  { kind: "poem", prompt: "Write a poem from the point of view of something usually overlooked — a doormat, a streetlamp, a spare key." },
-  { kind: "story", prompt: "A character finds a photo of themselves they don't remember being taken." },
-  { kind: "poem", prompt: "Write a short poem that starts with the truest sentence you know and goes from there." },
 ];
 
 // Search terms for the Met Museum's Open Access collection (public domain / CC0 artworks),
