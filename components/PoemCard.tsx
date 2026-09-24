@@ -57,7 +57,6 @@ export default function PoemCard({ dateISO, poem }: { dateISO: string; poem: Poe
             {values.poet}
             {poem.year ? `, ${poem.year}` : ""}
           </p>
-          <p className="mt-1 text-xs text-ink/40">Public domain</p>
         </>
       )}
     </div>

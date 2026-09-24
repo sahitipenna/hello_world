@@ -1,5 +1,6 @@
 "use client";
 
+import { ComicInsight } from "@/lib/types";
 import { useEditableSection } from "@/lib/useEditableSection";
 import EditPencil from "./EditPencil";
 
@@ -7,57 +8,81 @@ export default function ComicBreak({
   dateISO,
   label,
   url,
+  insight,
 }: {
   dateISO: string;
   label: string;
   url: string;
+  insight: ComicInsight;
 }) {
-  const { editing, values, setValue, toggle, saving } = useEditableSection(dateISO, "comic", { label });
+  const { editing, values, setValue, toggle, saving } = useEditableSection(dateISO, "comic", {
+    theme: insight.theme,
+    tidbit: insight.tidbit,
+  });
 
   return (
-    <div className="text-center py-4">
-      <div className="flex justify-end -mt-3 mb-1">
+    <div>
+      <div className="flex justify-end -mt-1 mb-1">
         <EditPencil editing={editing} onClick={toggle} label="Comic Break" disabled={saving} />
       </div>
-      <div className="mx-auto w-16 h-16 rounded-full bg-paper2 border-2 border-dashed border-ink/20 flex items-center justify-center mb-3">
-        <svg viewBox="0 0 24 24" className="w-8 h-8 text-terracotta" fill="none">
-          <path
-            d="M4 6h16v10H9l-4 3v-3H4z"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinejoin="round"
-          />
-          <circle cx="9" cy="11" r="1" fill="currentColor" />
-          <circle cx="13" cy="11" r="1" fill="currentColor" />
-          <circle cx="17" cy="11" r="1" fill="currentColor" />
-        </svg>
-      </div>
+
       {editing ? (
-        <div className="space-y-2 max-w-xs mx-auto">
-          <p className="text-xs font-semibold text-terracotta">Editing this label — check to save.</p>
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-terracotta">Editing this section — check to save.</p>
           <input
             type="text"
-            value={values.label}
-            onChange={(e) => setValue("label", e.target.value)}
-            className="w-full rounded-md border border-dashed border-ink/30 bg-paper px-2 py-1.5 text-sm text-center outline-none focus:border-terracotta"
+            value={values.theme}
+            onChange={(e) => setValue("theme", e.target.value)}
+            placeholder="Theme"
+            className="w-full rounded-md border border-dashed border-ink/30 bg-paper px-2 py-1.5 text-[15px] font-medium outline-none focus:border-terracotta"
+          />
+          <textarea
+            value={values.tidbit}
+            onChange={(e) => setValue("tidbit", e.target.value)}
+            rows={4}
+            className="w-full rounded-md border border-dashed border-ink/30 bg-paper px-2 py-1.5 text-sm leading-relaxed outline-none focus:border-terracotta resize-none"
           />
         </div>
       ) : (
-        <p className="text-sm text-ink/70 mb-3">
-          Today&apos;s <span className="font-medium">{values.label}</span> strip, straight from the official archive.
-        </p>
+        <>
+          <h3 className="font-serif text-lg mb-2" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+            {values.theme}
+          </h3>
+          <p className="text-[15px] leading-relaxed text-ink/85">{values.tidbit}</p>
+
+          {insight.connections.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-ink/10">
+              <p className="text-xs font-semibold text-plum mb-1.5">Worth thinking about alongside</p>
+              <ul className="space-y-1.5">
+                {insight.connections.map((c, i) => (
+                  <li key={i} className="text-sm text-ink/75">
+                    <span className="font-medium text-ink/90">{c.work}</span>
+                    {" — "}
+                    {c.note}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="mt-4 pt-3 border-t border-ink/10 flex items-center justify-between gap-2">
+            <p className="text-xs text-ink/40">
+              Today&apos;s <span className="font-medium text-ink/55">{label}</span> strip
+            </p>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-sky underline decoration-dotted underline-offset-4 whitespace-nowrap"
+            >
+              Read it on GoComics {"→"}
+            </a>
+          </div>
+          <p className="mt-2 text-[11px] text-ink/35">
+            {"©"} its respective owner &mdash; we link to the official archive rather than reproducing it.
+          </p>
+        </>
       )}
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block text-sm font-semibold bg-terracotta text-paper rounded-full px-5 py-2 hover:bg-rust transition-colors"
-      >
-        Read on GoComics
-      </a>
-      <p className="mt-3 text-[11px] text-ink/35">
-        {"©"} its respective owner. We link to the official archive rather than reproducing it.
-      </p>
     </div>
   );
 }

@@ -1,6 +1,14 @@
 import { DailyBundle } from "./types";
-import { dayOfYear, parseISODate, pickIndex, pickIndices, hashString } from "./dateUtils";
-import { ART_QUERIES, BOOKS, POEMS, TODO_POOL, TRAVEL_VIGNETTES } from "./contentBank";
+import { dayOfYear, parseISODate, pickIndex, pickIndices, hashString, getISOWeekKey } from "./dateUtils";
+import {
+  ART_SPOTLIGHT,
+  BOOKS,
+  COMIC_INSIGHTS,
+  POEMS,
+  TODO_POOL,
+  TRAVEL_VIGNETTES,
+  WRITING_PROMPTS,
+} from "./contentBank";
 import { CROSSWORD_THEMES } from "./crosswordBanks";
 import { generateBestCrossword } from "./crosswordGen";
 import { pickWeightedIndex } from "./personalize";
@@ -21,12 +29,16 @@ function comicArchiveUrl(dateISO: string): string {
 export function buildDailyBundle(dateISO: string, weights: Record<string, number> = {}): DailyBundle {
   const date = parseISODate(dateISO);
   const doy = dayOfYear(date);
+  const weekKey = getISOWeekKey(date);
 
   const poemIdx = pickWeightedIndex(POEMS.map((p) => p.category), dateISO, "poem", weights);
   const travelIdx = pickWeightedIndex(TRAVEL_VIGNETTES.map((v) => v.category), dateISO, "travel", weights);
   const bookIdx = pickWeightedIndex(BOOKS.map((b) => b.category), dateISO, "book", weights);
-  const artIdx = pickIndex(dateISO, "art", ART_QUERIES.length);
-  const todoIdx = pickIndices(dateISO, "todos", TODO_POOL.length, 5);
+  const artIdx = pickWeightedIndex(ART_SPOTLIGHT.map((a) => a.category), dateISO, "art", weights);
+  const comicIdx = pickWeightedIndex(COMIC_INSIGHTS.map((c) => c.category), dateISO, "comic", weights);
+  const writingIdx = pickIndex(dateISO, "writing", WRITING_PROMPTS.length);
+  // Picked per ISO week (not per day) so "This Week" stays the same all week.
+  const todoIdx = pickIndices(weekKey, "todos", TODO_POOL.length, 5);
 
   const themeIdx = pickWeightedIndex(CROSSWORD_THEMES.map((t) => t.category), dateISO, "crossword", weights);
   const theme = CROSSWORD_THEMES[themeIdx];
@@ -37,18 +49,24 @@ export function buildDailyBundle(dateISO: string, weights: Record<string, number
     hashString(`${dateISO}:crossword`)
   );
 
+  const art = ART_SPOTLIGHT[artIdx];
+
   return {
     dateISO,
     dayOfYear: doy,
+    weekKey,
     comic: {
       label: "Calvin and Hobbes",
       url: comicArchiveUrl(dateISO),
+      insight: COMIC_INSIGHTS[comicIdx],
     },
     poem: POEMS[poemIdx],
+    writing: WRITING_PROMPTS[writingIdx],
     travel: TRAVEL_VIGNETTES[travelIdx],
     book: BOOKS[bookIdx],
     todos: todoIdx.map((i) => TODO_POOL[i]),
     crossword,
-    artQuery: ART_QUERIES[artIdx],
+    artQuery: art.query,
+    artAnalysis: art.analysis,
   };
 }

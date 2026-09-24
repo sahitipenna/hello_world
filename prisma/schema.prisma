@@ -16,12 +16,13 @@ model User {
   sectionOrder   String? // JSON-encoded string[] of section ids
   hiddenSections String? // JSON-encoded string[] of section ids
 
-  interests   UserInterest[]
-  todoChecks  DailyTodoCheck[]
-  promptEdits PromptEdit[]
+  interests    UserInterest[]
+  todoChecks   DailyTodoCheck[]
+  promptEdits  PromptEdit[]
   sectionEdits SectionEdit[]
-  todoItems   TodoListItem[]
-  quizEdits   QuizEdit[]
+  todoItems    TodoListItem[]
+  quizEdits    QuizEdit[]
+  quizProgress QuizProgress[]
 }
 
 /// The fixed set of interest categories users can pick from
@@ -100,24 +101,52 @@ model TodoListItem {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-/// The master bank of 15 daily-quiz questions, seeded once.
+/// The fixed set of quiz genres users can choose from.
+model QuizGenre {
+  id    String @id @default(cuid())
+  slug  String @unique
+  label String
+  emoji String @default("")
+  order Int    @default(0)
+}
+
+/// The master bank of quiz questions, seeded once: 15 per (genre, difficulty).
 model QuizQuestion {
-  id       String @id @default(cuid())
-  index    Int    @unique
-  question String
-  answer   String
-  category String @default("science")
+  id         String @id @default(cuid())
+  genre      String
+  difficulty String @default("easy") // "easy" | "medium" | "hard"
+  index      Int // 0-14 within that genre+difficulty
+  question   String
+  answer     String
+
+  @@unique([genre, difficulty, index])
 }
 
 /// A user's own rewritten question/answer for one quiz slot.
 model QuizEdit {
   id            String @id @default(cuid())
   userId        String
+  genre         String
+  difficulty    String
   questionIndex Int
   question      String
   answer        String
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, questionIndex])
+  @@unique([userId, genre, difficulty, questionIndex])
+}
+
+/// Marks a (genre, difficulty) tier as completed by a user, which is what
+/// unlocks the next difficulty tier for that genre. Easy is always unlocked.
+model QuizProgress {
+  id         String @id @default(cuid())
+  userId     String
+  genre      String
+  difficulty String
+  completedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, genre, difficulty])
 }

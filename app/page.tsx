@@ -16,6 +16,7 @@ import TodoList from "@/components/TodoList";
 import TodoListPersonal from "@/components/TodoListPersonal";
 import DailyQuiz from "@/components/DailyQuiz";
 import PoemCard from "@/components/PoemCard";
+import WritingPromptCard from "@/components/WritingPromptCard";
 import BookRecommendation from "@/components/BookRecommendation";
 import ArtSpotlight from "@/components/ArtSpotlight";
 import TravelVignetteCard from "@/components/TravelVignetteCard";
@@ -27,6 +28,7 @@ const ACCENTS: Record<string, string> = {
   todolist: "sky",
   quiz: "terracotta",
   poem: "plum",
+  writing: "mustard",
   book: "terracotta",
   crossword: "mustard",
   comic: "terracotta",
@@ -191,9 +193,9 @@ export default function Home() {
 
       <footer className="max-w-3xl mx-auto px-4 sm:px-6 mt-10 pt-6 border-t border-ink/10 text-center text-xs text-ink/40 space-y-2">
         <p>
-          Poems are public domain. Art comes from the Met Museum&apos;s Open Access collection. The comic links to
-          the official GoComics archive rather than reproducing it. Travel vignettes are original, written for
-          Daybook.
+          Poems come from classic, freely available writers. Art comes from the Met Museum&apos;s Open Access
+          collection. The comic links to the official GoComics archive rather than reproducing it. Travel
+          vignettes are original, written for Daybook.
         </p>
         <p>
           <Link href="/pricing" className="underline decoration-dotted underline-offset-4">
@@ -232,7 +234,7 @@ function renderSection(
     case "todos":
       return (
         <TodoList
-          dateISO={bundle.dateISO}
+          weekKey={bundle.weekKey}
           todos={bundle.todos}
           checks={bundle.todoChecks}
           onChecksChange={onTodoChecksChange}
@@ -244,14 +246,23 @@ function renderSection(
       return <DailyQuiz />;
     case "poem":
       return <PoemCard dateISO={bundle.dateISO} poem={bundle.poem} />;
+    case "writing":
+      return <WritingPromptCard dateISO={bundle.dateISO} writing={bundle.writing} />;
     case "book":
       return <BookRecommendation dateISO={bundle.dateISO} book={bundle.book} />;
     case "crossword":
       return <CrosswordPuzzle dateISO={bundle.dateISO} puzzle={bundle.crossword} />;
     case "comic":
-      return <ComicBreak dateISO={bundle.dateISO} label={bundle.comic.label} url={bundle.comic.url} />;
+      return (
+        <ComicBreak
+          dateISO={bundle.dateISO}
+          label={bundle.comic.label}
+          url={bundle.comic.url}
+          insight={bundle.comic.insight}
+        />
+      );
     case "art":
-      return <ArtSpotlight query={bundle.artQuery} dateISO={bundle.dateISO} />;
+      return <ArtSpotlight query={bundle.artQuery} analysis={bundle.artAnalysis} dateISO={bundle.dateISO} />;
     case "travel":
       return <TravelVignetteCard dateISO={bundle.dateISO} vignette={bundle.travel} />;
     default:

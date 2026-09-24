@@ -15,13 +15,22 @@ interface ArtData {
   credit: string;
 }
 
-export default function ArtSpotlight({ query, dateISO }: { query: string; dateISO: string }) {
+export default function ArtSpotlight({
+  query,
+  analysis,
+  dateISO,
+}: {
+  query: string;
+  analysis: string;
+  dateISO: string;
+}) {
   const [art, setArt] = useState<ArtData | null>(null);
   const [failed, setFailed] = useState(false);
   const { editing, values, setValue, toggle, saving } = useEditableSection(dateISO, "art", {
     title: art?.title ?? "",
     artist: art?.artist ?? "",
     credit: art?.credit ?? "",
+    analysis,
   });
 
   useEffect(() => {
@@ -104,6 +113,13 @@ export default function ArtSpotlight({ query, dateISO }: { query: string; dateIS
             placeholder="Credit line"
             className="w-full rounded-md border border-dashed border-ink/30 bg-paper px-2 py-1 text-xs outline-none focus:border-terracotta"
           />
+          <textarea
+            value={values.analysis}
+            onChange={(e) => setValue("analysis", e.target.value)}
+            rows={4}
+            placeholder="What the piece is doing, at a deeper level"
+            className="w-full rounded-md border border-dashed border-ink/30 bg-paper px-2 py-1.5 text-sm leading-relaxed outline-none focus:border-terracotta resize-none"
+          />
         </div>
       ) : (
         <>
@@ -115,7 +131,8 @@ export default function ArtSpotlight({ query, dateISO }: { query: string; dateIS
             {art.date ? `, ${art.date}` : ""}
           </p>
           {art.medium && <p className="text-xs text-ink/45 mt-0.5">{art.medium}</p>}
-          <p className="mt-2 text-xs text-ink/40">{art.credit}</p>
+          <p className="mt-3 text-[15px] leading-relaxed text-ink/85">{values.analysis}</p>
+          <p className="mt-3 text-xs text-ink/40">{art.credit}</p>
           <a
             href={art.sourceUrl}
             target="_blank"

@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import EditPencil from "./EditPencil";
 
 export default function TodoList({
-  dateISO,
+  weekKey,
   todos,
   checks,
   onChecksChange,
 }: {
-  dateISO: string;
+  weekKey: string;
   todos: string[];
   checks: Record<number, boolean>;
   onChecksChange: (checks: Record<number, boolean>) => void;
@@ -20,7 +20,7 @@ export default function TodoList({
 
   useEffect(() => {
     setDrafts(todos);
-  }, [dateISO, todos]);
+  }, [weekKey, todos]);
 
   async function toggle(i: number) {
     const next = { ...checks, [i]: !checks[i] };
@@ -28,7 +28,7 @@ export default function TodoList({
     await fetch("/api/todos/checks", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dateISO, index: i, done: next[i] }),
+      body: JSON.stringify({ dateISO: weekKey, index: i, done: next[i] }),
     });
   }
 
@@ -42,7 +42,7 @@ export default function TodoList({
               ? fetch("/api/todos/edit", {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ dateISO, index: i, text: text.trim() }),
+                  body: JSON.stringify({ dateISO: weekKey, index: i, text: text.trim() }),
                 })
               : Promise.resolve()
           )
@@ -59,7 +59,7 @@ export default function TodoList({
   return (
     <div>
       <div className="flex justify-end -mt-1 mb-2">
-        <EditPencil editing={editing} onClick={toggleEdit} label="Five for Today" disabled={saving} />
+        <EditPencil editing={editing} onClick={toggleEdit} label="This Week" disabled={saving} />
       </div>
       {editing && <p className="text-xs font-semibold text-terracotta mb-3">Editing prompt text — check to save.</p>}
       <ul className="space-y-2.5">
@@ -96,7 +96,7 @@ export default function TodoList({
       </ul>
       {!editing && (
         <p className="mt-4 text-xs text-ink/50">
-          {doneCount} of {drafts.length} done today
+          {doneCount} of {drafts.length} done this week
         </p>
       )}
     </div>

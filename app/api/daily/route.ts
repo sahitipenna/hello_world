@@ -19,9 +19,9 @@ export async function GET(req: NextRequest) {
   const bundle = buildDailyBundle(dateISO, weights);
 
   const [promptEdits, sectionEdits, todoChecks] = await Promise.all([
-    getPromptEdits(user.id, dateISO),
+    getPromptEdits(user.id, bundle.weekKey),
     getSectionEdits(user.id, dateISO),
-    getTodoChecks(user.id, dateISO),
+    getTodoChecks(user.id, bundle.weekKey),
   ]);
 
   bundle.todos = bundle.todos.map((t, i) => promptEdits[i] ?? t);
@@ -44,8 +44,14 @@ export async function GET(req: NextRequest) {
     if (e.title) bundle.travel.title = e.title;
     if (e.body) bundle.travel.body = e.body;
   }
-  if (sectionEdits.comic?.label) bundle.comic.label = sectionEdits.comic.label;
+  if (sectionEdits.comic) {
+    const e = sectionEdits.comic;
+    if (e.label) bundle.comic.label = e.label;
+    if (e.theme) bundle.comic.insight.theme = e.theme;
+    if (e.tidbit) bundle.comic.insight.tidbit = e.tidbit;
+  }
   if (sectionEdits.crossword?.title) bundle.crossword.title = sectionEdits.crossword.title;
+  if (sectionEdits.writing?.prompt) bundle.writing.prompt = sectionEdits.writing.prompt;
 
   const response: DailyBundleResponse = {
     ...bundle,

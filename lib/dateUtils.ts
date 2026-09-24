@@ -13,6 +13,16 @@ export function parseISODate(iso: string): Date {
   return new Date(Date.UTC(y, m - 1, d));
 }
 
+/** ISO-8601 week key like "2026-W39" — stable Monday-to-Sunday, for weekly (not daily) content. */
+export function getISOWeekKey(date: Date): string {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const dayNum = d.getUTCDay() || 7; // Monday=1 ... Sunday=7
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum); // move to the Thursday of this week
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNum = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNum).padStart(2, "0")}`;
+}
+
 /** Deterministic 32-bit hash of a string (FNV-1a). */
 export function hashString(str: string): number {
   let hash = 0x811c9dc5;
