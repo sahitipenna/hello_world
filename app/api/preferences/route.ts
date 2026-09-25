@@ -27,7 +27,11 @@ function toSectionMeta(rows: Awaited<ReturnType<typeof getEnabledSections>>): Se
 
 export async function GET() {
   const user = await getOrCreateUser();
-  const allSections = toSectionMeta(await getEnabledSections());
+  const [sections, premiumPlan] = await Promise.all([
+    getEnabledSections(),
+    prisma.pricingPlan.findUnique({ where: { key: "premium" } }),
+  ]);
+  const allSections = toSectionMeta(sections);
   const defaultOrder = allSections.map((s) => s.key);
   return NextResponse.json(
     {
@@ -39,6 +43,9 @@ export async function GET() {
       // the customizer needs the full catalog to reorder/hide, not just
       // whatever made today's edition.
       allSections,
+      // So UpgradeModal shows the real price without hardcoding it — an
+      // /admin price edit takes effect there too, not just on /pricing.
+      premiumPrice: premiumPlan ? { usd: premiumPlan.priceUSD, inr: premiumPlan.priceINR } : null,
     },
     { headers: { "Cache-Control": "private, no-store" } }
   );

@@ -54,7 +54,8 @@ export default async function Pricing() {
               <p className="font-serif text-3xl mb-4" style={{ fontFamily: "var(--font-fraunces), serif" }}>
                 ${premium.priceUSD} <span className="text-base text-ink/50 font-sans">/ {premium.interval}</span>
               </p>
-              <p className="text-xs text-ink/45 -mt-3 mb-4">or ₹{premium.priceINR} / {premium.interval}</p>
+              <p className="text-xs text-ink/45 -mt-3 mb-1">or ₹{premium.priceINR} / {premium.interval}</p>
+              <p className="text-xs text-terracotta font-medium mb-4">Introductory price</p>
               <ul className="space-y-2 text-sm text-ink/80 mb-6">
                 {(premium.features as string[]).map((f) => (
                   <li key={f} className="flex gap-2">

@@ -26,11 +26,13 @@ export default function UpgradeModal({
   onClose,
   onDemoUpgrade,
   onPaymentSuccess,
+  price,
 }: {
   open: boolean;
   onClose: () => void;
   onDemoUpgrade: () => void;
   onPaymentSuccess: () => void;
+  price: { usd: number; inr: number } | null;
 }) {
   const [status, setStatus] = useState<"idle" | "starting" | "error">("idle");
 
@@ -98,12 +100,13 @@ export default function UpgradeModal({
           <li>{"•"} Reorder and hide sections to fit your day</li>
           <li>{"•"} Full archive of past days</li>
         </ul>
-        <div className="flex items-baseline gap-1 mb-5">
+        <div className="flex items-baseline gap-1 mb-1">
           <span className="font-serif text-3xl" style={{ fontFamily: "var(--font-fraunces), serif" }}>
-            ₹399
+            ₹{price?.inr ?? "—"}
           </span>
           <span className="text-sm text-ink/50">/ month</span>
         </div>
+        <p className="text-xs text-terracotta font-medium mb-5">Introductory price</p>
         <button
           onClick={handleUpgradeClick}
           disabled={status === "starting"}

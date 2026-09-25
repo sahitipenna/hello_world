@@ -37,6 +37,7 @@ export default function Home() {
   const [order, setOrder] = useState<string[]>([]);
   const [hidden, setHidden] = useState<string[]>([]);
   const [allSections, setAllSections] = useState<SectionMeta[]>([]);
+  const [premiumPrice, setPremiumPrice] = useState<{ usd: number; inr: number } | null>(null);
   const [timeBudget, setTimeBudget] = useState<number | null>(null);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
@@ -56,6 +57,7 @@ export default function Home() {
         setHidden(p.hiddenSections);
         setTimeBudget(p.timeBudgetMinutes ?? null);
         setAllSections(p.allSections ?? []);
+        setPremiumPrice(p.premiumPrice ?? null);
       })
       .catch(() => {});
 
@@ -242,6 +244,7 @@ export default function Home() {
         onClose={() => setUpgradeOpen(false)}
         onDemoUpgrade={handleDemoUpgrade}
         onPaymentSuccess={handlePaymentSuccess}
+        price={premiumPrice}
       />
       <OnboardingModal
         open={onboardingOpen}
