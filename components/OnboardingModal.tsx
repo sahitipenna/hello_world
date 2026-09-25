@@ -92,7 +92,7 @@ export default function OnboardingModal({
           How much time do you have?
         </h3>
         <p className="text-sm text-ink/60 mb-3">
-          Shorter sections stay open; the rest tuck into a one-line teaser you can still open.
+          A shorter budget means a shorter edition — sections that need more time than you have just won&apos;t show up today.
         </p>
         <div className="flex flex-wrap gap-2 mb-6">
           {TIME_BUDGETS.map((mins) => {

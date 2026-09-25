@@ -24,14 +24,24 @@ export async function getSectionCategories(): Promise<Record<string, Set<string>
   return Object.fromEntries(entries);
 }
 
+/** A section's pool must have at least this fraction of its distinct
+ * categories in the visitor's chosen interests to stay visible by default. */
+const MATCH_THRESHOLD = 0.5;
+
 /**
  * Default section visibility once a visitor has chosen interests: a section
- * whose pool shares zero categories with the chosen interests is hidden by
- * default (still visible any time via Customize — this only sets the
- * starting point). A section with no pool data (or an unrecognized key) is
- * never auto-hidden. If the overlap is so narrow it would hide more than
- * half the enabled sections, skip auto-hiding entirely rather than leave a
- * near-empty edition.
+ * is hidden by default unless at least MATCH_THRESHOLD of its pool's
+ * distinct categories are among the chosen interests (still visible any
+ * time via Customize — this only sets the starting point). A section with
+ * no pool data (or an unrecognized key) is never auto-hidden. If the
+ * threshold is so narrow it would hide more than half the enabled sections,
+ * skip auto-hiding entirely rather than leave a near-empty edition.
+ *
+ * Called in two places: once, silently, the first time a visitor saves
+ * interests (see /api/interests PUT); and any time after that only when the
+ * visitor explicitly asks to reset via /api/interests/reset-sections —
+ * interest changes alone never re-run this and never touch a visitor's own
+ * Customize edits.
  */
 export function computeDefaultHidden(
   sectionKeys: string[],
@@ -43,7 +53,8 @@ export function computeDefaultHidden(
   const noMatch = sectionKeys.filter((key) => {
     const categories = categoriesByKey[key];
     if (!categories || categories.size === 0) return false;
-    return ![...categories].some((c) => interestSet.has(c));
+    const matched = [...categories].filter((c) => interestSet.has(c)).length;
+    return matched / categories.size < MATCH_THRESHOLD;
   });
   if (noMatch.length > sectionKeys.length / 2) return [];
   return noMatch;

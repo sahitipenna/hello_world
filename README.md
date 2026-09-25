@@ -130,7 +130,16 @@ the header's "Interests" link:
   brief. Chosen tags weight the deterministic pick toward matching
   categories (`lib/personalize.ts`); an empty selection behaves like a
   uniform pick, so a first-time visitor still gets a complete, varied
-  edition.
+  edition. The first time a visitor ever saves interests, it also sets a
+  starting point for which sections are shown: a section is hidden by
+  default unless at least half of its content pool's categories are among
+  the chosen interests (`lib/sectionInterests.ts`) — unless that would hide
+  more than half the sections, in which case nothing is auto-hidden.
+  Customize always wins after that, and re-picking interests later never
+  touches visibility again on its own; a "Reset to suggested" button in
+  Customize (`/api/interests/reset-sections`) lets a visitor explicitly
+  re-apply the suggestion for their current interests, discarding whatever
+  they'd hidden/shown manually.
 - **How much time do you have** — 5 / 15 / 30 / 45+ minutes. A section
   whose `minTimeMinutes` exceeds the visitor's budget is left out of that
   day's edition entirely, so a 5-minute visitor gets a genuinely shorter
@@ -182,6 +191,12 @@ can reach (any provider works).
    `DATABASE_URL` to load the sections, content pools, interest tags, and
    pricing plans — the app works without this, but every section will be
    empty until you do.
+6. **Custom domain (optional)** — in the Vercel project's Settings →
+   Domains, add your domain and follow Vercel's DNS instructions (usually
+   an A record or CNAME at your registrar). This project's production
+   domain is `godilly.life`, referenced in `app/layout.tsx`'s
+   `metadataBase`/Open Graph tags — update that if you deploy under a
+   different domain.
 
 ## Project layout
 
