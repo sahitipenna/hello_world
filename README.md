@@ -171,8 +171,13 @@ can reach (any provider works).
 2. **Create the database** (Vercel Postgres, Neon, Supabase, ...).
 3. **Import the project** on Vercel — it auto-detects Next.js; `npm run
    build` already runs `prisma migrate deploy` before `next build`.
-4. **Set env vars**: `DATABASE_URL` (the connection string) and
-   `ADMIN_SECRET` (a long random string — this is what gates `/admin`).
+4. **Set env vars**: `DATABASE_URL` (the connection string — the *pooled*
+   one, if your provider distinguishes pooled vs. direct), `DIRECT_URL`
+   (the same database's *direct*, non-pooled connection string — migrations
+   need a real session lock that a pooled/PgBouncer connection can hang or
+   time out on; if your provider has no such distinction, just repeat
+   `DATABASE_URL`'s value), and `ADMIN_SECRET` (a long random string — this
+   is what gates `/admin`).
 5. **Deploy**, then run `npm run db:seed` once against that same
    `DATABASE_URL` to load the sections, content pools, interest tags, and
    pricing plans — the app works without this, but every section will be
