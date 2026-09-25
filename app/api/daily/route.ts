@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildDailyBundle } from "@/lib/dailyBundle";
+import { buildEdition } from "@/lib/dailyBundle";
 import { toISODate } from "@/lib/dateUtils";
 import { getOrCreateUser } from "@/lib/auth";
 import { getPromptEdits, getSectionEdits, getTodoChecks } from "@/lib/userOverlay";
 import { getUserWeights } from "@/lib/interests";
-import { DailyBundleResponse } from "@/lib/types";
+import { DailyEditionResponse, EditionContent, EditionSection, Plan } from "@/lib/types";
 
 function isValidISODate(s: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s));
@@ -16,49 +16,124 @@ export async function GET(req: NextRequest) {
 
   const user = await getOrCreateUser();
   const weights = await getUserWeights(user.id);
-  const bundle = buildDailyBundle(dateISO, weights);
+  const edition = await buildEdition(dateISO, weights);
+  const plan: Plan = (user.plan as Plan) ?? "free";
 
-  const [promptEdits, sectionEdits, todoChecks] = await Promise.all([
-    getPromptEdits(user.id, bundle.weekKey),
+  const [sectionEdits, promptEdits, todoChecks] = await Promise.all([
     getSectionEdits(user.id, dateISO),
-    getTodoChecks(user.id, bundle.weekKey),
+    getPromptEdits(user.id, dateISO),
+    getTodoChecks(user.id, dateISO),
   ]);
 
-  bundle.todos = bundle.todos.map((t, i) => promptEdits[i] ?? t);
+  const sections: EditionSection[] = edition.sections.map(({ meta, content }) => {
+    let resolved = applyEdits(content, sectionEdits);
+    if (resolved?.kind === "do") {
+      resolved = { ...resolved, tasks: resolved.tasks.map((t, i) => promptEdits[i] ?? t) };
+    }
+    const locked = meta.premium && plan === "free";
+    if (!locked && plan === "free") {
+      resolved = applyFreeLimit(resolved, meta.freeCount);
+    }
+    return {
+      key: meta.key,
+      eyebrow: meta.eyebrow,
+      title: meta.title,
+      tagline: meta.tagline,
+      premium: meta.premium,
+      minTimeMinutes: meta.minTimeMinutes,
+      locked,
+      collapsed: user.timeBudgetMinutes != null && meta.minTimeMinutes > user.timeBudgetMinutes,
+      content: resolved,
+    };
+  });
 
-  if (sectionEdits.poem) {
-    const e = sectionEdits.poem;
-    if (e.title) bundle.poem.title = e.title;
-    if (e.poet) bundle.poem.poet = e.poet;
-    if (e.lines) bundle.poem.lines = e.lines.split("\n");
-  }
-  if (sectionEdits.book) {
-    const e = sectionEdits.book;
-    if (e.title) bundle.book.title = e.title;
-    if (e.author) bundle.book.author = e.author;
-    if (e.reason) bundle.book.reason = e.reason;
-  }
-  if (sectionEdits.travel) {
-    const e = sectionEdits.travel;
-    if (e.place) bundle.travel.place = e.place;
-    if (e.title) bundle.travel.title = e.title;
-    if (e.body) bundle.travel.body = e.body;
-  }
-  if (sectionEdits.comic) {
-    const e = sectionEdits.comic;
-    if (e.label) bundle.comic.label = e.label;
-    if (e.theme) bundle.comic.insight.theme = e.theme;
-    if (e.tidbit) bundle.comic.insight.tidbit = e.tidbit;
-  }
-  if (sectionEdits.crossword?.title) bundle.crossword.title = sectionEdits.crossword.title;
-  if (sectionEdits.writing?.prompt) bundle.writing.prompt = sectionEdits.writing.prompt;
-
-  const response: DailyBundleResponse = {
-    ...bundle,
-    plan: (user.plan as DailyBundleResponse["plan"]) ?? "free",
+  const response: DailyEditionResponse = {
+    dateISO,
+    dayOfYear: edition.dayOfYear,
+    weekKey: edition.weekKey,
+    plan,
+    timeBudgetMinutes: user.timeBudgetMinutes ?? null,
+    sections,
     todoChecks,
   };
 
-  // Personalized, per-user response — never cache this at a shared/CDN layer.
   return NextResponse.json(response, { headers: { "Cache-Control": "private, no-store" } });
+}
+
+/** Layers a user's saved per-field rewrites onto resolved content. Every
+ * editable section shares the generic /api/section-edit endpoint and a
+ * fixed internal field key (kept from the original build — "poem", "book",
+ * "travel", "crossword", "wonder" — independent of the section's own
+ * PRD-facing key, which an admin can rename freely without breaking edits). */
+function applyEdits(content: EditionContent, edits: Record<string, Record<string, string>>): EditionContent {
+  if (!content) return content;
+  switch (content.kind) {
+    case "read": {
+      const e = edits.poem;
+      if (!e) return content;
+      return {
+        ...content,
+        poem: {
+          ...content.poem,
+          ...(e.title ? { title: e.title } : {}),
+          ...(e.poet ? { poet: e.poet } : {}),
+          ...(e.lines ? { lines: e.lines.split("\n") } : {}),
+        },
+      };
+    }
+    case "readnext": {
+      const e = edits.book;
+      if (!e) return content;
+      return {
+        ...content,
+        book: {
+          ...content.book,
+          ...(e.title ? { title: e.title } : {}),
+          ...(e.author ? { author: e.author } : {}),
+          ...(e.reason ? { reason: e.reason } : {}),
+        },
+      };
+    }
+    case "wander": {
+      const e = edits.travel;
+      if (!e) return content;
+      return {
+        ...content,
+        travel: {
+          ...content.travel,
+          ...(e.place ? { place: e.place } : {}),
+          ...(e.title ? { title: e.title } : {}),
+          ...(e.body ? { body: e.body } : {}),
+        },
+      };
+    }
+    case "play": {
+      const e = edits.crossword;
+      if (!e?.title) return content;
+      return { ...content, puzzle: { ...content.puzzle, title: e.title } };
+    }
+    case "wonder": {
+      const e = edits.wonder;
+      if (!e) return content;
+      return {
+        ...content,
+        wonder: {
+          ...content.wonder,
+          ...(e.title ? { title: e.title } : {}),
+          ...(e.body ? { body: e.body } : {}),
+        },
+      };
+    }
+    default:
+      return content;
+  }
+}
+
+/** Free plan cap for multi-item sections (KNOW, DO), driven by
+ * Section.freeCount — a row edit via /admin, not a code change. */
+function applyFreeLimit(content: EditionContent, freeCount: number | null): EditionContent {
+  if (!content || freeCount == null) return content;
+  if (content.kind === "know") return { ...content, items: content.items.slice(0, freeCount) };
+  if (content.kind === "do") return { ...content, tasks: content.tasks.slice(0, freeCount) };
+  return content;
 }

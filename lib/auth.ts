@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { randomUUID } from "crypto";
 import { prisma } from "./db";
 
-const COOKIE_NAME = "daybook_uid";
+const COOKIE_NAME = "godilly_uid";
 
 /**
  * Anonymous, per-browser identity: a random id in an httpOnly cookie,

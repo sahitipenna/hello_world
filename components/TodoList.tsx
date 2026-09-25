@@ -4,15 +4,23 @@ import { useEffect, useState } from "react";
 import EditPencil from "./EditPencil";
 
 export default function TodoList({
-  weekKey,
+  dateKey,
   todos,
   checks,
   onChecksChange,
+  label = "This Week",
+  period = "this week",
+  hiddenCount = 0,
+  onUnlockClick,
 }: {
-  weekKey: string;
+  dateKey: string;
   todos: string[];
   checks: Record<number, boolean>;
   onChecksChange: (checks: Record<number, boolean>) => void;
+  label?: string;
+  period?: string;
+  hiddenCount?: number;
+  onUnlockClick?: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [drafts, setDrafts] = useState<string[]>(todos);
@@ -20,7 +28,7 @@ export default function TodoList({
 
   useEffect(() => {
     setDrafts(todos);
-  }, [weekKey, todos]);
+  }, [dateKey, todos]);
 
   async function toggle(i: number) {
     const next = { ...checks, [i]: !checks[i] };
@@ -28,7 +36,7 @@ export default function TodoList({
     await fetch("/api/todos/checks", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dateISO: weekKey, index: i, done: next[i] }),
+      body: JSON.stringify({ dateISO: dateKey, index: i, done: next[i] }),
     });
   }
 
@@ -42,7 +50,7 @@ export default function TodoList({
               ? fetch("/api/todos/edit", {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ dateISO: weekKey, index: i, text: text.trim() }),
+                  body: JSON.stringify({ dateISO: dateKey, index: i, text: text.trim() }),
                 })
               : Promise.resolve()
           )
@@ -59,7 +67,7 @@ export default function TodoList({
   return (
     <div>
       <div className="flex justify-end -mt-1 mb-2">
-        <EditPencil editing={editing} onClick={toggleEdit} label="This Week" disabled={saving} />
+        <EditPencil editing={editing} onClick={toggleEdit} label={label} disabled={saving} />
       </div>
       {editing && <p className="text-xs font-semibold text-terracotta mb-3">Editing prompt text — check to save.</p>}
       <ul className="space-y-2.5">
@@ -96,8 +104,16 @@ export default function TodoList({
       </ul>
       {!editing && (
         <p className="mt-4 text-xs text-ink/50">
-          {doneCount} of {drafts.length} done this week
+          {doneCount} of {drafts.length} done {period}
         </p>
+      )}
+      {!editing && hiddenCount > 0 && (
+        <button
+          onClick={onUnlockClick}
+          className="mt-3 w-full text-sm font-medium text-ink/60 border border-dashed border-ink/25 rounded-lg px-3 py-2.5 hover:border-terracotta hover:text-terracotta transition-colors"
+        >
+          +{hiddenCount} more with Premium
+        </button>
       )}
     </div>
   );

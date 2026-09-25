@@ -34,20 +34,20 @@ const INTEREST_TAGS = [
 // features kept in the system but disabled by default (see ARCHITECTURE.md).
 // ---------------------------------------------------------------------------
 const SECTIONS = [
-  { key: "know", eyebrow: "KNOW", title: "5 things happening in the world", tagline: "a little more of what's going on, in about 5 minutes", order: 0, premium: false, enabled: true, minTimeMinutes: 5 },
-  { key: "play", eyebrow: "PLAY", title: "Today's crossword", tagline: "easy to medium, 5–15 minutes", order: 1, premium: false, enabled: true, minTimeMinutes: 15 },
-  { key: "look", eyebrow: "LOOK", title: "Artwork of the day", tagline: "one piece, looked at closely", order: 2, premium: false, enabled: true, minTimeMinutes: 5 },
-  { key: "read", eyebrow: "READ", title: "A literary moment", tagline: "a short excerpt to sit with", order: 3, premium: false, enabled: true, minTimeMinutes: 5 },
-  { key: "wander", eyebrow: "WANDER", title: "A place worth getting lost in", tagline: "a short piece of travel writing", order: 4, premium: true, enabled: true, minTimeMinutes: 5 },
-  { key: "readnext", eyebrow: "READ NEXT", title: "One book", tagline: "read this if you want something worth your evening", order: 5, premium: false, enabled: true, minTimeMinutes: 5 },
-  { key: "wonder", eyebrow: "WONDER", title: "Something you'll want to tell someone", tagline: "wait, really?", order: 6, premium: false, enabled: true, minTimeMinutes: 5 },
-  { key: "do", eyebrow: "DO", title: "Five little things", tagline: "small, optional, and not about productivity", order: 7, premium: false, enabled: true, minTimeMinutes: 5 },
+  { key: "know", eyebrow: "KNOW", title: "5 things happening in the world", tagline: "a little more of what's going on, in about 5 minutes", order: 0, premium: false, enabled: true, minTimeMinutes: 5, freeCount: 3 },
+  { key: "play", eyebrow: "PLAY", title: "Today's crossword", tagline: "easy to medium, 5–15 minutes", order: 1, premium: false, enabled: true, minTimeMinutes: 15, freeCount: null },
+  { key: "look", eyebrow: "LOOK", title: "Artwork of the day", tagline: "one piece, looked at closely", order: 2, premium: false, enabled: true, minTimeMinutes: 5, freeCount: null },
+  { key: "read", eyebrow: "READ", title: "A literary moment", tagline: "a short excerpt to sit with", order: 3, premium: false, enabled: true, minTimeMinutes: 5, freeCount: null },
+  { key: "wander", eyebrow: "WANDER", title: "A place worth getting lost in", tagline: "a short piece of travel writing", order: 4, premium: true, enabled: true, minTimeMinutes: 5, freeCount: null },
+  { key: "readnext", eyebrow: "READ NEXT", title: "One book", tagline: "read this if you want something worth your evening", order: 5, premium: false, enabled: true, minTimeMinutes: 5, freeCount: null },
+  { key: "wonder", eyebrow: "WONDER", title: "Something you'll want to tell someone", tagline: "wait, really?", order: 6, premium: false, enabled: true, minTimeMinutes: 5, freeCount: null },
+  { key: "do", eyebrow: "DO", title: "Five little things", tagline: "small, optional, and not about productivity", order: 7, premium: false, enabled: true, minTimeMinutes: 5, freeCount: 3 },
   // Kept from the earlier build, off by default — a config change turns
   // any of these back on without touching code.
-  { key: "quiz", eyebrow: "PLAY MORE", title: "Daily Quiz", tagline: "pick a genre, work your way up", order: 8, premium: true, enabled: false, minTimeMinutes: 15 },
-  { key: "todolist", eyebrow: "KEEP", title: "My To-Do List", tagline: "add and track your own tasks", order: 9, premium: false, enabled: false, minTimeMinutes: 5 },
-  { key: "writing", eyebrow: "MAKE", title: "Write Something", tagline: "a small prompt for a poem or a story", order: 10, premium: true, enabled: false, minTimeMinutes: 15 },
-  { key: "comic", eyebrow: "SMILE", title: "Comic of the Day", tagline: "licensing pending", order: 11, premium: true, enabled: false, minTimeMinutes: 5 },
+  { key: "quiz", eyebrow: "PLAY MORE", title: "Daily Quiz", tagline: "pick a genre, work your way up", order: 8, premium: true, enabled: false, minTimeMinutes: 15, freeCount: null },
+  { key: "todolist", eyebrow: "KEEP", title: "My To-Do List", tagline: "add and track your own tasks", order: 9, premium: false, enabled: false, minTimeMinutes: 5, freeCount: null },
+  { key: "writing", eyebrow: "MAKE", title: "Write Something", tagline: "a small prompt for a poem or a story", order: 10, premium: true, enabled: false, minTimeMinutes: 15, freeCount: null },
+  { key: "comic", eyebrow: "SMILE", title: "Comic of the Day", tagline: "licensing pending", order: 11, premium: true, enabled: false, minTimeMinutes: 5, freeCount: null },
 ];
 
 // ---------------------------------------------------------------------------
