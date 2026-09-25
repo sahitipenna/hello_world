@@ -145,7 +145,7 @@ const PRICING_PLANS = [
     key: "premium",
     name: "Premium",
     priceINR: 399,
-    priceUSD: 5,
+    priceUSD: 4,
     interval: "month",
     order: 1,
     features: [
