@@ -139,6 +139,19 @@ const CONTENT_TYPES: ContentTypeDef[] = [
       { key: "words", label: "Words (JSON array of {word, clue})", kind: "json", required: true },
     ],
   },
+  {
+    slug: "bonus-article",
+    label: "Bonus articles (come back tomorrow)",
+    sectionKey: "bonus",
+    delegate: prisma.bonusArticle,
+    fields: [
+      { key: "title", label: "Title", kind: "text", required: true },
+      { key: "source", label: "Source (e.g. The Atlantic)", kind: "text", required: true },
+      { key: "url", label: "URL", kind: "text", required: true },
+      { key: "teaser", label: "Teaser", kind: "textarea" },
+      { key: "category", label: "Category", kind: "text" },
+    ],
+  },
 ];
 
 export function getContentType(slug: string): ContentTypeDef | undefined {

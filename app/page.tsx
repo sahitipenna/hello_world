@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { DailyEditionResponse, EditionSection, Plan, SectionMeta } from "@/lib/types";
 import { accentForKey } from "@/lib/accent";
-import { toISODate } from "@/lib/dateUtils";
+import { toISODate, dayOfYear, parseISODate } from "@/lib/dateUtils";
 
 import SiteHeader from "@/components/SiteHeader";
 import DateNav from "@/components/DateNav";
+import ComeBackTomorrow from "@/components/ComeBackTomorrow";
 import SectionCard from "@/components/SectionCard";
 import SectionCustomizer from "@/components/SectionCustomizer";
 import UpgradeModal from "@/components/UpgradeModal";
@@ -35,6 +36,7 @@ export default function Home() {
   const [plan, setPlanState] = useState<Plan>("free");
   const [order, setOrder] = useState<string[]>([]);
   const [hidden, setHidden] = useState<string[]>([]);
+  const [allSections, setAllSections] = useState<SectionMeta[]>([]);
   const [timeBudget, setTimeBudget] = useState<number | null>(null);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
@@ -53,6 +55,7 @@ export default function Home() {
         setOrder(p.sectionOrder);
         setHidden(p.hiddenSections);
         setTimeBudget(p.timeBudgetMinutes ?? null);
+        setAllSections(p.allSections ?? []);
       })
       .catch(() => {});
 
@@ -66,14 +69,16 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
+  const isFuture = dateISO !== "" && dateISO > toISODate(new Date());
+
   useEffect(() => {
-    if (!dateISO) return;
+    if (!dateISO || isFuture) return;
     setBundle(null);
     fetch(`/api/daily?date=${dateISO}`)
       .then((r) => r.json())
       .then(setBundle)
       .catch(() => setBundle(null));
-  }, [dateISO]);
+  }, [dateISO, isFuture]);
 
   async function handleUpgrade() {
     const res = await fetch("/api/preferences", {
@@ -108,12 +113,12 @@ export default function Home() {
   }
 
   async function handleSaveOnboarding(slugs: string[], timeBudgetMinutes: number | null) {
-    await Promise.all([
+    const [interestsRes] = await Promise.all([
       fetch("/api/interests", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slugs }),
-      }),
+      }).then((r) => r.json()),
       fetch("/api/preferences", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -122,6 +127,13 @@ export default function Home() {
     ]);
     setSelectedInterests(slugs);
     setTimeBudget(timeBudgetMinutes);
+    // Only chosen the first time (hiddenSections is null until a visitor
+    // customizes) — /api/interests seeds a default based on the chosen
+    // interests; a null response means the visitor already has their own
+    // customization, which always wins.
+    if (Array.isArray(interestsRes?.hiddenSections)) {
+      setHidden(interestsRes.hiddenSections);
+    }
     setOnboardingOpen(false);
     if (dateISO) fetch(`/api/daily?date=${dateISO}`).then((r) => r.json()).then(setBundle).catch(() => {});
   }
@@ -135,7 +147,7 @@ export default function Home() {
   }
 
   const sectionsByKey = new Map((bundle?.sections ?? []).map((s) => [s.key, s]));
-  const visibleOrder = order.length > 0 ? order : (bundle?.sections ?? []).map((s) => s.key);
+  const visibleOrder = order.length > 0 ? order : allSections.map((s) => s.key);
 
   return (
     <div className="pb-20">
@@ -151,10 +163,14 @@ export default function Home() {
           Good morning. Here&apos;s a little something for you &mdash; a handful of good things for your day.
         </p>
         <div className="flex justify-center mb-8">
-          {bundle && <DateNav dateISO={bundle.dateISO} dayOfYear={bundle.dayOfYear} onChange={setDateISO} />}
+          {dateISO && (
+            <DateNav dateISO={dateISO} dayOfYear={dayOfYear(parseISODate(dateISO))} onChange={setDateISO} />
+          )}
         </div>
 
-        {!bundle ? (
+        {isFuture ? (
+          <ComeBackTomorrow dateISO={dateISO} />
+        ) : !bundle ? (
           <div className="space-y-6">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-40 rounded-2xl bg-paper2 animate-pulse" />
@@ -200,7 +216,7 @@ export default function Home() {
       <SectionCustomizer
         open={customizeOpen}
         onClose={() => setCustomizeOpen(false)}
-        sections={bundle?.sections.map(sectionMetaOf) ?? []}
+        sections={allSections}
         order={visibleOrder}
         hidden={hidden}
         onReorder={handleReorder}
@@ -217,10 +233,6 @@ export default function Home() {
       />
     </div>
   );
-}
-
-function sectionMetaOf(s: EditionSection): SectionMeta {
-  return { key: s.key, eyebrow: s.eyebrow, title: s.title, tagline: s.tagline, premium: s.premium, minTimeMinutes: s.minTimeMinutes };
 }
 
 function renderSection(

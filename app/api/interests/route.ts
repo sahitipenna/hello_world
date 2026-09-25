@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOrCreateUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { INTEREST_WEIGHT_SELECTED } from "@/lib/interests";
+import { getEnabledSections } from "@/lib/sections";
+import { computeDefaultHidden, getSectionCategories } from "@/lib/sectionInterests";
 
 export async function GET() {
   const user = await getOrCreateUser();
@@ -23,7 +25,12 @@ export async function GET() {
   );
 }
 
-/** Body: { slugs: string[] } — replaces the user's whole interest selection. */
+/** Body: { slugs: string[] } — replaces the user's whole interest selection.
+ * If the visitor has never manually reordered/hidden sections via
+ * Customize (User.hiddenSections is still null), this also sets a starting
+ * hiddenSections based on which sections' content pools actually overlap
+ * the chosen interests — see lib/sectionInterests.ts. Customize always
+ * wins after that; this only sets the default. */
 export async function PUT(req: NextRequest) {
   const user = await getOrCreateUser();
   const body = await req.json().catch(() => null);
@@ -43,5 +50,16 @@ export async function PUT(req: NextRequest) {
     ),
   ]);
 
-  return NextResponse.json({ ok: true, selected: tags.map((t) => t.slug) });
+  let hiddenSections: string[] | null = null;
+  if (user.hiddenSections === null) {
+    const [sections, categoriesByKey] = await Promise.all([getEnabledSections(), getSectionCategories()]);
+    hiddenSections = computeDefaultHidden(
+      sections.map((s) => s.key),
+      categoriesByKey,
+      tags.map((t) => t.slug)
+    );
+    await prisma.user.update({ where: { id: user.id }, data: { hiddenSections: JSON.stringify(hiddenSections) } });
+  }
+
+  return NextResponse.json({ ok: true, selected: tags.map((t) => t.slug), hiddenSections });
 }
