@@ -15,6 +15,7 @@ const CONTENT_TYPES = [
   { slug: "wonder", label: "Wonder facts — WONDER" },
   { slug: "task", label: "Little things to do — DO" },
   { slug: "crossword-theme", label: "Crossword themes — PLAY" },
+  { slug: "bonus-article", label: "Bonus articles — come back tomorrow" },
 ];
 
 type Tab = "sections" | "pricing" | "content";

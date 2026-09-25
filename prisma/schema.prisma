@@ -171,6 +171,20 @@ model Comic {
   scheduledDate String?
 }
 
+/// A curated external link (never reproduced content, just a citation +
+/// short teaser) shown on the "come back tomorrow" screen a visitor hits
+/// when they navigate past today's edition. Admin-curated via /admin, same
+/// as every other pool, so a real editor picks what's linked.
+model BonusArticle {
+  id        String   @id @default(cuid())
+  title     String
+  source    String // e.g. "The Atlantic", "The New York Times"
+  url       String
+  teaser    String   @default("")
+  category  String   @default("")
+  createdAt DateTime @default(now())
+}
+
 // ---------------------------------------------------------------------------
 // Personalization
 // ---------------------------------------------------------------------------

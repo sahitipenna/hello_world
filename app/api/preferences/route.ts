@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOrCreateUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getDefaultSectionOrder } from "@/lib/sections";
+import { getEnabledSections } from "@/lib/sections";
+import { SectionMeta } from "@/lib/types";
 
 function parseJsonArray(raw: string | null): string[] | null {
   if (!raw) return null;
@@ -13,15 +14,31 @@ function parseJsonArray(raw: string | null): string[] | null {
   }
 }
 
+function toSectionMeta(rows: Awaited<ReturnType<typeof getEnabledSections>>): SectionMeta[] {
+  return rows.map((s) => ({
+    key: s.key,
+    eyebrow: s.eyebrow,
+    title: s.title,
+    tagline: s.tagline,
+    premium: s.premium,
+    minTimeMinutes: s.minTimeMinutes,
+  }));
+}
+
 export async function GET() {
   const user = await getOrCreateUser();
-  const defaultOrder = await getDefaultSectionOrder();
+  const allSections = toSectionMeta(await getEnabledSections());
+  const defaultOrder = allSections.map((s) => s.key);
   return NextResponse.json(
     {
       plan: user.plan,
       sectionOrder: parseJsonArray(user.sectionOrder) ?? defaultOrder,
       hiddenSections: parseJsonArray(user.hiddenSections) ?? [],
       timeBudgetMinutes: user.timeBudgetMinutes ?? null,
+      // Every enabled section, regardless of today's time-budget filtering —
+      // the customizer needs the full catalog to reorder/hide, not just
+      // whatever made today's edition.
+      allSections,
     },
     { headers: { "Cache-Control": "private, no-store" } }
   );
@@ -56,12 +73,14 @@ export async function PATCH(req: NextRequest) {
   }
 
   const updated = await prisma.user.update({ where: { id: user.id }, data });
-  const defaultOrder = await getDefaultSectionOrder();
+  const allSections = toSectionMeta(await getEnabledSections());
+  const defaultOrder = allSections.map((s) => s.key);
 
   return NextResponse.json({
     plan: updated.plan,
     sectionOrder: parseJsonArray(updated.sectionOrder) ?? defaultOrder,
     hiddenSections: parseJsonArray(updated.hiddenSections) ?? [],
     timeBudgetMinutes: updated.timeBudgetMinutes ?? null,
+    allSections,
   });
 }

@@ -7,8 +7,3 @@ import { prisma } from "./db";
 export async function getEnabledSections() {
   return prisma.section.findMany({ where: { enabled: true }, orderBy: { order: "asc" } });
 }
-
-export async function getDefaultSectionOrder(): Promise<string[]> {
-  const sections = await getEnabledSections();
-  return sections.map((s) => s.key);
-}

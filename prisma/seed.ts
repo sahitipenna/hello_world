@@ -93,6 +93,36 @@ const WONDERS = [
 ];
 
 // ---------------------------------------------------------------------------
+// Bonus articles — shown on the "come back tomorrow" screen a visitor hits
+// when they navigate past today's edition. Placeholders pointing at safe,
+// always-valid section fronts rather than a specific article: an editor
+// should swap these for real curated picks via /admin (see ARCHITECTURE.md).
+// ---------------------------------------------------------------------------
+const BONUS_ARTICLES = [
+  {
+    title: "The Atlantic's Culture desk",
+    source: "The Atlantic",
+    url: "https://www.theatlantic.com/culture/",
+    teaser: "While you wait for tomorrow's edition, here's where our editors go looking.",
+    category: "culture",
+  },
+  {
+    title: "The New York Times Books section",
+    source: "The New York Times",
+    url: "https://www.nytimes.com/section/books",
+    teaser: "A good place to fall down a rabbit hole until tomorrow's edition is ready.",
+    category: "books",
+  },
+  {
+    title: "The Atlantic's Ideas desk",
+    source: "The Atlantic",
+    url: "https://www.theatlantic.com/ideas/",
+    teaser: "Longer thinking, for whenever you've got a spare twenty minutes.",
+    category: "philosophy",
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Pricing — the /pricing page reads this table directly.
 // ---------------------------------------------------------------------------
 const PRICING_PLANS = [
@@ -244,6 +274,10 @@ async function main() {
     });
   }
 
+  for (const article of BONUS_ARTICLES) {
+    await prisma.bonusArticle.create({ data: article });
+  }
+
   console.log(
     [
       `${INTEREST_TAGS.length} interest tags`,
@@ -257,6 +291,7 @@ async function main() {
       `${DAILY_TASKS.length} daily tasks`,
       `${CROSSWORD_THEMES.length} crossword themes`,
       `${PRICING_PLANS.length} pricing plans`,
+      `${BONUS_ARTICLES.length} bonus articles`,
     ].join(", ")
   );
 }
