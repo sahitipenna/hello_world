@@ -20,7 +20,8 @@ datasource db {
 model User {
   id                String   @id
   createdAt         DateTime @default(now())
-  plan              String   @default("free") // "free" | "premium" (demo toggle, no real billing yet)
+  plan              String   @default("free") // "free" | "premium" — kept in sync by the Razorpay webhook (lib/razorpay.ts); falls back to a manual demo toggle when Razorpay isn't configured
+  razorpaySubscriptionId String? @unique // Razorpay's sub_... id, once this visitor has started checkout
   timeBudgetMinutes Int? // 5 | 15 | 30 | 45 — personalization from onboarding
   sectionOrder      String? // JSON-encoded string[] of section keys
   hiddenSections    String? // JSON-encoded string[] of section keys

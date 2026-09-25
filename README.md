@@ -151,10 +151,15 @@ Free users get the full edition, with two caps: `Section.premium`
 sections (WANDER, by default) are fully locked behind a blurred
 "Premium" panel, and multi-item sections (KNOW, DO) show only
 `Section.freeCount` items with an inline "+N more with Premium" nudge —
-both configured via `/admin`, not code. The "Go Premium" flow is a
-**demo toggle only** (`app/api/preferences/route.ts` /
-`components/UpgradeModal.tsx`) — it flips `User.plan` so you can see the
-full layout, but takes no payment.
+both configured via `/admin`, not code. "Go Premium" collects real payment
+via Razorpay Subscriptions (`lib/razorpay.ts`, `app/api/payments/*`) once
+`RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`/`RAZORPAY_PLAN_ID`/
+`RAZORPAY_WEBHOOK_SECRET` are set (see `.env.example` for the exact
+Razorpay-dashboard setup steps) — Checkout confirms the plan immediately,
+and a webhook stays the source of truth for renewals/cancellations after
+that. Without those env vars set, it falls back to a demo toggle
+(`components/UpgradeModal.tsx`) that just flips `User.plan` so you can see
+the full layout without a Razorpay account.
 
 ## Persistence & identity
 

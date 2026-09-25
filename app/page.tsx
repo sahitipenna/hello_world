@@ -80,7 +80,7 @@ export default function Home() {
       .catch(() => setBundle(null));
   }, [dateISO, isFuture]);
 
-  async function handleUpgrade() {
+  async function handleDemoUpgrade() {
     const res = await fetch("/api/preferences", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -90,6 +90,12 @@ export default function Home() {
       setPlanState("premium");
       if (dateISO) fetch(`/api/daily?date=${dateISO}`).then((r) => r.json()).then(setBundle).catch(() => {});
     }
+    setUpgradeOpen(false);
+  }
+
+  function handlePaymentSuccess() {
+    setPlanState("premium");
+    if (dateISO) fetch(`/api/daily?date=${dateISO}`).then((r) => r.json()).then(setBundle).catch(() => {});
     setUpgradeOpen(false);
   }
 
@@ -231,7 +237,12 @@ export default function Home() {
         onResetToSuggested={handleResetToSuggested}
         hasInterests={selectedInterests.length > 0}
       />
-      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} onUpgrade={handleUpgrade} />
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        onDemoUpgrade={handleDemoUpgrade}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
       <OnboardingModal
         open={onboardingOpen}
         tags={tags}
