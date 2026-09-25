@@ -172,7 +172,6 @@ export default function Home() {
                       key={key}
                       meta={section}
                       locked={section.locked}
-                      collapsed={section.collapsed}
                       onUnlockClick={() => setUpgradeOpen(true)}
                       accent={accentForKey(key)}
                     >
@@ -237,17 +236,17 @@ function renderSection(
     case "know":
       return <KnowSection items={content.items} totalCount={content.totalCount} onUnlockClick={onUnlockClick} />;
     case "play":
-      return <CrosswordPuzzle dateISO={bundle.dateISO} puzzle={content.puzzle} />;
+      return <CrosswordPuzzle puzzle={content.puzzle} />;
     case "look":
       return <ArtSpotlight query={content.query} analysis={content.analysis} dateISO={bundle.dateISO} />;
     case "read":
-      return <PoemCard dateISO={bundle.dateISO} poem={content.poem} />;
+      return <PoemCard poem={content.poem} />;
     case "wander":
-      return <TravelVignetteCard dateISO={bundle.dateISO} vignette={content.travel} />;
+      return <TravelVignetteCard vignette={content.travel} />;
     case "readnext":
-      return <BookRecommendation dateISO={bundle.dateISO} book={content.book} />;
+      return <BookRecommendation book={content.book} />;
     case "wonder":
-      return <WonderCard dateISO={bundle.dateISO} wonder={content.wonder} />;
+      return <WonderCard wonder={content.wonder} />;
     case "do":
       return (
         <TodoList

@@ -60,10 +60,11 @@ Eight canonical sections, matching the product brief:
 | **WONDER** | Something you'll want to tell someone | `Wonder` pool — one verifiable "wait, really?" fact |
 | **DO** | Five little things | `DailyTask` pool — small, optional, not productivity |
 
-Most single-item sections (READ, LOOK, READ NEXT, WANDER, WONDER, PLAY)
-have a pencil icon for an inline per-user rewrite, saved via the generic
-`/api/section-edit` endpoint — separate from the admin content pools
-below, which change what every visitor sees.
+Editorial sections (READ, LOOK, READ NEXT, WANDER, WONDER, PLAY) are
+curated content and deliberately **not** editable by a visitor — that
+belongs to `/admin`, so the edition reads as edited, not user-modified.
+The only section a visitor can rewrite inline is **DO** ("Five little
+things"), which is closer to a personal to-do list than editorial voice.
 
 ## Content architecture
 
@@ -105,9 +106,9 @@ per-user account — set something long and random before deploying
 publicly). Three tabs:
 
 - **Sections** — reorder (drag via up/down), rename (eyebrow/title/
-  tagline), toggle enabled/premium, set the minimum time budget that keeps
-  a section expanded by default, and set the free-plan item cap for
-  multi-item sections (KNOW, DO).
+  tagline), toggle enabled/premium, set the minimum time budget a visitor
+  needs to have for the section to appear in their edition at all, and
+  set the free-plan item cap for multi-item sections (KNOW, DO).
 - **Pricing** — edit the Free/Premium plan copy and price; feeds
   `/pricing` directly, no copy lives in code.
 - **Content** — add/edit/delete rows in any of the eight content pools,
@@ -131,8 +132,9 @@ the header's "Interests" link:
   uniform pick, so a first-time visitor still gets a complete, varied
   edition.
 - **How much time do you have** — 5 / 15 / 30 / 45+ minutes. A section
-  whose `minTimeMinutes` exceeds the visitor's budget collapses to a
-  one-line teaser they can still tap open — nothing is hidden, just paced.
+  whose `minTimeMinutes` exceeds the visitor's budget is left out of that
+  day's edition entirely, so a 5-minute visitor gets a genuinely shorter
+  edition than a 45-minute one, not just a collapsed teaser.
 
 ## Freemium & customization
 
@@ -185,8 +187,7 @@ app/
   pricing/page.tsx                reads PricingPlan straight from the DB
   api/daily/route.ts               assembles + personalizes a day's edition
   api/art/route.ts                  proxies the Met Museum Open Access API
-  api/book/route.ts                  proxies Open Library for a cover + link
-  api/section-edit/route.ts          generic per-user text override, any section/field
+  api/book/route.ts                  proxies Open Library for a cover, links out to Goodreads
   api/preferences/route.ts           plan, section order/visibility, time budget
   api/interests/route.ts             interest tags + a user's selection
   api/admin/sections, /pricing, /content/[type]   admin CRUD (ADMIN_SECRET-gated)

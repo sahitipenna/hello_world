@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { seededRandom, hashString } from "@/lib/dateUtils";
-import { getOrCreateUser } from "@/lib/auth";
-import { getSectionEdits } from "@/lib/userOverlay";
 
 const MET_BASE = "https://collectionapi.metmuseum.org/public/collection/v1";
 
@@ -30,7 +28,6 @@ async function fetchWithTimeout(url: string, ms: number) {
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q") || "art";
-  const dateISO = req.nextUrl.searchParams.get("date") || "";
   const seedParam = req.nextUrl.searchParams.get("seed") || q;
 
   try {
@@ -52,17 +49,9 @@ export async function GET(req: NextRequest) {
       if (!objRes.ok) continue;
       const obj: MetObject = await objRes.json();
       if (obj.primaryImageSmall && obj.isPublicDomain) {
-        let title = obj.title || "Untitled";
-        let artist = obj.artistDisplayName || "Unknown artist";
-        let credit = obj.creditLine || "The Metropolitan Museum of Art, Open Access";
-
-        if (dateISO) {
-          const user = await getOrCreateUser();
-          const edits = (await getSectionEdits(user.id, dateISO)).art;
-          if (edits?.title) title = edits.title;
-          if (edits?.artist) artist = edits.artist;
-          if (edits?.credit) credit = edits.credit;
-        }
+        const title = obj.title || "Untitled";
+        const artist = obj.artistDisplayName || "Unknown artist";
+        const credit = obj.creditLine || "The Metropolitan Museum of Art, Open Access";
 
         return NextResponse.json(
           {

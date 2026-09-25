@@ -99,9 +99,10 @@ uniform-weight fallback already built).
 **Return visit**
 `/` → today's edition immediately, no gate, no login wall. Free sections
 render fully; premium sections show a soft lock with an unlock action.
-Time budget affects which sections are expanded vs. collapsed to a
-one-line teaser, not which exist — nothing important is hidden, just
-paced.
+Time budget decides which sections make the edition at all: a section
+whose `minTimeMinutes` exceeds the visitor's stated budget is left out of
+that day's edition entirely, rather than shown collapsed — a 5-minute
+visitor genuinely gets a shorter edition than a 45-minute one.
 
 **Archive**
 `/archive` → month grid → click a date → `/?date=...` renders that day's
