@@ -10,6 +10,8 @@ export default function SectionCustomizer({
   hidden,
   onReorder,
   onToggleHidden,
+  onResetToSuggested,
+  hasInterests,
 }: {
   open: boolean;
   onClose: () => void;
@@ -18,8 +20,16 @@ export default function SectionCustomizer({
   hidden: string[];
   onReorder: (order: string[]) => void;
   onToggleHidden: (key: string) => void;
+  onResetToSuggested: () => void;
+  hasInterests: boolean;
 }) {
   if (!open) return null;
+
+  function handleReset() {
+    if (window.confirm("Reset which sections are shown based on your chosen interests? This replaces your current Hide/Show choices above.")) {
+      onResetToSuggested();
+    }
+  }
 
   function move(key: string, dir: -1 | 1) {
     const idx = order.indexOf(key);
@@ -42,9 +52,17 @@ export default function SectionCustomizer({
             {"×"}
           </button>
         </div>
-        <p className="text-sm text-ink/60 mb-5">
+        <p className="text-sm text-ink/60 mb-3">
           Reorder sections or hide the ones that aren&apos;t for you today.
         </p>
+        {hasInterests && (
+          <button
+            onClick={handleReset}
+            className="text-xs font-medium text-terracotta hover:underline mb-4"
+          >
+            Reset to suggested, based on your interests
+          </button>
+        )}
         <ul className="space-y-2">
           {order.map((key, i) => {
             const meta = sections.find((s) => s.key === key);

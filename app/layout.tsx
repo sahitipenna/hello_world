@@ -21,10 +21,25 @@ const workSans = Work_Sans({
   display: "swap",
 });
 
+const description =
+  "A daily cultural daybook: world curiosities, an artwork looked at closely, a literary moment, a place worth getting lost in, a book recommendation, a fascinating fact, a mini crossword, and five little things to do — personalized to your interests, for every day of the year.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://godilly.life"),
   title: "Go Dilly — a few good things for your day",
-  description:
-    "A daily cultural daybook: world curiosities, an artwork looked at closely, a literary moment, a place worth getting lost in, a book recommendation, a fascinating fact, a mini crossword, and five little things to do — personalized to your interests, for every day of the year.",
+  description,
+  openGraph: {
+    title: "Go Dilly — a few good things for your day",
+    description,
+    url: "https://godilly.life",
+    siteName: "Go Dilly",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Go Dilly — a few good things for your day",
+    description,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

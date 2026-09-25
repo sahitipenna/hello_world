@@ -112,6 +112,13 @@ export default function Home() {
     });
   }
 
+  async function handleResetToSuggested() {
+    const res = await fetch("/api/interests/reset-sections", { method: "POST" }).then((r) => r.json());
+    if (Array.isArray(res?.hiddenSections)) {
+      setHidden(res.hiddenSections);
+    }
+  }
+
   async function handleSaveOnboarding(slugs: string[], timeBudgetMinutes: number | null) {
     const [interestsRes] = await Promise.all([
       fetch("/api/interests", {
@@ -221,6 +228,8 @@ export default function Home() {
         hidden={hidden}
         onReorder={handleReorder}
         onToggleHidden={handleToggleHidden}
+        onResetToSuggested={handleResetToSuggested}
+        hasInterests={selectedInterests.length > 0}
       />
       <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} onUpgrade={handleUpgrade} />
       <OnboardingModal
