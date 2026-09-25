@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { POEMS, TRAVEL_VIGNETTES, BOOKS, ART_SPOTLIGHT, TODO_POOL } from "../lib/contentBank";
+import { POEMS, TRAVEL_VIGNETTES, BOOKS, ART_SPOTLIGHT, DAILY_TASKS } from "../lib/contentBank";
 import { CROSSWORD_THEMES } from "../lib/crosswordBanks";
 
 const prisma = new PrismaClient();
@@ -205,8 +205,8 @@ async function main() {
     });
   }
 
-  for (const task of TODO_POOL) {
-    await prisma.dailyTask.create({ data: { title: task } });
+  for (const task of DAILY_TASKS) {
+    await prisma.dailyTask.create({ data: task });
   }
 
   for (const theme of CROSSWORD_THEMES) {
@@ -254,7 +254,7 @@ async function main() {
       `${POEMS.length} literary items`,
       `${TRAVEL_VIGNETTES.length} travel items`,
       `${BOOKS.length} books`,
-      `${TODO_POOL.length} daily tasks`,
+      `${DAILY_TASKS.length} daily tasks`,
       `${CROSSWORD_THEMES.length} crossword themes`,
       `${PRICING_PLANS.length} pricing plans`,
     ].join(", ")

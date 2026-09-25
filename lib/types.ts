@@ -140,7 +140,6 @@ export type EditionContent =
 
 export interface EditionSection extends SectionMeta {
   locked: boolean;
-  collapsed: boolean;
   content: EditionContent;
 }
 
