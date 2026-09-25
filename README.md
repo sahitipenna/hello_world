@@ -163,18 +163,63 @@ the full layout without a Razorpay account.
 
 ## Persistence & identity
 
-There's no signup flow — a visitor is identified by a random id in an
+No signup is required — a visitor is identified by a random id in an
 httpOnly cookie (`lib/auth.ts`), mirrored as a `User` row the first time
 they're seen. That's enough for real, durable, per-browser persistence
-without the overhead of an account system — see the schema comments in
+without forcing an account — see the schema comments in
 `prisma/schema.prisma` for the full per-user tables (edits, checkmarks,
 interests, plan, time budget, section order/visibility).
 
-**What this is not**: real accounts (no email/password, no cross-device
-sync), real billing (Stripe/Razorpay checkout + webhooks), or a licensed
-daily comic (the `Comic` model and disabled "comic" section are an
-architecture placeholder only — see `ARCHITECTURE.md` and the product
-brief's own note on Calvin & Hobbes licensing).
+**Sign in with Google is optional**, on top of that same anonymous
+identity, not instead of it (`lib/googleAuth.ts`, `app/api/auth/google/*`).
+Signing in attaches the Google profile to the visitor's *existing* row —
+their interests/todos/plan carry over automatically, nothing migrates or
+resets — unless that Google account is already linked to an older row (a
+previous device), in which case the browser reunites with that established
+account instead. Needs `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` (see
+`.env.example`); without them the header simply shows no sign-in option
+and every visitor stays anonymous, exactly as before.
+
+**What this is not**: real billing beyond Razorpay Subscriptions (no
+Stripe, no invoicing), a password-based login (Google is the only
+provider), or a licensed daily comic (the `Comic` model and disabled
+"comic" section are an architecture placeholder only — see
+`ARCHITECTURE.md` and the product brief's own note on Calvin & Hobbes
+licensing).
+
+## Analytics: repeat/return rate
+
+`User.lastSeenAt` is bumped on every request that resolves a visitor
+(`lib/auth.ts`), alongside `User.createdAt` — enough to query return
+behavior directly in Neon's SQL editor without any extra tooling:
+
+```sql
+-- Active visitors in the last 24 hours / 7 days
+select count(*) from "User" where "lastSeenAt" > now() - interval '1 day';
+select count(*) from "User" where "lastSeenAt" > now() - interval '7 days';
+
+-- Of visitors first seen 7+ days ago, what fraction ever came back
+-- (lastSeenAt more than a day after createdAt)?
+select
+  count(*) filter (where "lastSeenAt" > "createdAt" + interval '1 day') as returned,
+  count(*) as total,
+  round(100.0 * count(*) filter (where "lastSeenAt" > "createdAt" + interval '1 day') / count(*), 1) as return_pct
+from "User"
+where "createdAt" < now() - interval '7 days';
+
+-- New visitors per day, last 30 days
+select date_trunc('day', "createdAt") as day, count(*)
+from "User" where "createdAt" > now() - interval '30 days'
+group by 1 order by 1;
+```
+
+This only tells you *whether* someone returned, not day-by-day retention
+curves (a single `lastSeenAt` overwrites the previous value each visit) —
+for actual cohort/retention charts, set `NEXT_PUBLIC_POSTHOG_KEY` (see
+`.env.example`); `components/PostHogProvider.tsx` then captures pageviews
+and identifies each visitor by their own `User.id`, so repeat visits (and,
+once signed in, the same person across devices) roll up as one person in
+PostHog's dashboards instead of one row per browser session.
 
 ## Deploying a public instance
 
@@ -215,20 +260,27 @@ app/
   api/book/route.ts                  proxies Open Library for a cover, links out to Goodreads
   api/preferences/route.ts           plan, section order/visibility, time budget
   api/interests/route.ts             interest tags + a user's selection
+  api/interests/reset-sections/route.ts  explicit "reset to suggested" section visibility
   api/admin/sections, /pricing, /content/[type]   admin CRUD (ADMIN_SECRET-gated)
+  api/payments/create-subscription, /verify, /webhook   Razorpay Subscriptions
+  api/auth/google, /google/callback, /signout   optional Google sign-in
 components/
   KnowSection.tsx, WonderCard.tsx, ...  one component per section type
   admin/                                 SectionsAdmin, PricingAdmin, ContentAdmin
+  PostHogProvider.tsx                    optional analytics init + visitor identify
 lib/
   types.ts                     shared types (EditionSection, per-section content shapes)
   dailyBundle.ts                 buildEdition(): resolves each section's content from the DB
   contentPicker.ts                the hybrid scheduled/rotating selection model
   sections.ts                     DB-backed section list + default order
+  sectionInterests.ts              interest-driven default section visibility
   adminContent.ts                  field definitions driving the generic content CRUD
   personalize.ts                   weighted deterministic picking (interest tags)
   dateUtils.ts                     day-of-year, seeded deterministic picking
-  auth.ts                          anonymous cookie identity
+  auth.ts                          anonymous cookie identity (+ lastSeenAt, cookie helpers)
   adminAuth.ts                     shared-secret cookie gate for /admin
+  razorpay.ts                      Razorpay client + checkout/webhook signature checks
+  googleAuth.ts                    Google OAuth authorize URL + token/profile exchange
 prisma/
   schema.prisma                the database schema (Section + 8 content pools + pricing)
   seed.ts                       seeds sections, content pools, interest tags, pricing plans

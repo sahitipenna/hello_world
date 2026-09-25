@@ -46,6 +46,12 @@ export async function GET() {
       // So UpgradeModal shows the real price without hardcoding it — an
       // /admin price edit takes effect there too, not just on /pricing.
       premiumPrice: premiumPlan ? { usd: premiumPlan.priceUSD, inr: premiumPlan.priceINR } : null,
+      // The visitor's own opaque id (harmless to hand back — it's already
+      // implied by their own cookie) — used client-side to identify this
+      // visitor to analytics (see components/PostHogProvider.tsx), so
+      // repeat visits are recognized as the same person.
+      userId: user.id,
+      user: user.email ? { email: user.email, name: user.name, image: user.image } : null,
     },
     { headers: { "Cache-Control": "private, no-store" } }
   );
