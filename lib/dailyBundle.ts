@@ -70,7 +70,22 @@ async function resolveContent(
       const pool = await prisma.artwork.findMany();
       const artwork = resolveOneForDate(pool, dateISO, "look", weights);
       if (!artwork) return null;
-      return { kind: "look", query: artwork.metQuery || artwork.title, analysis: artwork.description };
+      return {
+        kind: "look",
+        query: artwork.metQuery || artwork.title,
+        analysis: artwork.description,
+        custom: artwork.image
+          ? {
+              image: artwork.image,
+              title: artwork.title,
+              artist: artwork.artist,
+              year: artwork.year,
+              medium: artwork.medium,
+              museum: artwork.museum,
+              sourceUrl: artwork.sourceUrl,
+            }
+          : null,
+      };
     }
     case "read": {
       const pool = await prisma.literaryItem.findMany();

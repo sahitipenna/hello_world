@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { LookContent } from "@/lib/types";
 
 interface ArtData {
   title: string;
@@ -16,16 +17,19 @@ interface ArtData {
 export default function ArtSpotlight({
   query,
   analysis,
+  custom,
   dateISO,
 }: {
   query: string;
   analysis: string;
+  custom: LookContent["custom"];
   dateISO: string;
 }) {
   const [art, setArt] = useState<ArtData | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    if (custom) return; // an editor's own image — nothing to fetch
     let cancelled = false;
     setArt(null);
     setFailed(false);
@@ -43,9 +47,21 @@ export default function ArtSpotlight({
     return () => {
       cancelled = true;
     };
-  }, [query, dateISO]);
+  }, [query, dateISO, custom]);
 
-  if (failed) {
+  const resolved: ArtData | null = custom
+    ? {
+        title: custom.title,
+        artist: custom.artist,
+        date: custom.year,
+        medium: custom.medium,
+        image: custom.image,
+        sourceUrl: custom.sourceUrl ?? "",
+        credit: custom.museum,
+      }
+    : art;
+
+  if (!custom && failed) {
     return (
       <p className="text-sm text-ink/50">
         Couldn&apos;t reach the museum&apos;s archive right now &mdash; today&apos;s spotlight was &ldquo;{query}&rdquo;. Try again shortly.
@@ -53,7 +69,7 @@ export default function ArtSpotlight({
     );
   }
 
-  if (!art) {
+  if (!resolved) {
     return <div className="h-40 rounded-lg bg-paper2 animate-pulse" />;
   }
 
@@ -61,8 +77,8 @@ export default function ArtSpotlight({
     <div>
       <div className="rounded-lg overflow-hidden bg-paper2 border border-ink/10">
         <Image
-          src={art.image}
-          alt={art.title}
+          src={resolved.image}
+          alt={resolved.title}
           width={600}
           height={450}
           className="w-full h-auto object-contain max-h-72"
@@ -70,23 +86,25 @@ export default function ArtSpotlight({
         />
       </div>
       <h3 className="font-serif text-lg mt-3" style={{ fontFamily: "var(--font-fraunces), serif" }}>
-        {art.title}
+        {resolved.title}
       </h3>
       <p className="text-sm text-ink/60">
-        {art.artist}
-        {art.date ? `, ${art.date}` : ""}
+        {resolved.artist}
+        {resolved.date ? `, ${resolved.date}` : ""}
       </p>
-      {art.medium && <p className="text-xs text-ink/45 mt-0.5">{art.medium}</p>}
+      {resolved.medium && <p className="text-xs text-ink/45 mt-0.5">{resolved.medium}</p>}
       <p className="mt-3 text-[15px] leading-relaxed text-ink/85">{analysis}</p>
-      <p className="mt-3 text-xs text-ink/40">{art.credit}</p>
-      <a
-        href={art.sourceUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block mt-1 text-sm text-sky underline decoration-dotted underline-offset-4"
-      >
-        View at the Met
-      </a>
+      {resolved.credit && <p className="mt-3 text-xs text-ink/40">{resolved.credit}</p>}
+      {resolved.sourceUrl && (
+        <a
+          href={resolved.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block mt-1 text-sm text-sky underline decoration-dotted underline-offset-4"
+        >
+          {custom ? "View source" : "View at the Met"}
+        </a>
+      )}
     </div>
   );
 }

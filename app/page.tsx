@@ -284,7 +284,9 @@ function renderSection(
     case "play":
       return <CrosswordPuzzle puzzle={content.puzzle} />;
     case "look":
-      return <ArtSpotlight query={content.query} analysis={content.analysis} dateISO={bundle.dateISO} />;
+      return (
+        <ArtSpotlight query={content.query} analysis={content.analysis} custom={content.custom} dateISO={bundle.dateISO} />
+      );
     case "read":
       return <PoemCard poem={content.poem} />;
     case "wander":

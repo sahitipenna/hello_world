@@ -104,6 +104,18 @@ export interface LookContent {
   kind: "look";
   query: string;
   analysis: string;
+  // Set once an editor gives an Artwork row its own `image` in /admin —
+  // shown as-is, no Met Museum lookup. Null falls back to a live Met
+  // search for `query`, as before.
+  custom: {
+    image: string;
+    title: string;
+    artist: string;
+    year: string;
+    medium: string;
+    museum: string;
+    sourceUrl: string | null;
+  } | null;
 }
 export interface ReadContent {
   kind: "read";
