@@ -232,6 +232,17 @@ and identifies each visitor by their own `User.id`, so repeat visits (and,
 once signed in, the same person across devices) roll up as one person in
 PostHog's dashboards instead of one row per browser session.
 
+## Branching & deploy workflow
+
+`master` is Vercel's Production Branch — anything merged there deploys to
+`www.godilly.life` immediately. Day-to-day work happens on `staging`
+instead: every push to it gets its own stable preview URL
+(`<project>-git-staging-<team>.vercel.app` in Vercel's dashboard) that
+updates on every push, entirely separate from production. Only merge
+`staging` → `master` (a normal PR) once you've checked something on that
+preview URL and want it live — that merge is the one deliberate "go to
+production" step; nothing else triggers it.
+
 ## Deploying a public instance
 
 The app is deploy-ready for Vercel; you just need a Postgres database it
