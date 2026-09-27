@@ -259,6 +259,38 @@ can reach (any provider works).
    `metadataBase`/Open Graph tags — update that if you deploy under a
    different domain.
 
+## Re-seeding a live database
+
+`npm run db:seed` is safe to re-run anytime (every content-pool row is
+upserted by a stable id, not just inserted) — but it's deliberately **not**
+run automatically on every deploy, because it overwrites a row's fields by
+that id, which would silently clobber an editor's own change made via
+`/admin` to that same row. Run it only when you've actually added new
+content to `lib/contentBank.ts`, `lib/crosswordBanks.ts`, or
+`prisma/seed.ts` and want it loaded into a live database.
+
+Two ways to run it against production, since your own machine's shell
+can't reach it if you don't have a local Node setup:
+
+1. **From your own machine**, if you have Node installed: `git pull`,
+   `npm install`, then `DATABASE_URL="<production URL>" npm run db:seed`.
+2. **From GitHub, no local setup needed**: add a `DATABASE_URL` repository
+   secret (Settings → Secrets and variables → Actions → New repository
+   secret, value = the same pooled connection string Vercel uses), then go
+   to the **Actions** tab → **Seed content** workflow → **Run workflow**,
+   type `yes` to confirm, and run it. See `.github/workflows/seed.yml`.
+
+One migration note if you're upgrading from before the idempotent-seed
+change: existing rows in the content-pool tables predate this id scheme
+and won't match the new positional ids, so re-seeding would add
+duplicates alongside them rather than updating them in place. Clear those
+tables once first (`DELETE FROM "NewsItem"; DELETE FROM "Wonder"; DELETE
+FROM "Artwork"; DELETE FROM "LiteraryItem"; DELETE FROM "TravelItem";
+DELETE FROM "Book"; DELETE FROM "DailyTask"; DELETE FROM "CrosswordTheme";
+DELETE FROM "BonusArticle";` in Neon's SQL editor), then seed fresh. Not
+needed for `Section`/`InterestTag`/`PricingPlan`, which were already
+upserted by a natural key before this change.
+
 ## Project layout
 
 ```

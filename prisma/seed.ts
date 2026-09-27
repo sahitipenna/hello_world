@@ -2,6 +2,15 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { POEMS, TRAVEL_VIGNETTES, BOOKS, ART_SPOTLIGHT, DAILY_TASKS } from "../lib/contentBank";
 import { CROSSWORD_THEMES } from "../lib/crosswordBanks";
 
+try {
+  // Loads .env when run bare (local dev). No-op (and no error) when the
+  // file doesn't exist — Vercel, GitHub Actions, etc. already have real
+  // env vars in process.env by the time this runs.
+  process.loadEnvFile();
+} catch {
+  /* no .env file — fine */
+}
+
 const prisma = new PrismaClient();
 
 // ---------------------------------------------------------------------------
