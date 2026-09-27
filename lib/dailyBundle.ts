@@ -140,7 +140,7 @@ async function resolveContent(
       const pool = await prisma.dailyTask.findMany();
       const schedulable = pool.map((t) => ({ ...t, scheduledDate: null as string | null }));
       const tasks = resolveManyForDate(schedulable, dateISO, "do", 5, weights);
-      return { kind: "do", tasks: tasks.map((t) => t.title), totalCount: tasks.length };
+      return { kind: "do", tasks: tasks.map((t) => ({ title: t.title, category: t.category })), totalCount: tasks.length };
     }
     default:
       // A section key the app doesn't have a content resolver for yet (an

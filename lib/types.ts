@@ -135,7 +135,7 @@ export interface WonderContent {
 }
 export interface DoContent {
   kind: "do";
-  tasks: string[];
+  tasks: { title: string; category: string }[];
   totalCount: number;
 }
 

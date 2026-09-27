@@ -145,6 +145,17 @@ the header's "Interests" link:
   day's edition entirely, so a 5-minute visitor gets a genuinely shorter
   edition than a 45-minute one, not just a collapsed teaser.
 
+**Adaptive, beyond what's chosen at onboarding**: checking off a DO task
+(the one behavioral signal the app currently has) nudges the picker toward
+that task's category — capped at roughly the same weight as an explicitly
+chosen interest, so demonstrated behavior can meaningfully tilt the
+edition over time without ever swamping what a visitor actually said they
+wanted (`CategoryEngagement` in `prisma/schema.prisma`, blended into
+`lib/interests.ts`'s `getUserWeights()`). Since every section shares the
+same weights, checking off enough "nature" tasks nudges KNOW, WONDER,
+READ, etc. toward nature too — not just DO. Unchecking never subtracts;
+it's a simple positive-signal count, not a full read/decay model.
+
 ## Freemium & customization
 
 Free users get the full edition, with two caps: `Section.premium`
