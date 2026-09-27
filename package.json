@@ -8,16 +8,18 @@
     "build": "prisma migrate deploy && next build",
     "start": "next start",
     "lint": "next lint",
-    "db:seed": "tsx --env-file=.env prisma/seed.ts",
+    "db:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
-    "seed": "tsx --env-file=.env prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "@vercel/analytics": "^2.0.1",
     "next": "16.3.5",
+    "posthog-js": "^1.434.14",
+    "razorpay": "^2.9.8",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "uuid": "^14.0.2"

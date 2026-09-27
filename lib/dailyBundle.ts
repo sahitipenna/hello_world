@@ -70,7 +70,22 @@ async function resolveContent(
       const pool = await prisma.artwork.findMany();
       const artwork = resolveOneForDate(pool, dateISO, "look", weights);
       if (!artwork) return null;
-      return { kind: "look", query: artwork.metQuery || artwork.title, analysis: artwork.description };
+      return {
+        kind: "look",
+        query: artwork.metQuery || artwork.title,
+        analysis: artwork.description,
+        custom: artwork.image
+          ? {
+              image: artwork.image,
+              title: artwork.title,
+              artist: artwork.artist,
+              year: artwork.year,
+              medium: artwork.medium,
+              museum: artwork.museum,
+              sourceUrl: artwork.sourceUrl,
+            }
+          : null,
+      };
     }
     case "read": {
       const pool = await prisma.literaryItem.findMany();
@@ -125,7 +140,7 @@ async function resolveContent(
       const pool = await prisma.dailyTask.findMany();
       const schedulable = pool.map((t) => ({ ...t, scheduledDate: null as string | null }));
       const tasks = resolveManyForDate(schedulable, dateISO, "do", 5, weights);
-      return { kind: "do", tasks: tasks.map((t) => t.title), totalCount: tasks.length };
+      return { kind: "do", tasks: tasks.map((t) => ({ title: t.title, category: t.category })), totalCount: tasks.length };
     }
     default:
       // A section key the app doesn't have a content resolver for yet (an

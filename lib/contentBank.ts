@@ -126,6 +126,115 @@ export const POEMS: Poem[] = [
       "Through windows, and through curtains, call on us?",
     ],
   },
+  {
+    title: "Ozymandias",
+    poet: "Percy Bysshe Shelley",
+    year: "1818",
+    category: "history",
+    lines: [
+      "I met a traveller from an antique land",
+      "Who said: Two vast and trunkless legs of stone",
+      "Stand in the desert... Near them, on the sand,",
+      "Half sunk, a shattered visage lies, whose frown,",
+      "And wrinkled lip, and sneer of cold command,",
+      "Tell that its sculptor well those passions read.",
+    ],
+  },
+  {
+    title: "Invictus",
+    poet: "William Ernest Henley",
+    year: "1888",
+    category: "philosophy",
+    lines: [
+      "Out of the night that covers me,",
+      "Black as the pit from pole to pole,",
+      "I thank whatever gods may be",
+      "For my unconquerable soul.",
+    ],
+  },
+  {
+    title: "She Walks in Beauty",
+    poet: "Lord Byron",
+    year: "1814",
+    category: "poetry",
+    lines: [
+      "She walks in beauty, like the night",
+      "Of cloudless climes and starry skies;",
+      "And all that's best of dark and bright",
+      "Meet in her aspect and her eyes.",
+    ],
+  },
+  {
+    title: "Jabberwocky (opening)",
+    poet: "Lewis Carroll",
+    year: "1871",
+    category: "literature",
+    lines: [
+      "'Twas brillig, and the slithy toves",
+      "Did gyre and gimble in the wabe;",
+      "All mimsy were the borogoves,",
+      "And the mome raths outgrabe.",
+    ],
+  },
+  {
+    title: "Sonnet 18",
+    poet: "William Shakespeare",
+    category: "poetry",
+    lines: [
+      "Shall I compare thee to a summer's day?",
+      "Thou art more lovely and more temperate:",
+      "Rough winds do shake the darling buds of May,",
+      "And summer's lease hath all too short a date.",
+    ],
+  },
+  {
+    title: "The Wild Swans at Coole (opening)",
+    poet: "W. B. Yeats",
+    year: "1917",
+    category: "nature",
+    lines: [
+      "The trees are in their autumn beauty,",
+      "The woodland paths are dry,",
+      "Under the October twilight the water",
+      "Mirrors a still sky;",
+    ],
+  },
+  {
+    title: "Ode to a Nightingale (opening)",
+    poet: "John Keats",
+    year: "1819",
+    category: "philosophy",
+    lines: [
+      "My heart aches, and a drowsy numbness pains",
+      "My sense, as though of hemlock I had drunk,",
+      "Or emptied some dull opiate to the drains",
+      "One minute past, and Lethe-wards had sunk:",
+    ],
+  },
+  {
+    title: "If— (opening)",
+    poet: "Rudyard Kipling",
+    year: "1910",
+    category: "psychology",
+    lines: [
+      "If you can keep your head when all about you",
+      "Are losing theirs and blaming it on you,",
+      "If you can trust yourself when all men doubt you,",
+      "But make allowance for their doubting too;",
+    ],
+  },
+  {
+    title: "I Wandered Lonely as a Cloud",
+    poet: "William Wordsworth",
+    year: "1807",
+    category: "nature",
+    lines: [
+      "I wandered lonely as a cloud",
+      "That floats on high o'er vales and hills,",
+      "When all at once I saw a crowd,",
+      "A host, of golden daffodils;",
+    ],
+  },
 ];
 
 // Original short vignettes written for Go Dilly — not excerpts of any published author.
@@ -178,6 +287,60 @@ export const TRAVEL_VIGNETTES: TravelVignette[] = [
     category: "food",
     body: "Ask for a recommendation and the owner will simply bring you what he thinks you need that day, no menu required. On a grey Tuesday, mine arrived as a small, dense chocolate cake and a black coffee I hadn't ordered, with the explanation: “You looked like today was long.” It was. The cake helped.",
   },
+  {
+    title: "The Bus That Waited for One More Passenger",
+    place: "A mountain switchback road",
+    category: "travel",
+    body: "The driver saw an old man jogging toward the stop, three switchbacks below, and simply idled the bus at the edge of a cliff road for four full minutes, whistling, while the rest of us pretended not to be nervous about the drop. Nobody complained. When the man finally climbed aboard, wheezing, the whole bus applauded, and he took a small, formal bow before finding his seat.",
+  },
+  {
+    title: "What the Fishmonger Knew About the Weather",
+    place: "A harbor town",
+    category: "food",
+    body: "Long before the forecast changed, the fishmonger would start closing early, muttering about a storm nobody else could see coming. He was right often enough that the whole street trusted his instincts over the radio. I asked him once how he knew. He just tapped the side of his nose and sold me the last of the mackerel at half price, “before it goes to waste.”",
+  },
+  {
+    title: "A Village Where the Clock Tower Runs Ten Minutes Fast",
+    place: "A hill village square",
+    category: "travel",
+    body: "Nobody has fixed it in living memory, and nobody particularly wants to. The barber times his shaves by it, the school bell follows it, an entire village quietly operates on its own private ten-minute-ahead standard, cheerfully out of sync with the rest of the country. “We're never late,” the baker told me, “we're just early for everyone else's time.”",
+  },
+  {
+    title: "The Language of the Ferry Whistle",
+    place: "A river crossing",
+    category: "travel",
+    body: "One short blast meant the ferry was leaving in five minutes. Two long ones meant wait, someone's running. Three meant the water was too rough today, try again tomorrow. Nobody had ever written the code down; it simply belonged to everyone who lived along that stretch of river, learned the way you learn which floorboard creaks in your own house.",
+  },
+  {
+    title: "A Meal Eaten Entirely in the Dark",
+    place: "A mountain guesthouse",
+    category: "food",
+    body: "The power failed halfway through dinner, and instead of scrambling for candles, our host simply laughed and told us to keep eating by feel. Texture became the whole conversation — the crunch of something fried, the give of something stewed for hours. I couldn't have named half the dish afterward, but I remember exactly how it felt in my mouth, which is its own kind of memory.",
+  },
+  {
+    title: "The Shortcut Only Children Knew",
+    place: "An old town's back alleys",
+    category: "travel",
+    body: "Every adult in town swore the fastest route to the market was the main road. Every child under twelve knew a gap between two courtyard walls that shaved a full ten minutes off the walk, if you didn't mind squeezing past a very unimpressed cat. I followed a nine-year-old through it once, entirely by luck, and never found my way back to it alone again.",
+  },
+  {
+    title: "The Orchard That Pays in Fruit, Not Money",
+    place: "A countryside orchard",
+    category: "food",
+    body: "Help pick for an afternoon, and you leave with a crate of whatever's ripe — that's the entire arrangement, unwritten, understood by everyone who shows up. I spent three hours up a ladder for a dozen peaches I could have bought in ten minutes at a stall down the road, and it remains one of the better trades I've ever made.",
+  },
+  {
+    title: "A Night Bus Full of Strangers' Snoring",
+    place: "An overnight bus route",
+    category: "travel",
+    body: "Somewhere past midnight, an entire bus of strangers falls into an accidental, overlapping rhythm of breathing and snoring, punctuated by the occasional whispered apology when someone startles themselves awake. There's an odd intimacy in it — a busload of people who will never see each other again, briefly and involuntarily vulnerable in exactly the same dark.",
+  },
+  {
+    title: "The Well That Still Gets Used",
+    place: "A village square with running water two streets over",
+    category: "travel",
+    body: "The village got piped water decades ago, but the old stone well in the square never stopped being used — not from necessity anymore, but because it's where the gossip happens. Someone showed me the trick to the rope and pulley, and mentioned, almost as an afterthought, that the water still tastes better than what comes from the tap. I didn't have the heart to disagree.",
+  },
 ];
 
 export const BOOKS: BookRec[] = [
@@ -199,6 +362,16 @@ export const BOOKS: BookRec[] = [
   { title: "The Left Hand of Darkness", author: "Ursula K. Le Guin", category: "science", reason: "A cold, strange, deeply humane planet, and one of the great thought experiments in fiction." },
   { title: "Consider the Lobster", author: "David Foster Wallace", category: "food", reason: "Essays that turn a state fair, a cruise ship, or a lobster pot into something worth thinking hard about." },
   { title: "The Snow Leopard", author: "Peter Matthiessen", category: "travel", reason: "A Himalayan trek in search of an elusive animal, and something harder to name." },
+  { title: "Meditations", author: "Marcus Aurelius", category: "philosophy", reason: "Private notes from a Roman emperor to himself, on staying decent under pressure — still startlingly relevant." },
+  { title: "The Art of Noticing", author: "Rob Walker", category: "design", reason: "A field guide of small exercises for actually paying attention to the world you already live in." },
+  { title: "Cosmos", author: "Carl Sagan", category: "science", reason: "The classic tour of the universe, written with a sense of genuine wonder that's aged remarkably well." },
+  { title: "The Poetics of Space", author: "Gaston Bachelard", category: "architecture", reason: "A philosopher's meditation on attics, corners, and drawers — why the spaces we live in shape how we dream." },
+  { title: "Salt, Fat, Acid, Heat", author: "Samin Nosrat", category: "food", reason: "Less a recipe book than a way of actually understanding why cooking works, told with real warmth." },
+  { title: "Thinking, Fast and Slow", author: "Daniel Kahneman", category: "psychology", reason: "The book behind a decade of \"why do we think that way\" conversations, from the psychologist who studied it directly." },
+  { title: "The Signal and the Noise", author: "Nate Silver", category: "technology", reason: "A clear-eyed look at prediction, uncertainty, and why so many confident forecasts turn out wrong." },
+  { title: "Bird by Bird", author: "Anne Lamott", category: "literature", reason: "Warm, funny, unpretentious advice on writing and on getting out of your own way." },
+  { title: "The Song of the Cell", author: "Siddhartha Mukherjee", category: "science", reason: "A physician's history of the cell, written with the narrative pull of a good novel." },
+  { title: "In Praise of Shadows", author: "Jun'ichirō Tanizaki", category: "design", reason: "A slim, strange, beautiful essay on light, shadow, and Japanese aesthetics — changes how you see a room." },
 ];
 
 /** Category matches an InterestTag slug so a chosen interest actually
@@ -244,6 +417,56 @@ export const DAILY_TASKS: { title: string; category: string }[] = [
   { title: "Practice one card trick or knot, slowly, until it clicks.", category: "design" },
   { title: "Trace your day back to one small decision that shaped it.", category: "philosophy" },
   { title: "Write a thank-you note you'll actually send.", category: "literature" },
+  { title: "Learn one fact about a building you pass every day.", category: "architecture" },
+  { title: "Sketch a floor plan of a place you miss, from memory.", category: "architecture" },
+  { title: "Notice one piece of good (or bad) design in your kitchen.", category: "design" },
+  { title: "Rewatch the trailer for a film that changed how you see things.", category: "film" },
+  { title: "Name a film you'd show someone to explain yourself.", category: "film" },
+  { title: "Look up one word's etymology and trace where it traveled from.", category: "literature" },
+  { title: "Read the first paragraph of a book you'll probably never finish.", category: "books" },
+  { title: "Write down one belief you held ten years ago that you don't anymore.", category: "philosophy" },
+  { title: "Ask yourself what you'd do today if no one were watching.", category: "philosophy" },
+  { title: "Learn how one everyday object actually works.", category: "technology" },
+  { title: "Turn off notifications on one app for the rest of the day.", category: "technology" },
+  { title: "Cook a dish from a country you've never visited.", category: "world_culture" },
+  { title: "Learn to count to ten in a language you don't speak.", category: "world_culture" },
+  { title: "Try a recipe or ritual from a grandparent's home region.", category: "indian_culture" },
+  { title: "Learn the meaning behind one festival you've never really understood.", category: "indian_culture" },
+  { title: "Look up one event that happened on today's date in history.", category: "history" },
+  { title: "Ask an older relative what the news was like when they were young.", category: "history" },
+  { title: "Listen to one song all the way through with your eyes closed.", category: "music" },
+  { title: "Learn who wrote your favorite song and one thing about them.", category: "music" },
+  { title: "Try humming a harmony to a song instead of the melody.", category: "music" },
+  { title: "Sit with a difficult emotion for two minutes before naming it.", category: "psychology" },
+  { title: "Write down three things you did well this week, however small.", category: "psychology" },
+  { title: "Notice what you reach for first when you're bored.", category: "psychology" },
+  { title: "Look closely at one leaf, flower, or bug for a full minute.", category: "nature" },
+  { title: "Name the phase the moon is in tonight, then check if you're right.", category: "science" },
+  { title: "Learn what's actually in one thing in your pantry.", category: "science" },
+  { title: "Read one page of a science topic that always confused you.", category: "science" },
+  { title: "Sketch the last building you found genuinely beautiful.", category: "art" },
+  { title: "Try mixing a color you don't have a name for.", category: "art" },
+  { title: "Rearrange one shelf so it's easier to find things blind.", category: "design" },
+  { title: "Look up the origin of a proverb your family uses often.", category: "world_culture" },
+  { title: "Write a two-line review of the last thing you watched.", category: "film" },
+  { title: "Look up who directed a film you love and what else they made.", category: "film" },
+  { title: "Ask someone what book changed their mind about something.", category: "books" },
+  { title: "Reread a paragraph you underlined once and see if it still lands.", category: "literature" },
+  { title: "Write one sentence describing today's weather like a poem would.", category: "poetry" },
+  { title: "Read a poem in a language other than your own, even if you don't speak it.", category: "poetry" },
+  { title: "Ask what makes a place feel like \"home\" to you right now.", category: "philosophy" },
+  { title: "List three questions you'd ask a stranger if small talk didn't exist.", category: "philosophy" },
+  { title: "Look up how something in your house is actually made.", category: "technology" },
+  { title: "Try one app-free hour before bed tonight.", category: "technology" },
+  { title: "Cook the same dish your family makes, but change one ingredient.", category: "food" },
+  { title: "Taste something slowly, on purpose, without doing anything else.", category: "food" },
+  { title: "Learn the name of one tree on your street.", category: "nature" },
+  { title: "Watch the sky for ten minutes and just narrate what it's doing.", category: "nature" },
+  { title: "Look up one architect and one building they're known for.", category: "architecture" },
+  { title: "Notice a doorway, arch, or stair you've never really looked at.", category: "architecture" },
+  { title: "Write a one-line horoscope for tomorrow, for yourself, to be kind.", category: "psychology" },
+  { title: "Plan a single-day trip somewhere within an hour of you.", category: "travel" },
+  { title: "Look at a map of somewhere you've never been and pick a street name you like.", category: "travel" },
 ];
 
 // Search terms for the Met Museum's Open Access collection (public domain / CC0 artworks),
@@ -370,5 +593,89 @@ export const ART_SPOTLIGHT: ArtSpotlightEntry[] = [
     category: "art",
     analysis:
       "Kahlo's self-portraits confront physical pain — the result of a near-fatal bus accident and decades of surgery — alongside Mexican folk tradition and her own fractured identity, with unusual directness. She rejected being labeled a Surrealist: “I never painted dreams,” she said. “I painted my own reality.”",
+  },
+  {
+    query: "Raphael Madonna",
+    category: "art",
+    analysis:
+      "Raphael's Madonnas arrange mother and child into calm, stable triangles — a compositional trick borrowed from Leonardo but made entirely his own, all warmth and geometric order at once. He died at 37, and the High Renaissance he helped define barely outlived him; even his rivals conceded he made difficulty look effortless.",
+  },
+  {
+    query: "Diego Rivera mural",
+    category: "world_culture",
+    analysis:
+      "Rivera painted enormous public murals of Mexican history and labor, believing art belonged on walls ordinary people passed every day, not locked in private collections. His crowded, muscular compositions — farmers, factory workers, revolutionaries — treat working people with the same monumental scale earlier painters reserved for saints and kings.",
+  },
+  {
+    query: "Katsushika Hokusai portrait",
+    category: "art",
+    analysis:
+      "Hokusai reportedly signed his late work “The Old Man Mad About Painting,” and kept revising his technique into his eighties, convinced true mastery was still ahead of him. That restlessness runs through his prints: an obsessive, almost scientific interest in how the same subject looks from a dozen different angles and lights.",
+  },
+  {
+    query: "Édouard Manet",
+    category: "art",
+    analysis:
+      "Manet painted contemporary Parisian life — barmaids, picnics, boulevards — with flat, harsh lighting that scandalized critics used to soft academic shading. He's often called the bridge between Realism and Impressionism: too modern for the establishment salons, too committed to real subjects to fully join the Impressionists either.",
+  },
+  {
+    query: "Paul Gauguin Tahiti",
+    category: "travel",
+    analysis:
+      "Gauguin left Paris for French Polynesia chasing what he called an unspoiled, “primitive” world, painting flat planes of intense, non-naturalic color — skin rendered orange, shadows rendered blue. The work is gorgeous and still debated: a genuine formal breakthrough entangled with a colonial gaze historians now examine as critically as the color.",
+  },
+  {
+    query: "Artemisia Gentileschi",
+    category: "history",
+    analysis:
+      "Gentileschi was one of the first women admitted to Florence's prestigious art academy, working in a genre — dramatic, violent biblical scenes — almost entirely dominated by men. Her heroines are physically forceful rather than decorative, painted with a directness historians now read partly through her own survival of assault and a public trial.",
+  },
+  {
+    query: "Piet Mondrian composition",
+    category: "design",
+    analysis:
+      "Mondrian spent decades simplifying his landscapes down to black grid lines and blocks of primary color, convinced that pure abstraction could express a universal harmony beneath appearances. What looks like clean, almost architectural design was, to him, closer to a spiritual discipline — stripping the world down to its essential structure.",
+  },
+  {
+    query: "Henri Matisse",
+    category: "design",
+    analysis:
+      "Late in life, arthritis kept Matisse from painting, so he began “drawing with scissors” instead — cutting shapes directly from painted paper and arranging them into compositions of pure, joyful color. He called this final body of work, made from a wheelchair, the purest distillation of everything he'd spent his career learning.",
+  },
+  {
+    query: "Utagawa Kuniyoshi",
+    category: "history",
+    analysis:
+      "Kuniyoshi made his name with woodblock prints of warriors and folk heroes, packed with dynamic, twisting motion rarely seen in earlier Japanese printmaking. He also slipped satirical commentary on current events past Edo-period censors by disguising politicians as cats, fish, or historical figures — visual puns audiences of the time knew exactly how to read.",
+  },
+  {
+    query: "John Constable landscape",
+    category: "nature",
+    analysis:
+      "Constable painted the ordinary English countryside he'd grown up in — mills, clouds, cart-horses — at a time when landscape painting was considered a lesser genre next to history and portraiture. His fast, visible brushwork and obsessive studies of sky and weather quietly influenced the Impressionists a generation later.",
+  },
+  {
+    query: "Qing dynasty porcelain",
+    category: "world_culture",
+    analysis:
+      "Qing-era porcelain workshops achieved a technical precision — impossibly thin walls, exact cobalt blue, glazes fired at exacting temperatures — that European courts spent a century trying and failing to fully replicate. Each piece often took a whole chain of specialized craftspeople, no single artist ever signing the finished work.",
+  },
+  {
+    query: "Kazimir Malevich",
+    category: "philosophy",
+    analysis:
+      "Malevich's Black Square — literally a black square on a white ground — was meant as a rupture point, what he called “zero of form”: painting reduced past recognizable subjects entirely, to force viewers to confront pure feeling instead of a depicted thing. It remains one of art history's most argued-over single canvases.",
+  },
+  {
+    query: "Yayoi Kusama",
+    category: "psychology",
+    analysis:
+      "Kusama has described her signature polka dots and infinity patterns as both artwork and self-treatment, a way of externalizing hallucinations she's experienced since childhood and has voluntarily lived alongside a psychiatric hospital for decades. What looks purely playful in her installations is also, by her own account, a survival strategy made visible.",
+  },
+  {
+    query: "Islamic geometric tilework",
+    category: "architecture",
+    analysis:
+      "Geometric tilework across mosques and palaces builds dazzlingly complex patterns from a small set of repeating shapes — stars, polygons, interlacing lines — governed by strict mathematical symmetry. Since figurative imagery was largely avoided in religious spaces, this abstract precision became its own tradition of devotion: infinity suggested through pattern rather than picture.",
   },
 ];

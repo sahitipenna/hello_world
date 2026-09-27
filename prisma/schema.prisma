@@ -20,19 +20,51 @@ datasource db {
 model User {
   id                String   @id
   createdAt         DateTime @default(now())
-  plan              String   @default("free") // "free" | "premium" (demo toggle, no real billing yet)
+  lastSeenAt        DateTime @default(now()) // bumped on every request that resolves a visitor (lib/auth.ts) — basis for return-rate/DAU queries, see README
+  plan              String   @default("free") // "free" | "premium" — kept in sync by the Razorpay webhook (lib/razorpay.ts); falls back to a manual demo toggle when Razorpay isn't configured
+  razorpaySubscriptionId String? @unique // Razorpay's sub_... id, once this visitor has started checkout
   timeBudgetMinutes Int? // 5 | 15 | 30 | 45 — personalization from onboarding
   sectionOrder      String? // JSON-encoded string[] of section keys
   hiddenSections    String? // JSON-encoded string[] of section keys
 
-  interests    UserInterest[]
-  todoChecks   DailyTodoCheck[]
-  promptEdits  PromptEdit[]
-  sectionEdits SectionEdit[]
-  todoItems    TodoListItem[]
-  quizEdits    QuizEdit[]
-  quizProgress QuizProgress[]
-  bookmarks    Bookmark[]
+  // Optional Google sign-in (lib/googleAuth.ts, app/api/auth/google/*).
+  // Anonymous by default (see the model comment above) — signing in just
+  // attaches these to the visitor's EXISTING row (same id, same data)
+  // rather than creating a new account, unless that Google account was
+  // already linked to a different row (a previous device), in which case
+  // the browser's identity cookie switches to that established row instead.
+  email    String? @unique
+  name     String?
+  image    String?
+  googleId String? @unique
+
+  interests           UserInterest[]
+  todoChecks          DailyTodoCheck[]
+  promptEdits         PromptEdit[]
+  sectionEdits        SectionEdit[]
+  todoItems           TodoListItem[]
+  quizEdits           QuizEdit[]
+  quizProgress        QuizProgress[]
+  bookmarks           Bookmark[]
+  categoryEngagement  CategoryEngagement[]
+}
+
+/// Adaptive personalization signal: how much a visitor actually engages
+/// with each category, versus just what they said they liked at
+/// onboarding. Today the only source is checking off a DO task (see
+/// PATCH /api/todos/checks) - score only ever increases, a simple
+/// positive-signal count, not a full read/decay model. Blended into
+/// lib/interests.ts's getUserWeights() so it nudges every section, not
+/// just DO - check off enough "nature" tasks and WONDER/READ/etc. start
+/// leaning that way too, on top of (not instead of) chosen interests.
+model CategoryEngagement {
+  userId   String
+  category String
+  score    Int    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, category])
 }
 
 // ---------------------------------------------------------------------------

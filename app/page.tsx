@@ -7,6 +7,7 @@ import { accentForKey } from "@/lib/accent";
 import { toISODate, dayOfYear, parseISODate } from "@/lib/dateUtils";
 
 import SiteHeader from "@/components/SiteHeader";
+import { identifyVisitor } from "@/components/PostHogProvider";
 import DateNav from "@/components/DateNav";
 import ComeBackTomorrow from "@/components/ComeBackTomorrow";
 import SectionCard from "@/components/SectionCard";
@@ -37,6 +38,8 @@ export default function Home() {
   const [order, setOrder] = useState<string[]>([]);
   const [hidden, setHidden] = useState<string[]>([]);
   const [allSections, setAllSections] = useState<SectionMeta[]>([]);
+  const [premiumPrice, setPremiumPrice] = useState<{ usd: number; inr: number } | null>(null);
+  const [viewer, setViewer] = useState<{ email: string; name: string | null; image: string | null } | null>(null);
   const [timeBudget, setTimeBudget] = useState<number | null>(null);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
@@ -56,6 +59,9 @@ export default function Home() {
         setHidden(p.hiddenSections);
         setTimeBudget(p.timeBudgetMinutes ?? null);
         setAllSections(p.allSections ?? []);
+        setPremiumPrice(p.premiumPrice ?? null);
+        setViewer(p.user ?? null);
+        if (p.userId) identifyVisitor(p.userId, p.user ? { email: p.user.email, name: p.user.name } : undefined);
       })
       .catch(() => {});
 
@@ -80,7 +86,7 @@ export default function Home() {
       .catch(() => setBundle(null));
   }, [dateISO, isFuture]);
 
-  async function handleUpgrade() {
+  async function handleDemoUpgrade() {
     const res = await fetch("/api/preferences", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -91,6 +97,17 @@ export default function Home() {
       if (dateISO) fetch(`/api/daily?date=${dateISO}`).then((r) => r.json()).then(setBundle).catch(() => {});
     }
     setUpgradeOpen(false);
+  }
+
+  function handlePaymentSuccess() {
+    setPlanState("premium");
+    if (dateISO) fetch(`/api/daily?date=${dateISO}`).then((r) => r.json()).then(setBundle).catch(() => {});
+    setUpgradeOpen(false);
+  }
+
+  async function handleSignOut() {
+    await fetch("/api/auth/signout", { method: "POST" });
+    window.location.reload();
   }
 
   async function handleReorder(next: string[]) {
@@ -163,6 +180,8 @@ export default function Home() {
         onOpenCustomize={() => setCustomizeOpen(true)}
         onOpenUpgrade={() => setUpgradeOpen(true)}
         onOpenInterests={() => setOnboardingOpen(true)}
+        user={viewer}
+        onSignOut={handleSignOut}
       />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
@@ -231,7 +250,13 @@ export default function Home() {
         onResetToSuggested={handleResetToSuggested}
         hasInterests={selectedInterests.length > 0}
       />
-      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} onUpgrade={handleUpgrade} />
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        onDemoUpgrade={handleDemoUpgrade}
+        onPaymentSuccess={handlePaymentSuccess}
+        price={premiumPrice}
+      />
       <OnboardingModal
         open={onboardingOpen}
         tags={tags}
@@ -259,7 +284,9 @@ function renderSection(
     case "play":
       return <CrosswordPuzzle puzzle={content.puzzle} />;
     case "look":
-      return <ArtSpotlight query={content.query} analysis={content.analysis} dateISO={bundle.dateISO} />;
+      return (
+        <ArtSpotlight query={content.query} analysis={content.analysis} custom={content.custom} dateISO={bundle.dateISO} />
+      );
     case "read":
       return <PoemCard poem={content.poem} />;
     case "wander":

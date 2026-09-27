@@ -3,16 +3,26 @@
 import Link from "next/link";
 import { Plan } from "@/lib/types";
 
+interface Viewer {
+  email: string;
+  name: string | null;
+  image: string | null;
+}
+
 export default function SiteHeader({
   plan,
   onOpenCustomize,
   onOpenUpgrade,
   onOpenInterests,
+  user,
+  onSignOut,
 }: {
   plan: Plan;
   onOpenCustomize: () => void;
   onOpenUpgrade: () => void;
   onOpenInterests: () => void;
+  user: Viewer | null;
+  onSignOut: () => void;
 }) {
   return (
     <header className="max-w-3xl mx-auto px-4 sm:px-6 pt-8 pb-4 flex items-center justify-between">
@@ -67,6 +77,27 @@ export default function SiteHeader({
         >
           {"⚙"}
         </button>
+        {user ? (
+          <button
+            onClick={onSignOut}
+            title={`Signed in as ${user.name ?? user.email} — click to sign out`}
+            className="w-8 h-8 rounded-full overflow-hidden border border-ink/15 flex items-center justify-center text-xs font-semibold bg-paper2 hover:opacity-80 transition-opacity"
+          >
+            {user.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.image} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            ) : (
+              (user.name ?? user.email).slice(0, 1).toUpperCase()
+            )}
+          </button>
+        ) : (
+          <a
+            href="/api/auth/google"
+            className="text-sm font-medium text-ink/70 hover:text-ink px-2 py-1.5 rounded-md hover:bg-ink/5 transition-colors hidden sm:inline-block"
+          >
+            Sign in
+          </a>
+        )}
       </div>
     </header>
   );

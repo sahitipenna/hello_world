@@ -1,0 +1,29 @@
+name: Seed content
+
+# Manual only — never runs automatically. Deliberately not wired into any
+# deploy, because npm run db:seed's upserts overwrite a row's fields by
+# id, which would clobber an editor's own change made via /admin to that
+# same seeded row. Run this only when you've added new content to
+# lib/contentBank.ts / lib/crosswordBanks.ts / prisma/seed.ts and want it
+# loaded into the target database.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_production:
+        description: 'Type "yes" to confirm this should run against the DATABASE_URL secret configured below'
+        required: true
+        default: "no"
+
+jobs:
+  seed:
+    if: github.event.inputs.confirm_production == 'yes'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run db:seed
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

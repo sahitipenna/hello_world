@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Caveat, Work_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import PostHogProvider from "@/components/PostHogProvider";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -47,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${fraunces.variable} ${caveat.variable} ${workSans.variable}`}>
       <body className="font-sans bg-paper bg-grain bg-repeat min-h-screen text-ink" style={{ fontFamily: "var(--font-work-sans), sans-serif" }}>
-        {children}
+        <PostHogProvider>{children}</PostHogProvider>
         <Analytics />
       </body>
     </html>

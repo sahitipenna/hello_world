@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     .map(({ meta, content }) => {
       let resolved = content;
       if (resolved?.kind === "do") {
-        resolved = { ...resolved, tasks: resolved.tasks.map((t, i) => promptEdits[i] ?? t) };
+        resolved = { ...resolved, tasks: resolved.tasks.map((t, i) => (promptEdits[i] ? { ...t, title: promptEdits[i] } : t)) };
       }
       const locked = meta.premium && plan === "free";
       if (!locked && plan === "free") {

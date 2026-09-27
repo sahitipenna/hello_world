@@ -145,31 +145,92 @@ the header's "Interests" link:
   day's edition entirely, so a 5-minute visitor gets a genuinely shorter
   edition than a 45-minute one, not just a collapsed teaser.
 
+**Adaptive, beyond what's chosen at onboarding**: checking off a DO task
+(the one behavioral signal the app currently has) nudges the picker toward
+that task's category — capped at roughly the same weight as an explicitly
+chosen interest, so demonstrated behavior can meaningfully tilt the
+edition over time without ever swamping what a visitor actually said they
+wanted (`CategoryEngagement` in `prisma/schema.prisma`, blended into
+`lib/interests.ts`'s `getUserWeights()`). Since every section shares the
+same weights, checking off enough "nature" tasks nudges KNOW, WONDER,
+READ, etc. toward nature too — not just DO. Unchecking never subtracts;
+it's a simple positive-signal count, not a full read/decay model.
+
 ## Freemium & customization
 
 Free users get the full edition, with two caps: `Section.premium`
 sections (WANDER, by default) are fully locked behind a blurred
 "Premium" panel, and multi-item sections (KNOW, DO) show only
 `Section.freeCount` items with an inline "+N more with Premium" nudge —
-both configured via `/admin`, not code. The "Go Premium" flow is a
-**demo toggle only** (`app/api/preferences/route.ts` /
-`components/UpgradeModal.tsx`) — it flips `User.plan` so you can see the
-full layout, but takes no payment.
+both configured via `/admin`, not code. "Go Premium" collects real payment
+via Razorpay Subscriptions (`lib/razorpay.ts`, `app/api/payments/*`) once
+`RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`/`RAZORPAY_PLAN_ID`/
+`RAZORPAY_WEBHOOK_SECRET` are set (see `.env.example` for the exact
+Razorpay-dashboard setup steps) — Checkout confirms the plan immediately,
+and a webhook stays the source of truth for renewals/cancellations after
+that. Without those env vars set, it falls back to a demo toggle
+(`components/UpgradeModal.tsx`) that just flips `User.plan` so you can see
+the full layout without a Razorpay account.
 
 ## Persistence & identity
 
-There's no signup flow — a visitor is identified by a random id in an
+No signup is required — a visitor is identified by a random id in an
 httpOnly cookie (`lib/auth.ts`), mirrored as a `User` row the first time
 they're seen. That's enough for real, durable, per-browser persistence
-without the overhead of an account system — see the schema comments in
+without forcing an account — see the schema comments in
 `prisma/schema.prisma` for the full per-user tables (edits, checkmarks,
 interests, plan, time budget, section order/visibility).
 
-**What this is not**: real accounts (no email/password, no cross-device
-sync), real billing (Stripe/Razorpay checkout + webhooks), or a licensed
-daily comic (the `Comic` model and disabled "comic" section are an
-architecture placeholder only — see `ARCHITECTURE.md` and the product
-brief's own note on Calvin & Hobbes licensing).
+**Sign in with Google is optional**, on top of that same anonymous
+identity, not instead of it (`lib/googleAuth.ts`, `app/api/auth/google/*`).
+Signing in attaches the Google profile to the visitor's *existing* row —
+their interests/todos/plan carry over automatically, nothing migrates or
+resets — unless that Google account is already linked to an older row (a
+previous device), in which case the browser reunites with that established
+account instead. Needs `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` (see
+`.env.example`); without them the header simply shows no sign-in option
+and every visitor stays anonymous, exactly as before.
+
+**What this is not**: real billing beyond Razorpay Subscriptions (no
+Stripe, no invoicing), a password-based login (Google is the only
+provider), or a licensed daily comic (the `Comic` model and disabled
+"comic" section are an architecture placeholder only — see
+`ARCHITECTURE.md` and the product brief's own note on Calvin & Hobbes
+licensing).
+
+## Analytics: repeat/return rate
+
+`User.lastSeenAt` is bumped on every request that resolves a visitor
+(`lib/auth.ts`), alongside `User.createdAt` — enough to query return
+behavior directly in Neon's SQL editor without any extra tooling:
+
+```sql
+-- Active visitors in the last 24 hours / 7 days
+select count(*) from "User" where "lastSeenAt" > now() - interval '1 day';
+select count(*) from "User" where "lastSeenAt" > now() - interval '7 days';
+
+-- Of visitors first seen 7+ days ago, what fraction ever came back
+-- (lastSeenAt more than a day after createdAt)?
+select
+  count(*) filter (where "lastSeenAt" > "createdAt" + interval '1 day') as returned,
+  count(*) as total,
+  round(100.0 * count(*) filter (where "lastSeenAt" > "createdAt" + interval '1 day') / count(*), 1) as return_pct
+from "User"
+where "createdAt" < now() - interval '7 days';
+
+-- New visitors per day, last 30 days
+select date_trunc('day', "createdAt") as day, count(*)
+from "User" where "createdAt" > now() - interval '30 days'
+group by 1 order by 1;
+```
+
+This only tells you *whether* someone returned, not day-by-day retention
+curves (a single `lastSeenAt` overwrites the previous value each visit) —
+for actual cohort/retention charts, set `NEXT_PUBLIC_POSTHOG_KEY` (see
+`.env.example`); `components/PostHogProvider.tsx` then captures pageviews
+and identifies each visitor by their own `User.id`, so repeat visits (and,
+once signed in, the same person across devices) roll up as one person in
+PostHog's dashboards instead of one row per browser session.
 
 ## Deploying a public instance
 
@@ -198,6 +259,38 @@ can reach (any provider works).
    `metadataBase`/Open Graph tags — update that if you deploy under a
    different domain.
 
+## Re-seeding a live database
+
+`npm run db:seed` is safe to re-run anytime (every content-pool row is
+upserted by a stable id, not just inserted) — but it's deliberately **not**
+run automatically on every deploy, because it overwrites a row's fields by
+that id, which would silently clobber an editor's own change made via
+`/admin` to that same row. Run it only when you've actually added new
+content to `lib/contentBank.ts`, `lib/crosswordBanks.ts`, or
+`prisma/seed.ts` and want it loaded into a live database.
+
+Two ways to run it against production, since your own machine's shell
+can't reach it if you don't have a local Node setup:
+
+1. **From your own machine**, if you have Node installed: `git pull`,
+   `npm install`, then `DATABASE_URL="<production URL>" npm run db:seed`.
+2. **From GitHub, no local setup needed**: add a `DATABASE_URL` repository
+   secret (Settings → Secrets and variables → Actions → New repository
+   secret, value = the same pooled connection string Vercel uses), then go
+   to the **Actions** tab → **Seed content** workflow → **Run workflow**,
+   type `yes` to confirm, and run it. See `.github/workflows/seed.yml`.
+
+One migration note if you're upgrading from before the idempotent-seed
+change: existing rows in the content-pool tables predate this id scheme
+and won't match the new positional ids, so re-seeding would add
+duplicates alongside them rather than updating them in place. Clear those
+tables once first (`DELETE FROM "NewsItem"; DELETE FROM "Wonder"; DELETE
+FROM "Artwork"; DELETE FROM "LiteraryItem"; DELETE FROM "TravelItem";
+DELETE FROM "Book"; DELETE FROM "DailyTask"; DELETE FROM "CrosswordTheme";
+DELETE FROM "BonusArticle";` in Neon's SQL editor), then seed fresh. Not
+needed for `Section`/`InterestTag`/`PricingPlan`, which were already
+upserted by a natural key before this change.
+
 ## Project layout
 
 ```
@@ -210,20 +303,27 @@ app/
   api/book/route.ts                  proxies Open Library for a cover, links out to Goodreads
   api/preferences/route.ts           plan, section order/visibility, time budget
   api/interests/route.ts             interest tags + a user's selection
+  api/interests/reset-sections/route.ts  explicit "reset to suggested" section visibility
   api/admin/sections, /pricing, /content/[type]   admin CRUD (ADMIN_SECRET-gated)
+  api/payments/create-subscription, /verify, /webhook   Razorpay Subscriptions
+  api/auth/google, /google/callback, /signout   optional Google sign-in
 components/
   KnowSection.tsx, WonderCard.tsx, ...  one component per section type
   admin/                                 SectionsAdmin, PricingAdmin, ContentAdmin
+  PostHogProvider.tsx                    optional analytics init + visitor identify
 lib/
   types.ts                     shared types (EditionSection, per-section content shapes)
   dailyBundle.ts                 buildEdition(): resolves each section's content from the DB
   contentPicker.ts                the hybrid scheduled/rotating selection model
   sections.ts                     DB-backed section list + default order
+  sectionInterests.ts              interest-driven default section visibility
   adminContent.ts                  field definitions driving the generic content CRUD
   personalize.ts                   weighted deterministic picking (interest tags)
   dateUtils.ts                     day-of-year, seeded deterministic picking
-  auth.ts                          anonymous cookie identity
+  auth.ts                          anonymous cookie identity (+ lastSeenAt, cookie helpers)
   adminAuth.ts                     shared-secret cookie gate for /admin
+  razorpay.ts                      Razorpay client + checkout/webhook signature checks
+  googleAuth.ts                    Google OAuth authorize URL + token/profile exchange
 prisma/
   schema.prisma                the database schema (Section + 8 content pools + pricing)
   seed.ts                       seeds sections, content pools, interest tags, pricing plans

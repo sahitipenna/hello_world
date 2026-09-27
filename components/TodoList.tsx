@@ -14,7 +14,7 @@ export default function TodoList({
   onUnlockClick,
 }: {
   dateKey: string;
-  todos: string[];
+  todos: { title: string; category: string }[];
   checks: Record<number, boolean>;
   onChecksChange: (checks: Record<number, boolean>) => void;
   label?: string;
@@ -23,11 +23,11 @@ export default function TodoList({
   onUnlockClick?: () => void;
 }) {
   const [editing, setEditing] = useState(false);
-  const [drafts, setDrafts] = useState<string[]>(todos);
+  const [drafts, setDrafts] = useState<string[]>(todos.map((t) => t.title));
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setDrafts(todos);
+    setDrafts(todos.map((t) => t.title));
   }, [dateKey, todos]);
 
   async function toggle(i: number) {
@@ -36,7 +36,7 @@ export default function TodoList({
     await fetch("/api/todos/checks", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dateISO: dateKey, index: i, done: next[i] }),
+      body: JSON.stringify({ dateISO: dateKey, index: i, done: next[i], category: todos[i]?.category }),
     });
   }
 
@@ -46,7 +46,7 @@ export default function TodoList({
       try {
         await Promise.all(
           drafts.map((text, i) =>
-            text.trim() && text.trim() !== todos[i]
+            text.trim() && text.trim() !== todos[i]?.title
               ? fetch("/api/todos/edit", {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
