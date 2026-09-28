@@ -52,3 +52,95 @@ body {
     animation: none;
   }
 }
+
+/* ---- Daily Desk homepage ---- */
+.daily-desk {
+  --desk-wood: #dba86a;
+  --desk-wood-dark: #b8824a;
+  --desk-wood-line: #8f6335;
+  --desk-backdrop: #6e4525;
+  --desk-mat: #2e6358;
+  --desk-mat-dark: #234a41;
+  --desk-paper: #fffdf8;
+  --desk-paper2: #f2e8d5;
+  --desk-ink: #2b2622;
+  --desk-ink-soft: rgba(43, 38, 34, 0.62);
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--desk-backdrop);
+  padding: 18px 14px 22px;
+  box-shadow: 0 18px 40px -14px rgba(43, 38, 34, 0.4);
+}
+.daily-desk svg.desk-illustration {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.daily-desk .desk-icon-hit {
+  cursor: pointer;
+}
+.daily-desk .desk-icon-hit:focus-visible .desk-icon-art {
+  outline: 3px solid #d9a02c;
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+.daily-desk .desk-icon-art {
+  transition: transform 220ms ease;
+  transform-origin: center;
+}
+.daily-desk .desk-icon-hit:hover .desk-icon-art,
+.daily-desk .desk-icon-hit:focus-visible .desk-icon-art {
+  transform: translateY(-6px) scale(1.04);
+}
+.daily-desk .desk-icon-hit.is-locked .desk-icon-art {
+  opacity: 0.75;
+}
+@media (prefers-reduced-motion: reduce) {
+  .daily-desk .desk-icon-art {
+    transition: none;
+  }
+  .daily-desk .desk-icon-hit:hover .desk-icon-art,
+  .daily-desk .desk-icon-hit:focus-visible .desk-icon-art {
+    transform: none;
+  }
+}
+.daily-desk .desk-tag-text {
+  font-family: var(--font-caveat), cursive;
+  font-weight: 600;
+  fill: var(--desk-ink);
+}
+
+.desk-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 14, 6, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+  animation: fade-in 150ms ease-out both;
+}
+@media (min-width: 640px) {
+  .desk-panel-backdrop {
+    align-items: center;
+    padding: 24px;
+  }
+}
+.desk-panel {
+  background: var(--desk-paper, #fffdf8);
+  width: 100%;
+  max-width: 640px;
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 20px 20px 0 0;
+  padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
+  position: relative;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+}
+@media (min-width: 640px) {
+  .desk-panel {
+    border-radius: 20px;
+    padding: 30px 32px;
+  }
+}

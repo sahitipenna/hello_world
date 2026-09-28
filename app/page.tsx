@@ -2,26 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { DailyEditionResponse, EditionSection, Plan, SectionMeta } from "@/lib/types";
-import { accentForKey } from "@/lib/accent";
+import { DailyEditionResponse, Plan, SectionMeta } from "@/lib/types";
 import { toISODate, dayOfYear, parseISODate } from "@/lib/dateUtils";
 
 import SiteHeader from "@/components/SiteHeader";
 import { identifyVisitor } from "@/components/PostHogProvider";
 import DateNav from "@/components/DateNav";
 import ComeBackTomorrow from "@/components/ComeBackTomorrow";
-import SectionCard from "@/components/SectionCard";
+import DailyDesk from "@/components/DailyDesk";
 import SectionCustomizer from "@/components/SectionCustomizer";
 import UpgradeModal from "@/components/UpgradeModal";
 import OnboardingModal from "@/components/OnboardingModal";
-import TodoList from "@/components/TodoList";
-import KnowSection from "@/components/KnowSection";
-import WonderCard from "@/components/WonderCard";
-import PoemCard from "@/components/PoemCard";
-import BookRecommendation from "@/components/BookRecommendation";
-import ArtSpotlight from "@/components/ArtSpotlight";
-import TravelVignetteCard from "@/components/TravelVignetteCard";
-import CrosswordPuzzle from "@/components/CrosswordPuzzle";
 
 interface Tag {
   id: string;
@@ -170,7 +161,6 @@ export default function Home() {
     return <div className="min-h-screen" />;
   }
 
-  const sectionsByKey = new Map((bundle?.sections ?? []).map((s) => [s.key, s]));
   const visibleOrder = order.length > 0 ? order : allSections.map((s) => s.key);
 
   return (
@@ -197,32 +187,16 @@ export default function Home() {
         {isFuture ? (
           <ComeBackTomorrow dateISO={dateISO} />
         ) : !bundle ? (
-          <div className="space-y-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-40 rounded-2xl bg-paper2 animate-pulse" />
-            ))}
-          </div>
+          <div className="h-[420px] sm:h-[480px] rounded-2xl bg-paper2 animate-pulse" />
         ) : (
           <>
-            <div className="columns-1 sm:columns-2 gap-6">
-              {visibleOrder
-                .filter((key) => !hidden.includes(key) && sectionsByKey.has(key))
-                .map((key) => {
-                  const section = sectionsByKey.get(key)!;
-                  return (
-                    <SectionCard
-                      key={key}
-                      meta={section}
-                      locked={section.locked}
-                      onUnlockClick={() => setUpgradeOpen(true)}
-                      accent={accentForKey(key)}
-                    >
-                      {renderSection(section, bundle, handleTodoChecksChange, () => setUpgradeOpen(true))}
-                    </SectionCard>
-                  );
-                })}
-            </div>
-            <p className="text-center text-ink/50 text-sm mt-4 mb-2">That&apos;s enough for today. Go have a life.</p>
+            <DailyDesk
+              bundle={bundle}
+              hidden={hidden}
+              onTodoChecksChange={handleTodoChecksChange}
+              onUnlockClick={() => setUpgradeOpen(true)}
+            />
+            <p className="text-center text-ink/50 text-sm mt-4 mb-2">Tap anything on the desk to open it.</p>
           </>
         )}
       </div>
@@ -267,48 +241,4 @@ export default function Home() {
       />
     </div>
   );
-}
-
-function renderSection(
-  section: EditionSection,
-  bundle: DailyEditionResponse,
-  onTodoChecksChange: (checks: Record<number, boolean>) => void,
-  onUnlockClick: () => void
-) {
-  const content = section.content;
-  if (!content) return null;
-
-  switch (content.kind) {
-    case "know":
-      return <KnowSection items={content.items} totalCount={content.totalCount} onUnlockClick={onUnlockClick} />;
-    case "play":
-      return <CrosswordPuzzle puzzle={content.puzzle} />;
-    case "look":
-      return (
-        <ArtSpotlight query={content.query} analysis={content.analysis} custom={content.custom} dateISO={bundle.dateISO} />
-      );
-    case "read":
-      return <PoemCard poem={content.poem} />;
-    case "wander":
-      return <TravelVignetteCard vignette={content.travel} />;
-    case "readnext":
-      return <BookRecommendation book={content.book} />;
-    case "wonder":
-      return <WonderCard wonder={content.wonder} />;
-    case "do":
-      return (
-        <TodoList
-          dateKey={bundle.dateISO}
-          todos={content.tasks}
-          checks={bundle.todoChecks}
-          onChecksChange={onTodoChecksChange}
-          label="Five little things"
-          period="today"
-          hiddenCount={content.totalCount - content.tasks.length}
-          onUnlockClick={onUnlockClick}
-        />
-      );
-    default:
-      return null;
-  }
 }
