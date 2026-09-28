@@ -183,11 +183,13 @@ export default function Home() {
             <DateNav dateISO={dateISO} dayOfYear={dayOfYear(parseISODate(dateISO))} onChange={setDateISO} />
           )}
         </div>
+      </div>
 
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
         {isFuture ? (
           <ComeBackTomorrow dateISO={dateISO} />
         ) : !bundle ? (
-          <div className="h-[420px] sm:h-[480px] rounded-2xl bg-paper2 animate-pulse" />
+          <div className="h-[70vh] min-h-[420px] rounded-2xl bg-paper2 animate-pulse" />
         ) : (
           <>
             <DailyDesk
