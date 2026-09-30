@@ -14,7 +14,7 @@ export default async function Pricing() {
         <Link href="/" className="text-sm text-sky underline decoration-dotted underline-offset-4">
           {"←"} Back to today
         </Link>
-        <h1 className="font-serif text-3xl sm:text-4xl mt-4 mb-2" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+        <h1 className="font-serif text-3xl sm:text-4xl mt-4 mb-2" style={{ fontFamily: "var(--font-serif), serif" }}>
           A small daily ritual, for less than a coffee
         </h1>
         <p className="text-ink/60 mb-10 max-w-lg">
@@ -26,7 +26,7 @@ export default async function Pricing() {
           {free && (
             <div className="paper-card rounded-2xl shadow-card p-6">
               <p className="text-xs font-semibold uppercase tracking-wide text-sage mb-2">{free.name}</p>
-              <p className="font-serif text-3xl mb-4" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+              <p className="font-serif text-3xl mb-4" style={{ fontFamily: "var(--font-serif), serif" }}>
                 $0
               </p>
               <ul className="space-y-2 text-sm text-ink/80 mb-6">
@@ -51,7 +51,7 @@ export default async function Pricing() {
                 Most curious
               </span>
               <p className="text-xs font-semibold uppercase tracking-wide text-terracotta mb-2">{premium.name}</p>
-              <p className="font-serif text-3xl mb-4" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+              <p className="font-serif text-3xl mb-4" style={{ fontFamily: "var(--font-serif), serif" }}>
                 ${premium.priceUSD} <span className="text-base text-ink/50 font-sans">/ {premium.interval}</span>
               </p>
               <p className="text-xs text-ink/45 -mt-3 mb-1">or ₹{premium.priceINR} / {premium.interval}</p>

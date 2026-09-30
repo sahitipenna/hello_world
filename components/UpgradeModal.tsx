@@ -91,7 +91,7 @@ export default function UpgradeModal({
           {"×"}
         </button>
         <p className="text-xs font-semibold uppercase tracking-wide text-mustard mb-2">Go Dilly Premium</p>
-        <h2 className="font-serif text-2xl mb-3" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+        <h2 className="font-serif text-2xl mb-3" style={{ fontFamily: "var(--font-serif), serif" }}>
           More to look forward to, every day
         </h2>
         <ul className="text-sm text-ink/80 space-y-1.5 mb-5">
@@ -101,7 +101,7 @@ export default function UpgradeModal({
           <li>{"•"} Full archive of past days</li>
         </ul>
         <div className="flex items-baseline gap-1 mb-1">
-          <span className="font-serif text-3xl" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+          <span className="font-serif text-3xl" style={{ fontFamily: "var(--font-serif), serif" }}>
             ₹{price?.inr ?? "—"}
           </span>
           <span className="text-sm text-ink/50">/ month</span>

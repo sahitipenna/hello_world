@@ -26,6 +26,7 @@ model User {
   timeBudgetMinutes Int? // 5 | 15 | 30 | 45 — personalization from onboarding
   sectionOrder      String? // JSON-encoded string[] of section keys
   hiddenSections    String? // JSON-encoded string[] of section keys
+  deskSkin          String? // "dark" | "light" | "white" — Daily Desk table skin (app/api/preferences)
 
   // Optional Google sign-in (lib/googleAuth.ts, app/api/auth/google/*).
   // Anonymous by default (see the model comment above) — signing in just

@@ -39,6 +39,7 @@ export async function GET() {
       sectionOrder: parseJsonArray(user.sectionOrder) ?? defaultOrder,
       hiddenSections: parseJsonArray(user.hiddenSections) ?? [],
       timeBudgetMinutes: user.timeBudgetMinutes ?? null,
+      deskSkin: user.deskSkin ?? "dark",
       // Every enabled section, regardless of today's time-budget filtering —
       // the customizer needs the full catalog to reorder/hide, not just
       // whatever made today's edition.
@@ -66,7 +67,13 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "invalid body" }, { status: 400 });
   }
 
-  const data: { plan?: string; sectionOrder?: string; hiddenSections?: string; timeBudgetMinutes?: number | null } = {};
+  const data: {
+    plan?: string;
+    sectionOrder?: string;
+    hiddenSections?: string;
+    timeBudgetMinutes?: number | null;
+    deskSkin?: string;
+  } = {};
 
   if (body.plan === "free" || body.plan === "premium") {
     data.plan = body.plan;
@@ -79,6 +86,9 @@ export async function PATCH(req: NextRequest) {
   }
   if (body.timeBudgetMinutes === null || VALID_TIME_BUDGETS.includes(body.timeBudgetMinutes)) {
     data.timeBudgetMinutes = body.timeBudgetMinutes;
+  }
+  if (["dark", "light", "white"].includes(body.deskSkin)) {
+    data.deskSkin = body.deskSkin;
   }
 
   if (Object.keys(data).length === 0) {
@@ -94,6 +104,7 @@ export async function PATCH(req: NextRequest) {
     sectionOrder: parseJsonArray(updated.sectionOrder) ?? defaultOrder,
     hiddenSections: parseJsonArray(updated.hiddenSections) ?? [],
     timeBudgetMinutes: updated.timeBudgetMinutes ?? null,
+    deskSkin: updated.deskSkin ?? "dark",
     allSections,
   });
 }

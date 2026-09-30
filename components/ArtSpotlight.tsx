@@ -85,7 +85,7 @@ export default function ArtSpotlight({
           unoptimized
         />
       </div>
-      <h3 className="font-serif text-lg mt-3" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+      <h3 className="font-serif text-lg mt-3" style={{ fontFamily: "var(--font-serif), serif" }}>
         {resolved.title}
       </h3>
       <p className="text-sm text-ink/60">
