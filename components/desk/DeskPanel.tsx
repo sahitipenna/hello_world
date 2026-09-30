@@ -152,7 +152,11 @@ export default function DeskPanel({
   const panelTitle = sideObject ? sideObject.title : section?.title ?? "";
 
   const base: React.CSSProperties = {
-    position: "absolute",
+    // fixed, not absolute: the desk's root container grows taller than one
+    // screen on mobile, so an absolutely-positioned panel is placed relative
+    // to the whole scrollable page rather than the viewport — opening it
+    // while scrolled down could land it off-screen, above the fold.
+    position: "fixed",
     zIndex: 50,
     display: "flex",
     flexDirection: "column",
@@ -178,7 +182,7 @@ export default function DeskPanel({
       <div
         onClick={onClose}
         style={{
-          position: "absolute",
+          position: "fixed",
           inset: 0,
           zIndex: 40,
           background: "rgba(30,18,8,.38)",
