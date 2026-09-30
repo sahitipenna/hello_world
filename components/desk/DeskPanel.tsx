@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { DailyEditionResponse, EditionSection } from "@/lib/types";
-import { SECTION_ACCENT, SIDE_OBJECTS } from "@/lib/deskLayout";
+import { SECTION_ACCENT, getSideObjects } from "@/lib/deskLayout";
 import LockSeal from "./illustrations/LockSeal";
 import KnowSection from "../KnowSection";
 import CrosswordPuzzle from "../CrosswordPuzzle";
@@ -110,7 +110,11 @@ export default function DeskPanel({
 
   useEffect(() => {
     if (!open) return;
-    closeBtnRef.current?.focus();
+    // preventScroll: without it, focusing this button while the panel is
+    // still mid-slide-in (transform not yet settled) makes the browser
+    // snap-scroll the page to "reveal" it, then the CSS transition finishes
+    // a frame later — felt as a jitter right as the panel opens.
+    closeBtnRef.current?.focus({ preventScroll: true });
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         onClose();
@@ -136,7 +140,7 @@ export default function DeskPanel({
   }, [open, onClose]);
 
   const section = activeKey ? sectionsByKey.get(activeKey) : undefined;
-  const sideObject = activeKey ? SIDE_OBJECTS.find((s) => s.id === activeKey) : undefined;
+  const sideObject = activeKey ? getSideObjects(bundle?.dateISO ?? "").find((s) => s.id === activeKey) : undefined;
   const idx = activeKey ? visibleKeys.indexOf(activeKey) : -1;
   const prevKey = visibleKeys.length ? visibleKeys[(idx - 1 + visibleKeys.length) % visibleKeys.length] : undefined;
   const nextKey = visibleKeys.length ? visibleKeys[(idx + 1) % visibleKeys.length] : undefined;
@@ -244,6 +248,28 @@ export default function DeskPanel({
               </h2>
               <div style={{ fontSize: 14, color: "#5b524a" }}>{sideObject.sub}</div>
               <p style={{ margin: 0, fontSize: 16, lineHeight: 1.65 }}>{sideObject.body}</p>
+              {sideObject.url && (
+                <a
+                  href={sideObject.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    alignSelf: "flex-start",
+                    background: sideObject.accent,
+                    color: "#faf3e6",
+                    border: 0,
+                    borderRadius: 999,
+                    padding: "10px 18px",
+                    fontSize: 14.5,
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    fontFamily: "var(--font-sans), sans-serif",
+                    textDecoration: "none",
+                  }}
+                >
+                  {sideObject.linkLabel ?? "Open"}
+                </a>
+              )}
               <p style={{ margin: 0, fontFamily: "var(--font-hand), cursive", fontSize: 22, color: "#a8441f" }}>{sideObject.note}</p>
             </div>
           ) : section?.locked ? (

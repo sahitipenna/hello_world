@@ -10,7 +10,7 @@ import {
   DECOR_ART,
   DECOR_LAYOUT_DESKTOP,
   DECOR_LAYOUT_MOBILE,
-  SIDE_OBJECTS,
+  getSideObjects,
 } from "@/lib/deskLayout";
 
 export default function DeskScene({
@@ -19,6 +19,7 @@ export default function DeskScene({
   mobile,
   containerWidth,
   visited,
+  dateISO,
   onOpenSection,
   onOpenSide,
 }: {
@@ -27,6 +28,7 @@ export default function DeskScene({
   mobile: boolean;
   containerWidth: number;
   visited: string[];
+  dateISO: string;
   onOpenSection: (key: string) => void;
   onOpenSide: (id: string) => void;
 }) {
@@ -35,10 +37,11 @@ export default function DeskScene({
   const stageW = mobile ? containerWidth : Math.min(containerWidth - 80, 1180);
   const stageH = (stageW * layout.H) / layout.W;
   const labelsAlways = mobile;
+  const sideObjects = getSideObjects(dateISO);
 
   return (
     <div style={{ position: "relative", width: stageW, height: stageH, margin: "0 auto" }}>
-      {SIDE_OBJECTS.map((extra) => {
+      {sideObjects.map((extra) => {
         const box = decorLayout[extra.id];
         const Illustration = DECOR_ART[extra.id];
         if (!box || !Illustration) return null;
@@ -60,6 +63,8 @@ export default function DeskScene({
         const box = layout.items[key];
         const art = DESK_ART[key];
         if (!section || !box || !art) return null;
+        const illustrationProps =
+          key === "readnext" && section.content?.kind === "readnext" ? { title: section.content.book.title } : undefined;
         return (
           <DeskObject
             key={key}
@@ -72,6 +77,7 @@ export default function DeskScene({
             labelsAlways={labelsAlways}
             mobile={mobile}
             Illustration={art.svg}
+            illustrationProps={illustrationProps}
             png={art.png}
             onOpen={() => onOpenSection(key)}
           />

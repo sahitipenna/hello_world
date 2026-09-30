@@ -14,6 +14,7 @@ export default function DeskObject({
   labelsAlways,
   mobile,
   Illustration,
+  illustrationProps,
   png,
   onOpen,
 }: {
@@ -25,7 +26,8 @@ export default function DeskObject({
   visited: boolean;
   labelsAlways: boolean;
   mobile: boolean;
-  Illustration: ComponentType;
+  Illustration: ComponentType<Record<string, unknown>>;
+  illustrationProps?: Record<string, unknown>;
   png?: string;
   onOpen: () => void;
 }) {
@@ -74,7 +76,7 @@ export default function DeskObject({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={png} alt="" style={{ width: "100%", height: "100%", objectFit: "fill", display: "block" }} />
         ) : (
-          <Illustration />
+          <Illustration {...illustrationProps} />
         )}
         {locked && (
           <span style={{ position: "absolute", top: -12, right: -12, transform: "rotate(-12deg)" }}>

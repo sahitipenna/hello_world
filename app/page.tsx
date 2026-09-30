@@ -244,7 +244,7 @@ export default function Home() {
           padding: "8px 16px",
         }}
       >
-        Good morning. Here&apos;s a little something for you — a handful of good things for your day.
+        Good morning. Take a little time for yourself.
       </p>
 
       <DeskSurface skin={deskSkin} mobile={mobile}>
@@ -259,6 +259,7 @@ export default function Home() {
             mobile={mobile}
             containerWidth={width}
             visited={visited}
+            dateISO={dateISO}
             onOpenSection={openSection}
             onOpenSide={openSide}
           />
