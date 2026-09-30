@@ -15,6 +15,7 @@ import { identifyVisitor } from "@/components/PostHogProvider";
 import ComeBackTomorrow from "@/components/ComeBackTomorrow";
 import UpgradeModal from "@/components/UpgradeModal";
 import OnboardingModal from "@/components/OnboardingModal";
+import NotifyMeButton from "@/components/NotifyMeButton";
 
 interface Tag {
   id: string;
@@ -275,6 +276,7 @@ export default function Home() {
         >
           That&apos;s enough for today. Go have a life.
         </div>
+        <NotifyMeButton user={viewer} deskSkin={deskSkin} />
         <footer
           style={{
             maxWidth: 640,
