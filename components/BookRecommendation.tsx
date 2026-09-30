@@ -36,7 +36,7 @@ export default function BookRecommendation({ book }: { book: BookRec }) {
         )}
       </div>
       <div className="min-w-0">
-        <h3 className="font-serif text-lg leading-snug" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+        <h3 className="font-serif text-lg leading-snug" style={{ fontFamily: "var(--font-serif), serif" }}>
           {book.title}
         </h3>
         <p className="text-sm text-ink/60 mb-2">{book.author}</p>

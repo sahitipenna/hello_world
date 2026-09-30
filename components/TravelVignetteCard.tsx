@@ -4,7 +4,7 @@ export default function TravelVignetteCard({ vignette }: { vignette: TravelVigne
   return (
     <div>
       <p className="text-xs uppercase tracking-wide text-sky font-semibold mb-1">{vignette.place}</p>
-      <h3 className="font-serif text-lg mb-2" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+      <h3 className="font-serif text-lg mb-2" style={{ fontFamily: "var(--font-serif), serif" }}>
         {vignette.title}
       </h3>
       <p className="text-[15px] leading-relaxed text-ink/85">{vignette.body}</p>

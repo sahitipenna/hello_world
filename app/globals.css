@@ -52,3 +52,28 @@ body {
     animation: none;
   }
 }
+
+/* ---- Daily Desk homepage ---- */
+.dd-hover-rust:hover {
+  color: #a8441f !important;
+}
+.dd-linklike {
+  border-bottom: 1.5px dashed rgba(43, 38, 34, 0.45);
+}
+.dd-linklike:hover {
+  border-bottom-color: #c1552c;
+  color: #a8441f;
+}
+.dd-member-pill:hover {
+  background: #2b2622;
+  color: #faf3e6;
+}
+.dd-daynav:hover {
+  background: rgba(168, 68, 31, 0.08);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dd-reduce-motion {
+    transition: none !important;
+    transform: none !important;
+  }
+}

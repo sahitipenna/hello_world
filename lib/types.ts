@@ -193,10 +193,13 @@ export interface InterestTag {
   emoji: string;
 }
 
+export type DeskSkin = "dark" | "light" | "white";
+
 export interface UserPreferences {
   plan: Plan;
   sectionOrder: string[];
   hiddenSections: string[];
   timeBudgetMinutes: number | null;
+  deskSkin: DeskSkin;
   interests: { slug: string; weight: number }[];
 }

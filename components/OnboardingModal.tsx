@@ -62,7 +62,7 @@ export default function OnboardingModal({
           ×
         </button>
         <p className="text-xs font-semibold uppercase tracking-wide text-mustard mb-2">Make it yours</p>
-        <h2 className="font-serif text-2xl mb-2" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+        <h2 className="font-serif text-2xl mb-2" style={{ fontFamily: "var(--font-serif), serif" }}>
           What draws your attention?
         </h2>
         <p className="text-sm text-ink/60 mb-5">
@@ -88,7 +88,7 @@ export default function OnboardingModal({
           })}
         </div>
 
-        <h3 className="font-serif text-lg mb-2" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+        <h3 className="font-serif text-lg mb-2" style={{ fontFamily: "var(--font-serif), serif" }}>
           How much time do you have?
         </h3>
         <p className="text-sm text-ink/60 mb-3">

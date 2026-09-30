@@ -30,7 +30,7 @@ export default function ComeBackTomorrow({ dateISO }: { dateISO: string }) {
 
   return (
     <div className="text-center py-16 px-4">
-      <p className="font-serif text-2xl sm:text-3xl mb-3" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+      <p className="font-serif text-2xl sm:text-3xl mb-3" style={{ fontFamily: "var(--font-serif), serif" }}>
         Hang on till tomorrow&hellip;
       </p>
       <p className="text-ink/60 max-w-sm mx-auto mb-8">
@@ -45,7 +45,7 @@ export default function ComeBackTomorrow({ dateISO }: { dateISO: string }) {
           className="inline-block max-w-sm mx-auto paper-card rounded-2xl shadow-card p-5 text-left hover:shadow-lg transition-shadow"
         >
           <p className="text-xs uppercase tracking-wide text-terracotta font-semibold mb-2">In the meantime</p>
-          <h3 className="font-serif text-lg mb-1" style={{ fontFamily: "var(--font-fraunces), serif" }}>
+          <h3 className="font-serif text-lg mb-1" style={{ fontFamily: "var(--font-serif), serif" }}>
             {article.title}
           </h3>
           <p className="text-sm text-ink/70 leading-relaxed mb-2">{article.teaser}</p>

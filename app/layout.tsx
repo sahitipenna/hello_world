@@ -1,25 +1,28 @@
 import type { Metadata } from "next";
-import { Fraunces, Caveat, Work_Sans } from "next/font/google";
+import { La_Belle_Aurore, Spectral, Hanken_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import PostHogProvider from "@/components/PostHogProvider";
 import "./globals.css";
 
-const fraunces = Fraunces({
+const hand = La_Belle_Aurore({
   subsets: ["latin"],
-  variable: "--font-fraunces",
+  weight: "400",
+  variable: "--font-hand",
   display: "swap",
 });
 
-const caveat = Caveat({
+const serif = Spectral({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-caveat",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
   display: "swap",
 });
 
-const workSans = Work_Sans({
+const sans = Hanken_Grotesk({
   subsets: ["latin"],
-  variable: "--font-work-sans",
+  weight: ["400", "500", "600"],
+  variable: "--font-sans",
   display: "swap",
 });
 
@@ -46,8 +49,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${caveat.variable} ${workSans.variable}`}>
-      <body className="font-sans bg-paper bg-grain bg-repeat min-h-screen text-ink" style={{ fontFamily: "var(--font-work-sans), sans-serif" }}>
+    <html lang="en" className={`${hand.variable} ${serif.variable} ${sans.variable}`}>
+      <body className="font-sans bg-paper bg-grain bg-repeat min-h-screen text-ink" style={{ fontFamily: "var(--font-sans), sans-serif" }}>
         <PostHogProvider>{children}</PostHogProvider>
         <Analytics />
       </body>

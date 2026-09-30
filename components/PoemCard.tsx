@@ -7,7 +7,7 @@ export default function PoemCard({ poem }: { poem: Poem }) {
     <div>
       <p
         className="font-serif text-lg sm:text-xl italic leading-relaxed whitespace-pre-line"
-        style={{ fontFamily: "var(--font-fraunces), serif" }}
+        style={{ fontFamily: "var(--font-serif), serif" }}
       >
         {poem.lines.join("\n")}
       </p>
