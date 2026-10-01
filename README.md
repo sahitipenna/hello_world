@@ -265,6 +265,20 @@ and identifies each visitor by their own `User.id`, so repeat visits (and,
 once signed in, the same person across devices) roll up as one person in
 PostHog's dashboards instead of one row per browser session.
 
+**Heatmaps and session recordings** are a different lens than the
+funnel/retention numbers above — two options, not mutually exclusive:
+
+- **PostHog's own Session Replay** — same `NEXT_PUBLIC_POSTHOG_KEY`
+  already set up for the analytics above, nothing new to add. Turn it on
+  in PostHog's dashboard (Project Settings → Session Replay); it starts
+  recording automatically from the next pageview. Free tier includes a
+  monthly recording quota.
+- **Microsoft Clarity** (`components/ClarityProvider.tsx`) — a second,
+  separate dashboard, but free and unlimited, with heatmaps and
+  rage-click/dead-click detection PostHog's free tier doesn't include.
+  Set `NEXT_PUBLIC_CLARITY_PROJECT_ID` (see `.env.example`); without it,
+  the provider simply doesn't load anything.
+
 ## Branching & deploy workflow
 
 `master` is Vercel's Production Branch — anything merged there deploys to
