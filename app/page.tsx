@@ -372,10 +372,6 @@ export default function Home() {
           }}
         >
           <p>
-            Literary excerpts come from public-domain writers. Art comes from the Met Museum&apos;s Open Access
-            collection. Travel pieces are original, written for Go Dilly.
-          </p>
-          <p style={{ marginTop: 6 }}>
             <Link href="/pricing" style={{ textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: "4px" }}>
               See plans
             </Link>
