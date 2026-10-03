@@ -17,6 +17,8 @@ export default function DeskHeader({
   onOpenInterests,
   onOpenArrange,
   onOpenUpgrade,
+  onOpenShelf,
+  shelfCount,
   user,
   onSignOut,
   mobile,
@@ -29,6 +31,8 @@ export default function DeskHeader({
   onOpenInterests: () => void;
   onOpenArrange: () => void;
   onOpenUpgrade: () => void;
+  onOpenShelf: () => void;
+  shelfCount: number;
   user: Viewer | null;
   onSignOut: () => void;
   mobile: boolean;
@@ -111,6 +115,21 @@ export default function DeskHeader({
           }}
         >
           Arrange your desk
+        </button>
+        <button
+          onClick={onOpenShelf}
+          className="dd-linklike"
+          style={{
+            background: "transparent",
+            border: 0,
+            padding: "6px 2px",
+            fontFamily: "var(--font-sans), sans-serif",
+            fontSize: 14,
+            whiteSpace: "nowrap",
+            cursor: "pointer",
+          }}
+        >
+          Your shelf{shelfCount > 0 ? ` (${shelfCount})` : ""}
         </button>
         {/* Member / sign-in hidden for now, per request — not ready to surface yet. */}
       </div>

@@ -265,6 +265,38 @@ and identifies each visitor by their own `User.id`, so repeat visits (and,
 once signed in, the same person across devices) roll up as one person in
 PostHog's dashboards instead of one row per browser session.
 
+### North Star: Weekly Dilly Rituals
+
+Not MAUs, not pageviews, not time on site — the number of visitors who
+voluntarily open their Dilly on **3 or more distinct days in a trailing
+7-day window**. The product's whole bet is turning "a website" into "a
+thing I do"; this is the one number that actually says whether that's
+happening. Everything else — notifications, personalization, the shelf,
+membership — only matters in service of moving this number.
+
+`User.visitCount` (`lib/auth.ts`) counts distinct calendar days a visitor
+has ever been seen on, bumped at most once per day — useful for lifetime
+engagement ("has this person ever formed the habit at all?") and for
+product moments like the personalization invite (`app/page.tsx` waits for
+`visitCount >= 3`), but it's a cumulative counter, not a sliding window, so
+it can't answer "3+ days in the *last* 7" on its own:
+
+```sql
+-- Proxy, not the real thing: lifetime distinct-day visitors with 3+ days
+-- total, seen recently. Overcounts anyone who built up visitCount long ago
+-- and happened to come back once this week.
+select count(*) from "User"
+where "visitCount" >= 3 and "lastSeenAt" > now() - interval '7 days';
+```
+
+For the real rolling-window number, use PostHog (already capturing
+pageviews per `User.id` — see above): build an Insight on the pageview
+event, breakdown by person, counting distinct calendar days per person in
+the trailing 7 days, filtered to >= 3. That's a few clicks in PostHog's UI
+with data already flowing in, versus a new per-visit log table and a
+retention/cleanup policy for it on our own side — not worth building until
+this specific number is one you're checking regularly.
+
 **Heatmaps and session recordings** are a different lens than the
 funnel/retention numbers above — two options, not mutually exclusive:
 

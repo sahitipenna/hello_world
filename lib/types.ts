@@ -19,6 +19,10 @@ export interface SectionMeta {
 // ---------------------------------------------------------------------------
 
 export interface Poem {
+  // Present when this came from the live daily edition (dailyBundle.ts) —
+  // absent on the raw seed-bank entries in lib/contentBank.ts, which have
+  // no stable id of their own until Prisma assigns one at seed time.
+  id?: string;
   title: string;
   poet: string;
   year?: string;
@@ -29,6 +33,7 @@ export interface Poem {
 }
 
 export interface TravelVignette {
+  id?: string; // see Poem.id
   title: string;
   place: string;
   body: string;
@@ -36,6 +41,7 @@ export interface TravelVignette {
 }
 
 export interface BookRec {
+  id?: string; // see Poem.id
   title: string;
   author: string;
   reason: string;

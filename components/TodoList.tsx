@@ -112,7 +112,7 @@ export default function TodoList({
           onClick={onUnlockClick}
           className="mt-3 w-full text-sm font-medium text-ink/60 border border-dashed border-ink/25 rounded-lg px-3 py-2.5 hover:border-terracotta hover:text-terracotta transition-colors"
         >
-          +{hiddenCount} more with Premium
+          +{hiddenCount} more as a member
         </button>
       )}
     </div>

@@ -61,12 +61,12 @@ export default function OnboardingModal({
         >
           ×
         </button>
-        <p className="text-xs font-semibold uppercase tracking-wide text-mustard mb-2">Make it yours</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-mustard mb-2">You&apos;re becoming a regular</p>
         <h2 className="font-serif text-2xl mb-2" style={{ fontFamily: "var(--font-serif), serif" }}>
-          What draws your attention?
+          Want to make your Dilly yours?
         </h2>
         <p className="text-sm text-ink/60 mb-5">
-          Pick a few — we&apos;ll lean your edition toward them. Change this anytime.
+          Pick what you&apos;d like more of — we&apos;ll lean your edition that way. Change this anytime.
         </p>
         <div className="flex flex-wrap gap-2 mb-6">
           {tags.map((tag) => {

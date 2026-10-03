@@ -15,11 +15,11 @@ export default async function Pricing() {
           {"←"} Back to today
         </Link>
         <h1 className="font-serif text-3xl sm:text-4xl mt-4 mb-2" style={{ fontFamily: "var(--font-serif), serif" }}>
-          A small daily ritual, for less than a coffee
+          Make your Dilly yours
         </h1>
         <p className="text-ink/60 mb-10 max-w-lg">
-          Go Dilly is free to start. Premium unlocks the full edition &mdash; every section, every day of the
-          year.
+          Go Dilly is free to start, for as long as you like. Membership shapes it around you &mdash; your
+          interests, your time, your own growing shelf of things you've discovered.
         </p>
 
         <div className="grid sm:grid-cols-2 gap-6">

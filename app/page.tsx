@@ -16,6 +16,10 @@ import ComeBackTomorrow from "@/components/ComeBackTomorrow";
 import UpgradeModal from "@/components/UpgradeModal";
 import OnboardingModal from "@/components/OnboardingModal";
 import NotifyMeButton from "@/components/NotifyMeButton";
+import LandingGate from "@/components/LandingGate";
+import ShelfModal, { ShelfItem } from "@/components/ShelfModal";
+
+const LANDING_SEEN_KEY = "godilly-started";
 
 interface Tag {
   id: string;
@@ -43,6 +47,12 @@ export default function Home() {
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [showLandingGate, setShowLandingGate] = useState(false);
+  const [visitCount, setVisitCount] = useState(0);
+  const [hasChosenInterests, setHasChosenInterests] = useState<boolean | null>(null);
+  const [savedItems, setSavedItems] = useState<ShelfItem[]>([]);
+  const [shelfOpen, setShelfOpen] = useState(false);
+  const savedKeys = new Set(savedItems.map((it) => `${it.contentType}:${it.contentId}`));
 
   const { ref: rootRef, width } = useDeskWidth();
   const mobile = width < 700;
@@ -57,6 +67,17 @@ export default function Home() {
       if (stored === "dark" || stored === "light" || stored === "white") setDeskSkin(stored);
     } catch {}
 
+    // Local, not server-driven: resolves instantly (no flash of the gate
+    // before a network round-trip), and persists even if a visitor clears
+    // cookies — this is specifically "has this browser seen the gate",
+    // separate from visitCount below, which drives the later, slower
+    // personalization invitation.
+    try {
+      setShowLandingGate(localStorage.getItem(LANDING_SEEN_KEY) !== "1");
+    } catch {
+      setShowLandingGate(false);
+    }
+
     fetch("/api/preferences")
       .then((r) => r.json())
       .then((p) => {
@@ -67,6 +88,7 @@ export default function Home() {
         setAllSections(p.allSections ?? []);
         setPremiumPrice(p.premiumPrice ?? null);
         setViewer(p.user ?? null);
+        setVisitCount(p.visitCount ?? 0);
         if (p.deskSkin === "dark" || p.deskSkin === "light" || p.deskSkin === "white") setDeskSkin(p.deskSkin);
         if (p.userId) identifyVisitor(p.userId, p.user ? { email: p.user.email, name: p.user.name } : undefined);
       })
@@ -77,10 +99,30 @@ export default function Home() {
       .then((d) => {
         setTags(d.tags ?? []);
         setSelectedInterests(d.selected ?? []);
-        if (!d.hasChosen) setOnboardingOpen(true);
+        setHasChosenInterests(Boolean(d.hasChosen));
       })
       .catch(() => {});
+
+    fetch("/api/bookmarks")
+      .then((r) => r.json())
+      .then((d) => setSavedItems(d.items ?? []))
+      .catch(() => {});
   }, []);
+
+  // Invite personalization once someone's a few visits in, per the product
+  // loop: don't ask for commitment before they've experienced the magic.
+  // Deliberately NOT on first visit — see the removed `if (!d.hasChosen)`
+  // auto-open this used to do above.
+  useEffect(() => {
+    if (hasChosenInterests === false && visitCount >= 3) setOnboardingOpen(true);
+  }, [hasChosenInterests, visitCount]);
+
+  function dismissLandingGate() {
+    try {
+      localStorage.setItem(LANDING_SEEN_KEY, "1");
+    } catch {}
+    setShowLandingGate(false);
+  }
 
   const isFuture = dateISO !== "" && dateISO > toISODate(new Date());
 
@@ -187,6 +229,32 @@ export default function Home() {
     }).catch(() => {});
   }
 
+  async function toggleBookmark(contentType: string, contentId: string) {
+    const key = `${contentType}:${contentId}`;
+    const alreadySaved = savedItems.some((it) => `${it.contentType}:${it.contentId}` === key);
+    if (alreadySaved) {
+      setSavedItems((prev) => prev.filter((it) => `${it.contentType}:${it.contentId}` !== key));
+      await fetch("/api/bookmarks", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentType, contentId }),
+      }).catch(() => {});
+    } else {
+      await fetch("/api/bookmarks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentType, contentId }),
+      }).catch(() => {});
+      // Refetch rather than constructing the item locally — the API
+      // resolves title/subtitle from the underlying content row, which
+      // this component doesn't otherwise have in a consistent shape.
+      fetch("/api/bookmarks")
+        .then((r) => r.json())
+        .then((d) => setSavedItems(d.items ?? []))
+        .catch(() => {});
+    }
+  }
+
   function markVisited(key: string) {
     setVisited((prev) => (prev.includes(key) ? prev : [...prev, key]));
   }
@@ -219,6 +287,7 @@ export default function Home() {
       ref={rootRef}
       style={{ position: "relative", minHeight: "100dvh", display: "flex", flexDirection: "column", background: "#2b2622", overflow: "hidden" }}
     >
+      {showLandingGate && <LandingGate onStart={dismissLandingGate} />}
       <DeskHeader
         plan={plan}
         dateISO={dateISO}
@@ -227,6 +296,8 @@ export default function Home() {
         onOpenInterests={() => setOnboardingOpen(true)}
         onOpenArrange={openArrange}
         onOpenUpgrade={() => setUpgradeOpen(true)}
+        onOpenShelf={() => setShelfOpen(true)}
+        shelfCount={savedItems.length}
         user={viewer}
         onSignOut={handleSignOut}
         mobile={mobile}
@@ -334,6 +405,15 @@ export default function Home() {
           setActiveKey(null);
           setUpgradeOpen(true);
         }}
+        savedKeys={savedKeys}
+        onToggleSave={toggleBookmark}
+      />
+
+      <ShelfModal
+        open={shelfOpen}
+        items={savedItems}
+        onClose={() => setShelfOpen(false)}
+        onRemove={toggleBookmark}
       />
 
       <UpgradeModal

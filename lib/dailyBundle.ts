@@ -95,6 +95,7 @@ async function resolveContent(
       return {
         kind: "read",
         poem: {
+          id: item.id,
           title: item.work,
           poet: item.author,
           lines: item.excerpt.split("\n"),
@@ -110,7 +111,7 @@ async function resolveContent(
       if (!item) return null;
       return {
         kind: "wander",
-        travel: { title: item.title, place: item.location, body: item.text, category: item.category },
+        travel: { id: item.id, title: item.title, place: item.location, body: item.text, category: item.category },
       };
     }
     case "readnext": {
@@ -119,7 +120,7 @@ async function resolveContent(
       if (!book) return null;
       return {
         kind: "readnext",
-        book: { title: book.title, author: book.author, reason: book.whyRead, category: book.category },
+        book: { id: book.id, title: book.title, author: book.author, reason: book.whyRead, category: book.category },
       };
     }
     case "wonder": {

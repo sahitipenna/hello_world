@@ -12,6 +12,7 @@ import TravelVignetteCard from "../TravelVignetteCard";
 import BookRecommendation from "../BookRecommendation";
 import WonderCard from "../WonderCard";
 import TodoList from "../TodoList";
+import SaveButton from "../SaveButton";
 
 const OWN_HEADING_KINDS = new Set(["look", "wander", "readnext", "wonder"]);
 
@@ -40,37 +41,104 @@ function contentHeadline(section: EditionSection): string | null {
   }
 }
 
+/** Which single-item content kinds are bookmarkable, and the
+ * {contentType, contentId} that identifies them to /api/bookmarks — matches
+ * the Bookmark model's contentType enum (prisma/schema.prisma). "know" is
+ * handled separately (KnowSection has its own per-item save buttons, since
+ * one section holds several distinct news items); "play" and "do" aren't
+ * bookmarkable the way a single discovery is. */
+function bookmarkTarget(content: NonNullable<EditionSection["content"]>): { contentType: string; contentId: string } | null {
+  switch (content.kind) {
+    case "look":
+      return { contentType: "artwork", contentId: content.artworkId };
+    case "read":
+      return content.poem.id ? { contentType: "literary", contentId: content.poem.id } : null;
+    case "wander":
+      return content.travel.id ? { contentType: "travel", contentId: content.travel.id } : null;
+    case "readnext":
+      return content.book.id ? { contentType: "book", contentId: content.book.id } : null;
+    case "wonder":
+      return { contentType: "wonder", contentId: content.wonder.id };
+    default:
+      return null;
+  }
+}
+
 function renderSectionContent(
   section: EditionSection,
   bundle: DailyEditionResponse,
   onTodoChecksChange: (checks: Record<number, boolean>) => void,
-  onUnlockClick: () => void
+  onUnlockClick: () => void,
+  savedKeys: Set<string>,
+  onToggleSave: (contentType: string, contentId: string) => void
 ) {
   const content = section.content;
   if (!content) return null;
+
+  const target = bookmarkTarget(content);
+  const saveRow = target ? (
+    <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+      <SaveButton
+        saved={savedKeys.has(`${target.contentType}:${target.contentId}`)}
+        onToggle={() => onToggleSave(target.contentType, target.contentId)}
+      />
+    </div>
+  ) : null;
+
   switch (content.kind) {
     case "know":
-      return <KnowSection items={content.items} totalCount={content.totalCount} onUnlockClick={onUnlockClick} />;
+      return (
+        <KnowSection
+          items={content.items}
+          totalCount={content.totalCount}
+          onUnlockClick={onUnlockClick}
+          savedKeys={savedKeys}
+          onToggleSave={onToggleSave}
+        />
+      );
     case "play":
       return <CrosswordPuzzle puzzle={content.puzzle} />;
     case "look":
       return (
-        <ArtSpotlight
-          query={content.query}
-          analysis={content.analysis}
-          custom={content.custom}
-          dateISO={bundle.dateISO}
-          artworkId={content.artworkId}
-        />
+        <>
+          {saveRow}
+          <ArtSpotlight
+            query={content.query}
+            analysis={content.analysis}
+            custom={content.custom}
+            dateISO={bundle.dateISO}
+            artworkId={content.artworkId}
+          />
+        </>
       );
     case "read":
-      return <PoemCard poem={content.poem} />;
+      return (
+        <>
+          {saveRow}
+          <PoemCard poem={content.poem} />
+        </>
+      );
     case "wander":
-      return <TravelVignetteCard vignette={content.travel} />;
+      return (
+        <>
+          {saveRow}
+          <TravelVignetteCard vignette={content.travel} />
+        </>
+      );
     case "readnext":
-      return <BookRecommendation book={content.book} />;
+      return (
+        <>
+          {saveRow}
+          <BookRecommendation book={content.book} />
+        </>
+      );
     case "wonder":
-      return <WonderCard wonder={content.wonder} />;
+      return (
+        <>
+          {saveRow}
+          <WonderCard wonder={content.wonder} />
+        </>
+      );
     case "do":
       return (
         <TodoList
@@ -99,6 +167,8 @@ export default function DeskPanel({
   onNavigate,
   onTodoChecksChange,
   onUnlockClick,
+  savedKeys,
+  onToggleSave,
 }: {
   activeKey: string | null;
   mobile: boolean;
@@ -109,6 +179,8 @@ export default function DeskPanel({
   onNavigate: (key: string) => void;
   onTodoChecksChange: (checks: Record<number, boolean>) => void;
   onUnlockClick: () => void;
+  savedKeys: Set<string>;
+  onToggleSave: (contentType: string, contentId: string) => void;
 }) {
   const open = activeKey !== null;
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -338,7 +410,7 @@ export default function DeskPanel({
                     </h2>
                   ) : null;
                 })()}
-              {renderSectionContent(section, bundle, onTodoChecksChange, onUnlockClick)}
+              {renderSectionContent(section, bundle, onTodoChecksChange, onUnlockClick, savedKeys, onToggleSave)}
             </>
           ) : null}
         </div>
