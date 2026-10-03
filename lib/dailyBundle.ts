@@ -74,6 +74,7 @@ async function resolveContent(
         kind: "look",
         query: artwork.metQuery || artwork.title,
         analysis: artwork.description,
+        artworkId: artwork.id,
         custom: artwork.image
           ? {
               image: artwork.image,
