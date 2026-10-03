@@ -152,6 +152,23 @@ const CONTENT_TYPES: ContentTypeDef[] = [
       { key: "category", label: "Category", kind: "text" },
     ],
   },
+  {
+    slug: "side-object",
+    label: "On the side (mug / plant / headphones / apple)",
+    sectionKey: "side",
+    delegate: prisma.sideObjectItem,
+    fields: [
+      { key: "pool", label: "Which object: mug, plant, headphones, or apple", kind: "text", required: true },
+      { key: "title", label: "Title", kind: "text", required: true },
+      { key: "sub", label: "Subtitle", kind: "text" },
+      { key: "body", label: "Body", kind: "textarea", required: true },
+      { key: "note", label: "Note (the handwritten-style aside)", kind: "text" },
+      { key: "url", label: "URL (optional)", kind: "text" },
+      { key: "linkLabel", label: "Link label (optional, e.g. “Listen on Spotify”)", kind: "text" },
+      { key: "category", label: "Category", kind: "text" },
+      { key: "scheduledDate", label: "Scheduled date", kind: "date" },
+    ],
+  },
 ];
 
 export function getContentType(slug: string): ContentTypeDef | undefined {

@@ -10,7 +10,7 @@ import {
   DECOR_ART,
   DECOR_LAYOUT_DESKTOP,
   DECOR_LAYOUT_MOBILE,
-  getSideObjects,
+  SideObject,
 } from "@/lib/deskLayout";
 
 export default function DeskScene({
@@ -19,7 +19,7 @@ export default function DeskScene({
   mobile,
   containerWidth,
   visited,
-  dateISO,
+  sideObjects,
   onOpenSection,
   onOpenSide,
 }: {
@@ -28,7 +28,7 @@ export default function DeskScene({
   mobile: boolean;
   containerWidth: number;
   visited: string[];
-  dateISO: string;
+  sideObjects: SideObject[];
   onOpenSection: (key: string) => void;
   onOpenSide: (id: string) => void;
 }) {
@@ -37,7 +37,6 @@ export default function DeskScene({
   const stageW = mobile ? containerWidth : Math.min(containerWidth - 80, 1180);
   const stageH = (stageW * layout.H) / layout.W;
   const labelsAlways = mobile;
-  const sideObjects = getSideObjects(dateISO);
 
   return (
     <div style={{ position: "relative", width: stageW, height: stageH, margin: "0 auto" }}>

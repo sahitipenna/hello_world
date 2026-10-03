@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { DailyEditionResponse, EditionSection } from "@/lib/types";
-import { SECTION_ACCENT, getSideObjects } from "@/lib/deskLayout";
+import { SECTION_ACCENT } from "@/lib/deskLayout";
 import LockSeal from "./illustrations/LockSeal";
 import KnowSection from "../KnowSection";
 import CrosswordPuzzle from "../CrosswordPuzzle";
@@ -218,7 +218,7 @@ export default function DeskPanel({
   }, [open, onClose]);
 
   const section = activeKey ? sectionsByKey.get(activeKey) : undefined;
-  const sideObject = activeKey ? getSideObjects(bundle?.dateISO ?? "").find((s) => s.id === activeKey) : undefined;
+  const sideObject = activeKey ? bundle?.sideObjects.find((s) => s.id === activeKey) : undefined;
   const idx = activeKey ? visibleKeys.indexOf(activeKey) : -1;
   const prevKey = visibleKeys.length ? visibleKeys[(idx - 1 + visibleKeys.length) % visibleKeys.length] : undefined;
   const nextKey = visibleKeys.length ? visibleKeys[(idx + 1) % visibleKeys.length] : undefined;

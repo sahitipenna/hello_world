@@ -247,6 +247,25 @@ model BonusArticle {
   createdAt DateTime @default(now())
 }
 
+/// Content pool for the four "on the side" desk objects (mug/plant/
+/// headphones/apple — see lib/deskLayout.ts SIDE_OBJECT_META for their fixed
+/// label/accent). `pool` picks which object a row belongs to; within a pool,
+/// rows rotate the same scheduled-then-deterministic way as every other
+/// content pool (lib/contentPicker.ts).
+model SideObjectItem {
+  id            String   @id @default(cuid())
+  pool          String // "mug" | "plant" | "headphones" | "apple"
+  title         String
+  sub           String   @default("")
+  body          String
+  note          String   @default("")
+  url           String?
+  linkLabel     String?
+  category      String   @default("")
+  scheduledDate String?
+  createdAt     DateTime @default(now())
+}
+
 // ---------------------------------------------------------------------------
 // Personalization
 // ---------------------------------------------------------------------------

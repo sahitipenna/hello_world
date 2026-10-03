@@ -58,6 +58,7 @@ export async function GET(req: NextRequest) {
     plan,
     timeBudgetMinutes,
     sections,
+    sideObjects: edition.sideObjects,
     todoChecks,
   };
 

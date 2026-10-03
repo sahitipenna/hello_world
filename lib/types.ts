@@ -1,3 +1,5 @@
+import type { SideObject } from "./deskLayout";
+
 export type Plan = "free" | "premium";
 
 /** A section's config, as stored in the `Section` table — drives the whole
@@ -173,6 +175,7 @@ export interface DailyEditionResponse {
   plan: Plan;
   timeBudgetMinutes: number | null;
   sections: EditionSection[];
+  sideObjects: SideObject[];
   todoChecks: Record<number, boolean>;
 }
 

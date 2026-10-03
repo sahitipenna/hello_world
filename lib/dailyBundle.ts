@@ -3,7 +3,9 @@ import { prisma } from "./db";
 import { dayOfYear, parseISODate, getISOWeekKey, hashString } from "./dateUtils";
 import { resolveOneForDate, resolveManyForDate } from "./contentPicker";
 import { generateBestCrossword } from "./crosswordGen";
+import { resolveSideObjects } from "./sideObjects";
 import { EditionContent, NewsItemT } from "./types";
+import { SideObject } from "./deskLayout";
 
 export interface ResolvedSection {
   meta: Section;
@@ -15,6 +17,7 @@ export interface ResolvedEdition {
   dayOfYear: number;
   weekKey: string;
   sections: ResolvedSection[];
+  sideObjects: SideObject[];
 }
 
 /**
@@ -34,11 +37,12 @@ export async function buildEdition(
   const weekKey = getISOWeekKey(date);
 
   const sections = await prisma.section.findMany({ where: { enabled: true }, orderBy: { order: "asc" } });
-  const resolved = await Promise.all(
-    sections.map(async (meta) => ({ meta, content: await resolveContent(meta.key, dateISO, weights) }))
-  );
+  const [resolved, sideObjects] = await Promise.all([
+    Promise.all(sections.map(async (meta) => ({ meta, content: await resolveContent(meta.key, dateISO, weights) }))),
+    resolveSideObjects(dateISO),
+  ]);
 
-  return { dateISO, dayOfYear: doy, weekKey, sections: resolved };
+  return { dateISO, dayOfYear: doy, weekKey, sections: resolved, sideObjects };
 }
 
 async function resolveContent(

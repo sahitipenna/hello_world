@@ -342,7 +342,7 @@ export default function Home() {
             mobile={mobile}
             containerWidth={width}
             visited={visited}
-            dateISO={dateISO}
+            sideObjects={bundle.sideObjects}
             onOpenSection={openSection}
             onOpenSide={openSide}
           />
