@@ -62,32 +62,30 @@ export const DESK_LAYOUT_DESKTOP: { W: number; H: number; items: Record<string, 
 };
 
 // Mobile used to be a hand-placed fixed collage like the desktop one, in a
-// nominal 390x1390 design space. That broke once content could vary: a
-// visitor's time-budget choice hides some sections, but the rest stayed at
-// their original fixed Y, leaving a gap where the hidden one used to be
-// (never compacting upward) — and with every label shown at once on mobile
-// (not just on hover, like desktop), the tight original spacing let long
-// labels bleed into neighboring items. mobileFlowLayout() below replaces the
-// fixed table with a single-column stack generated from whichever keys are
-// actually visible, so there's never a gap and every item gets full-width
-// breathing room for its label. Desktop keeps the original fixed collage
-// (DESK_LAYOUT_DESKTOP / DECOR_LAYOUT_DESKTOP below) — it isn't subject to
-// the same hiding behavior and has room to spare.
+// nominal 390x1390 design space: a two-column "table" of cards, with a
+// couple of wider ones (READ, WANDER) spanning alone between pairs. That
+// broke once content could vary: a visitor's time-budget choice hides some
+// sections, but the rest stayed at their original fixed Y, leaving a gap
+// where the hidden one used to be (never compacting upward) — and with
+// every label shown at once on mobile (not just on hover, like desktop),
+// the tight original spacing let long labels bleed into neighboring items.
+// mobileTableLayout() below keeps that same two-column rhythm but generates
+// it fresh from whichever keys are actually visible — pairing them up two
+// at a time in order, with WIDE_MOBILE_KEYS spanning the full width alone
+// — so there's never a gap no matter which sections the time budget hides.
+// Desktop keeps the original fixed collage (DESK_LAYOUT_DESKTOP /
+// DECOR_LAYOUT_DESKTOP below) — it isn't subject to the same hiding
+// behavior and has room to spare.
 const MOBILE_FLOW_W = 390;
+const MOBILE_MARGIN = 16;
+const MOBILE_COL_GAP = 14;
+const MOBILE_COL_W = Math.round((MOBILE_FLOW_W - 2 * MOBILE_MARGIN - MOBILE_COL_GAP) / 2);
+const MOBILE_ROW_GAP = 62;
 
-// Width as a fraction of MOBILE_FLOW_W — echoes which items read as
-// "feature" cards vs. smaller ones in the original hand-tuned layout.
-const MOBILE_WIDTH_FRACTION: Record<string, number> = {
-  know: 0.74,
-  look: 0.62,
-  read: 0.92,
-  play: 0.66,
-  readnext: 0.62,
-  wander: 0.86,
-  wonder: 0.6,
-  do: 0.6,
-  quiz: 0.66,
-};
+// Which sections were full-width "feature" cards (spanning alone, not
+// paired into a column) in the original hand-tuned layout.
+const WIDE_MOBILE_KEYS = new Set(["read", "wander"]);
+const WIDE_MOBILE_WIDTH_FRACTION: Record<string, number> = { read: 0.8, wander: 0.64 };
 
 // w/h of each item's native illustration (matches its DESK_LAYOUT_DESKTOP
 // box), so scaling it down to a mobile card width doesn't stretch the art.
@@ -112,12 +110,14 @@ const DECOR_ASPECT: Record<string, number> = {
 
 const FLOW_ROTATIONS = [-3, 2.5, -2, 3, -3.5, 2, -2.5, 3.5];
 
-/** Generates a single-column mobile layout from whichever section keys are
- * actually visible, followed by the side-object decor stacked the same way
- * (decor isn't time-budget-filtered, but still needs to compact upward if
- * the sections above it are fewer). Returns the same `{W,H,items}` shape as
- * DESK_LAYOUT_DESKTOP so DeskScene's existing percentBox/stageH scaling
- * needs no change beyond calling this instead of a fixed table. */
+/** Generates the two-column mobile "table" from whichever section keys are
+ * actually visible (pairing them two at a time, in order, with
+ * WIDE_MOBILE_KEYS spanning alone), followed by the side-object decor as
+ * its own small grid (decor isn't time-budget-filtered, but still needs to
+ * compact upward if the sections above it are fewer). Returns the same
+ * `{W,H,items}` shape as DESK_LAYOUT_DESKTOP so DeskScene's existing
+ * percentBox/stageH scaling needs no change beyond calling this instead of
+ * a fixed table. */
 export function mobileFlowLayout(
   sectionKeys: string[],
   decorKeys: string[]
@@ -127,27 +127,74 @@ export function mobileFlowLayout(
   let y = 18;
   let i = 0;
 
-  for (const key of sectionKeys) {
-    const widthFrac = MOBILE_WIDTH_FRACTION[key] ?? 0.66;
+  function heightFor(key: string, w: number): number {
     const aspect = MOBILE_ASPECT[key] ?? 1;
-    const w = Math.round(MOBILE_FLOW_W * widthFrac);
-    const h = Math.round(w / aspect);
-    const x = Math.round((MOBILE_FLOW_W - w) / 2);
-    items[key] = [x, y, w, h, FLOW_ROTATIONS[i % FLOW_ROTATIONS.length], 3];
-    y += h + 64;
+    return Math.round(w / aspect);
+  }
+  function place(key: string, x: number, w: number, rowY: number) {
+    const h = heightFor(key, w);
+    items[key] = [x, rowY, w, h, FLOW_ROTATIONS[i % FLOW_ROTATIONS.length], 3];
     i++;
+    return h;
+  }
+
+  let pendingNarrow: string | null = null;
+  for (const key of sectionKeys) {
+    if (WIDE_MOBILE_KEYS.has(key)) {
+      if (pendingNarrow) {
+        y += place(pendingNarrow, MOBILE_MARGIN, MOBILE_COL_W, y) + MOBILE_ROW_GAP;
+        pendingNarrow = null;
+      }
+      const w = Math.round(MOBILE_FLOW_W * (WIDE_MOBILE_WIDTH_FRACTION[key] ?? 0.8));
+      const x = Math.round((MOBILE_FLOW_W - w) / 2);
+      y += place(key, x, w, y) + MOBILE_ROW_GAP;
+    } else if (pendingNarrow) {
+      const hA = place(pendingNarrow, MOBILE_MARGIN, MOBILE_COL_W, y);
+      const hB = place(key, MOBILE_MARGIN + MOBILE_COL_W + MOBILE_COL_GAP, MOBILE_COL_W, y);
+      y += Math.max(hA, hB) + MOBILE_ROW_GAP;
+      pendingNarrow = null;
+    } else {
+      pendingNarrow = key;
+    }
+  }
+  if (pendingNarrow) {
+    // Odd one out: give it the full-width treatment rather than leaving
+    // half a row empty.
+    const w = Math.round(MOBILE_FLOW_W * 0.6);
+    const x = Math.round((MOBILE_FLOW_W - w) / 2);
+    y += place(pendingNarrow, x, w, y) + MOBILE_ROW_GAP;
   }
 
   if (decorKeys.length > 0) {
-    y += 10;
+    y += 8;
+    let pendingDecor: string | null = null;
     for (const key of decorKeys) {
-      const aspect = DECOR_ASPECT[key] ?? 1;
-      const w = Math.round(MOBILE_FLOW_W * 0.42);
+      if (pendingDecor) {
+        const w = Math.round(MOBILE_COL_W * 0.62);
+        const aspectA = DECOR_ASPECT[pendingDecor] ?? 1;
+        const aspectB = DECOR_ASPECT[key] ?? 1;
+        const hA = Math.round(w / aspectA);
+        const hB = Math.round(w / aspectB);
+        const xA = Math.round(MOBILE_FLOW_W / 2 - MOBILE_COL_GAP / 2 - w);
+        const xB = Math.round(MOBILE_FLOW_W / 2 + MOBILE_COL_GAP / 2);
+        decorItems[pendingDecor] = [xA, y, w, hA, FLOW_ROTATIONS[i % FLOW_ROTATIONS.length], 1];
+        i++;
+        decorItems[key] = [xB, y, w, hB, FLOW_ROTATIONS[i % FLOW_ROTATIONS.length], 1];
+        i++;
+        y += Math.max(hA, hB) + MOBILE_ROW_GAP;
+        pendingDecor = null;
+      } else {
+        pendingDecor = key;
+      }
+    }
+    if (pendingDecor) {
+      const w = Math.round(MOBILE_COL_W * 0.62);
+      const aspect = DECOR_ASPECT[pendingDecor] ?? 1;
       const h = Math.round(w / aspect);
       const x = Math.round((MOBILE_FLOW_W - w) / 2);
-      decorItems[key] = [x, y, w, h, FLOW_ROTATIONS[i % FLOW_ROTATIONS.length], 1];
-      y += h + 64;
+      decorItems[pendingDecor] = [x, y, w, h, FLOW_ROTATIONS[i % FLOW_ROTATIONS.length], 1];
       i++;
+      y += h + MOBILE_ROW_GAP;
     }
   }
 
