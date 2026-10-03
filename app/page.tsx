@@ -45,6 +45,11 @@ export default function Home() {
   const [visited, setVisited] = useState<string[]>([]);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+  // Same modal, two different doors in: auto-invited after a few visits
+  // ("becoming a regular") vs. opened any time via the header's
+  // "Interests" link, by anyone, including a first-time visitor — "manual"
+  // gets the neutral greeting since "regular" wouldn't make sense there.
+  const [onboardingTrigger, setOnboardingTrigger] = useState<"auto" | "manual">("manual");
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [showLandingGate, setShowLandingGate] = useState(false);
@@ -114,7 +119,10 @@ export default function Home() {
   // Deliberately NOT on first visit — see the removed `if (!d.hasChosen)`
   // auto-open this used to do above.
   useEffect(() => {
-    if (hasChosenInterests === false && visitCount >= 3) setOnboardingOpen(true);
+    if (hasChosenInterests === false && visitCount >= 3) {
+      setOnboardingTrigger("auto");
+      setOnboardingOpen(true);
+    }
   }, [hasChosenInterests, visitCount]);
 
   function dismissLandingGate() {
@@ -293,7 +301,10 @@ export default function Home() {
         dateISO={dateISO}
         dayOfYear={dateISO ? dayOfYear(parseISODate(dateISO)) : 1}
         onDateChange={setDateISO}
-        onOpenInterests={() => setOnboardingOpen(true)}
+        onOpenInterests={() => {
+          setOnboardingTrigger("manual");
+          setOnboardingOpen(true);
+        }}
         onOpenArrange={openArrange}
         onOpenUpgrade={() => setUpgradeOpen(true)}
         onOpenShelf={() => setShelfOpen(true)}
@@ -430,6 +441,8 @@ export default function Home() {
         initialTimeBudget={timeBudget}
         onClose={() => setOnboardingOpen(false)}
         onSave={handleSaveOnboarding}
+        kicker={onboardingTrigger === "auto" ? "You're becoming a regular" : undefined}
+        title={onboardingTrigger === "auto" ? "Want to make your Dilly yours?" : undefined}
       />
     </div>
   );
