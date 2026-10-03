@@ -48,6 +48,27 @@ model User {
   quizProgress        QuizProgress[]
   bookmarks           Bookmark[]
   categoryEngagement  CategoryEngagement[]
+  pushSubscriptions   PushSubscription[]
+}
+
+/// A browser's Web Push subscription (app/api/push/*, lib/webPush.ts) — how
+/// the daily "come back" reminder reaches a phone/desktop without an app.
+/// Requires the visitor to be signed in with Google (see User model above):
+/// notifications are opted into deliberately, not tied to the anonymous
+/// cookie identity alone. One User can hold several rows (one per
+/// device/browser they enabled it on); `endpoint` (the push service URL
+/// the browser gave us) is what's actually unique, not the user.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String // subscription's public key, base64url
+  auth      String // subscription's auth secret, base64url
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 /// Adaptive personalization signal: how much a visitor actually engages

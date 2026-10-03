@@ -104,9 +104,14 @@ export interface LookContent {
   kind: "look";
   query: string;
   analysis: string;
-  // Set once an editor gives an Artwork row its own `image` in /admin —
-  // shown as-is, no Met Museum lookup. Null falls back to a live Met
-  // search for `query`, as before.
+  // The resolved Artwork row's id — lets the client tell /api/art which
+  // row to cache a successful Met Museum resolution into, so only the
+  // first visitor to resolve a given artwork ever pays for the live
+  // lookup (see /api/art/route.ts).
+  artworkId: string;
+  // Set once an editor gives an Artwork row its own `image` in /admin, or
+  // once /api/art has cached a resolved Met lookup into it — shown as-is,
+  // no live Met call. Null falls back to a live Met search for `query`.
   custom: {
     image: string;
     title: string;

@@ -198,6 +198,39 @@ provider), or a licensed daily comic (the `Comic` model and disabled
 `ARCHITECTURE.md` and the product brief's own note on Calvin & Hobbes
 licensing).
 
+## Push notifications
+
+"Remind me tomorrow" (`components/NotifyMeButton.tsx`, under the closing
+tagline) is an opt-in Web Push reminder that fires once a day — a real
+phone/lock-screen notification, not an email, and no native app involved.
+
+- **Requires Google sign-in.** Deliberately not tied to the anonymous
+  per-browser cookie alone — see the `PushSubscription` model's comment in
+  `prisma/schema.prisma`. Signed-out visitors see a "sign in to get a
+  daily reminder" prompt instead of the toggle.
+- **Needs a VAPID key pair** (`NEXT_PUBLIC_VAPID_PUBLIC_KEY` /
+  `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT`, generated with `npx web-push
+  generate-vapid-keys --json` — see `.env.example`). Without these, the
+  button just doesn't render, same as every other optional feature here.
+- **Browser support varies.** Works directly in Chrome/Edge/Firefox on
+  desktop and Android. On iPhone, Safari only supports Web Push once the
+  site's been added to the home screen (iOS 16.4+) — there's no way around
+  that from the app side, it's a platform restriction.
+- **The daily send is a Vercel Cron job** (`vercel.json`) hitting `POST
+  /api/push/send-daily` once a day at a fixed UTC hour (`0 13 * * *` —
+  13:00 UTC by default; edit the cron expression to match when your actual
+  users' mornings are, there's no per-user timezone handling). Protected
+  by a `CRON_SECRET` env var — set the same value in Vercel's project
+  settings and Vercel automatically sends it as the request's
+  `Authorization: Bearer ...` header, no extra wiring needed. **Vercel
+  Cron jobs only run for Production deployments** (this project's
+  `master`), not preview URLs — pushing this to `staging` alone won't
+  actually start sending anything.
+- Dead subscriptions (uninstalled, permission revoked, endpoint expired)
+  self-prune: `/api/push/send-daily` deletes a `PushSubscription` row the
+  moment the push service reports it gone (HTTP 404/410), so the table
+  doesn't accumulate stale rows over time.
+
 ## Analytics: repeat/return rate
 
 `User.lastSeenAt` is bumped on every request that resolves a visitor
@@ -231,6 +264,20 @@ for actual cohort/retention charts, set `NEXT_PUBLIC_POSTHOG_KEY` (see
 and identifies each visitor by their own `User.id`, so repeat visits (and,
 once signed in, the same person across devices) roll up as one person in
 PostHog's dashboards instead of one row per browser session.
+
+**Heatmaps and session recordings** are a different lens than the
+funnel/retention numbers above — two options, not mutually exclusive:
+
+- **PostHog's own Session Replay** — same `NEXT_PUBLIC_POSTHOG_KEY`
+  already set up for the analytics above, nothing new to add. Turn it on
+  in PostHog's dashboard (Project Settings → Session Replay); it starts
+  recording automatically from the next pageview. Free tier includes a
+  monthly recording quota.
+- **Microsoft Clarity** (`components/ClarityProvider.tsx`) — a second,
+  separate dashboard, but free and unlimited, with heatmaps and
+  rage-click/dead-click detection PostHog's free tier doesn't include.
+  Set `NEXT_PUBLIC_CLARITY_PROJECT_ID` (see `.env.example`); without it,
+  the provider simply doesn't load anything.
 
 ## Branching & deploy workflow
 

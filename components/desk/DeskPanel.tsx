@@ -55,7 +55,13 @@ function renderSectionContent(
       return <CrosswordPuzzle puzzle={content.puzzle} />;
     case "look":
       return (
-        <ArtSpotlight query={content.query} analysis={content.analysis} custom={content.custom} dateISO={bundle.dateISO} />
+        <ArtSpotlight
+          query={content.query}
+          analysis={content.analysis}
+          custom={content.custom}
+          dateISO={bundle.dateISO}
+          artworkId={content.artworkId}
+        />
       );
     case "read":
       return <PoemCard poem={content.poem} />;

@@ -228,15 +228,22 @@ async function main() {
   }
 
   for (const [i, a] of ART_SPOTLIGHT.entries()) {
-    const data = {
-      title: a.query, // a human title isn't known until the live Met search resolves
+    const id = `artwork-${i}`;
+    // title/artist/museum start as placeholders and get filled in for real
+    // once /api/art resolves (and caches) a live Met lookup for this row —
+    // don't let a re-seed stomp that resolved data back to placeholders.
+    // metQuery/description/category are the fields this content bank
+    // actually owns, so those always refresh on re-seed.
+    const create = {
+      title: a.query, // not known for real until the live Met search resolves
       artist: "",
       metQuery: a.query,
       description: a.analysis,
       category: a.category,
       museum: "The Metropolitan Museum of Art",
     };
-    await prisma.artwork.upsert({ where: { id: `artwork-${i}` }, update: data, create: { id: `artwork-${i}`, ...data } });
+    const update = { metQuery: a.query, description: a.analysis, category: a.category };
+    await prisma.artwork.upsert({ where: { id }, update, create: { id, ...create } });
   }
 
   for (const [i, p] of POEMS.entries()) {

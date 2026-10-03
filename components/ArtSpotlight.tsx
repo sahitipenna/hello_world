@@ -19,21 +19,23 @@ export default function ArtSpotlight({
   analysis,
   custom,
   dateISO,
+  artworkId,
 }: {
   query: string;
   analysis: string;
   custom: LookContent["custom"];
   dateISO: string;
+  artworkId: string;
 }) {
   const [art, setArt] = useState<ArtData | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (custom) return; // an editor's own image — nothing to fetch
+    if (custom) return; // already resolved (editor-set or previously cached) — nothing to fetch
     let cancelled = false;
     setArt(null);
     setFailed(false);
-    fetch(`/api/art?q=${encodeURIComponent(query)}&seed=${dateISO}&date=${dateISO}`)
+    fetch(`/api/art?q=${encodeURIComponent(query)}&seed=${dateISO}&date=${dateISO}&artworkId=${encodeURIComponent(artworkId)}`)
       .then((r) => {
         if (!r.ok) throw new Error("bad response");
         return r.json();
@@ -47,7 +49,7 @@ export default function ArtSpotlight({
     return () => {
       cancelled = true;
     };
-  }, [query, dateISO, custom]);
+  }, [query, dateISO, custom, artworkId]);
 
   const resolved: ArtData | null = custom
     ? {
