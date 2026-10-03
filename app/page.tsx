@@ -13,6 +13,8 @@ import ArrangeDeskCard from "@/components/desk/ArrangeDeskCard";
 import { useDeskWidth } from "@/components/desk/useDeskWidth";
 import { identifyVisitor } from "@/components/PostHogProvider";
 import ComeBackTomorrow from "@/components/ComeBackTomorrow";
+import ArchiveLocked from "@/components/ArchiveLocked";
+import { isWithinFreeArchive } from "@/lib/archive";
 import UpgradeModal from "@/components/UpgradeModal";
 import OnboardingModal from "@/components/OnboardingModal";
 import NotifyMeButton from "@/components/NotifyMeButton";
@@ -133,6 +135,14 @@ export default function Home() {
   }
 
   const isFuture = dateISO !== "" && dateISO > toISODate(new Date());
+  // Disables "Previous day" the same way `atToday` disables "Next day" —
+  // once dateISO is itself the oldest free-plan date, one step further
+  // back would be locked, so don't let the click happen at all.
+  const dayBeforeISO = dateISO ? toISODate(new Date(parseISODate(dateISO).getTime() - 86400000)) : "";
+  const atArchiveStart = plan === "free" && dateISO !== "" && !isWithinFreeArchive(dayBeforeISO);
+  // Points a brand-new visitor at the first item — gone the moment they
+  // open anything, and never shown again once they're not a first visit.
+  const showStartHint = visitCount <= 1 && visited.length === 0 && !showLandingGate;
 
   useEffect(() => {
     if (!dateISO || isFuture) return;
@@ -289,6 +299,12 @@ export default function Home() {
   const visibleOrder = order.length > 0 ? order : allSections.map((s) => s.key);
   const sectionsByKey = new Map((bundle?.sections ?? []).map((s) => [s.key, s]));
   const visibleKeys = visibleOrder.filter((key) => !hidden.includes(key) && sectionsByKey.has(key));
+  // Sections a visitor's time budget leaves out entirely aren't in `bundle`
+  // at all (server-filtered — see /api/daily), so a visitor who only ever
+  // looks at the desk has no way to know they exist. Surfaced here rather
+  // than silently absent.
+  const hiddenByTimeBudget =
+    timeBudget != null ? allSections.filter((s) => !hidden.includes(s.key) && s.minTimeMinutes > timeBudget) : [];
 
   return (
     <div
@@ -301,6 +317,7 @@ export default function Home() {
         dateISO={dateISO}
         dayOfYear={dateISO ? dayOfYear(parseISODate(dateISO)) : 1}
         onDateChange={setDateISO}
+        atArchiveStart={atArchiveStart}
         onOpenInterests={() => {
           setOnboardingTrigger("manual");
           setOnboardingOpen(true);
@@ -330,11 +347,38 @@ export default function Home() {
         Good morning. Take a little time for yourself.
       </p>
 
+      {hiddenByTimeBudget.length > 0 && (
+        <p
+          style={{
+            flex: "none",
+            textAlign: "center",
+            fontFamily: "var(--font-sans), sans-serif",
+            fontSize: 12.5,
+            color: "rgba(250,243,230,.55)",
+            background: "#2b2622",
+            margin: 0,
+            padding: "0 16px 10px",
+          }}
+        >
+          {hiddenByTimeBudget.length === 1 ? "One thing's" : `${hiddenByTimeBudget.length} things are`} tucked away
+          for today's {timeBudget}-minute Dilly — see everything in{" "}
+          <button
+            onClick={openArrange}
+            style={{ background: "none", border: 0, padding: 0, font: "inherit", color: "inherit", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: "3px", cursor: "pointer" }}
+          >
+            Arrange your desk
+          </button>
+          .
+        </p>
+      )}
+
       <DeskSurface skin={deskSkin} mobile={mobile}>
         {isFuture ? (
           <ComeBackTomorrow dateISO={dateISO} />
         ) : !bundle ? (
           <div style={{ height: "60vh", minHeight: 320 }} />
+        ) : bundle.archiveLocked ? (
+          <ArchiveLocked onUpgradeClick={() => setUpgradeOpen(true)} />
         ) : (
           <DeskScene
             sectionsByKey={sectionsByKey}
@@ -343,6 +387,7 @@ export default function Home() {
             containerWidth={width}
             visited={visited}
             sideObjects={bundle.sideObjects}
+            showStartHint={showStartHint}
             onOpenSection={openSection}
             onOpenSide={openSide}
           />
@@ -393,6 +438,7 @@ export default function Home() {
           deskSkin={deskSkin}
           onSkinChange={handleSkinChange}
           mobile={mobile}
+          timeBudgetMinutes={timeBudget}
         />
       )}
 

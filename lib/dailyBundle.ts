@@ -148,6 +148,8 @@ async function resolveContent(
       const tasks = resolveManyForDate(schedulable, dateISO, "do", 5, weights);
       return { kind: "do", tasks: tasks.map((t) => ({ title: t.title, category: t.category })), totalCount: tasks.length };
     }
+    case "quiz":
+      return { kind: "quiz" };
     default:
       // A section key the app doesn't have a content resolver for yet (an
       // admin re-enabling an older section like "quiz" or "comic"). The

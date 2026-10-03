@@ -5,6 +5,7 @@ import { getOrCreateUser } from "@/lib/auth";
 import { getPromptEdits, getTodoChecks } from "@/lib/userOverlay";
 import { getUserWeights } from "@/lib/interests";
 import { DailyEditionResponse, EditionContent, EditionSection, Plan } from "@/lib/types";
+import { isWithinFreeArchive } from "@/lib/archive";
 
 function isValidISODate(s: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s));
@@ -15,9 +16,29 @@ export async function GET(req: NextRequest) {
   const dateISO = param && isValidISODate(param) ? param : toISODate(new Date());
 
   const user = await getOrCreateUser();
+  const plan: Plan = (user.plan as Plan) ?? "free";
+  const archiveLocked = plan === "free" && !isWithinFreeArchive(dateISO);
+
+  // Free plan only gets the last FREE_ARCHIVE_DAYS days (see pricing copy) —
+  // skip the real (expensive) edition build for a locked date entirely
+  // rather than building it just to hide it client-side.
+  if (archiveLocked) {
+    const response: DailyEditionResponse = {
+      dateISO,
+      dayOfYear: 0,
+      weekKey: "",
+      plan,
+      timeBudgetMinutes: user.timeBudgetMinutes ?? null,
+      sections: [],
+      sideObjects: [],
+      todoChecks: {},
+      archiveLocked: true,
+    };
+    return NextResponse.json(response, { headers: { "Cache-Control": "private, no-store" } });
+  }
+
   const weights = await getUserWeights(user.id);
   const edition = await buildEdition(dateISO, weights);
-  const plan: Plan = (user.plan as Plan) ?? "free";
   const timeBudgetMinutes = user.timeBudgetMinutes ?? null;
 
   const [promptEdits, todoChecks] = await Promise.all([

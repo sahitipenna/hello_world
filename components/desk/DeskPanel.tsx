@@ -13,6 +13,7 @@ import BookRecommendation from "../BookRecommendation";
 import WonderCard from "../WonderCard";
 import TodoList from "../TodoList";
 import SaveButton from "../SaveButton";
+import DailyQuiz from "../DailyQuiz";
 
 const OWN_HEADING_KINDS = new Set(["look", "wander", "readnext", "wonder"]);
 
@@ -152,6 +153,10 @@ function renderSectionContent(
           onUnlockClick={onUnlockClick}
         />
       );
+    case "quiz":
+      // DailyQuiz fetches its own genres/questions and tracks its own
+      // progress — nothing from `content` to pass it.
+      return <DailyQuiz />;
     default:
       return null;
   }

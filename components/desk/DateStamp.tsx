@@ -13,11 +13,16 @@ export default function DateStamp({
   dayOfYear,
   onChange,
   mobile,
+  atArchiveStart,
 }: {
   dateISO: string;
   dayOfYear: number;
   onChange: (iso: string) => void;
   mobile: boolean;
+  /** True once another step back would be locked by the free plan's archive
+   * limit — disables "Previous day" the same way `atToday` disables "Next
+   * day", instead of letting a visitor click into the locked gate screen. */
+  atArchiveStart?: boolean;
 }) {
   const today = toISODate(new Date());
   const atToday = dateISO === today;
@@ -31,8 +36,10 @@ export default function DateStamp({
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <button
-          onClick={() => onChange(shiftDate(dateISO, -1))}
+          onClick={() => !atArchiveStart && onChange(shiftDate(dateISO, -1))}
           aria-label="Previous day"
+          title={atArchiveStart ? "Free plans keep the last 7 days — members see the full archive" : undefined}
+          disabled={atArchiveStart}
           className="dd-daynav"
           style={{
             width: 34,
@@ -44,9 +51,10 @@ export default function DateStamp({
             fontFamily: "var(--font-serif), serif",
             fontSize: 20,
             lineHeight: 1,
-            cursor: "pointer",
+            cursor: atArchiveStart ? "default" : "pointer",
             display: "grid",
             placeItems: "center",
+            opacity: atArchiveStart ? 0.3 : 1,
           }}
         >
           ‹

@@ -65,25 +65,36 @@ export default function DeskDecorObject({
         style={{
           position: "absolute",
           top: "calc(100% + 6px)",
-          left: "50%",
-          transform: `translateX(-50%) rotate(-2deg) translateY(${up ? 0 : -4}px)`,
-          background: "#faf3e6",
-          padding: "1px 10px 2px",
-          borderRadius: 2,
-          whiteSpace: "nowrap",
+          left: 0,
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          transform: `rotate(-2deg) translateY(${up ? 0 : -4}px)`,
           pointerEvents: "none",
-          fontFamily: "var(--font-hand), cursive",
-          fontSize: mobile ? 17 : 19,
-          color: "#2b2622",
-          boxShadow: "1px 2px 4px rgba(20,10,4,.3)",
           opacity: up ? 1 : 0,
           transition: "opacity .2s, transform .25s",
-          outline: up ? "2px solid #d9a02c" : "none",
-          outlineOffset: 2,
         }}
       >
-        {label}
-        {visited ? "  ✓" : ""}
+        <span
+          style={{
+            display: "inline-block",
+            maxWidth: "100%",
+            background: "#faf3e6",
+            padding: "1px 10px 2px",
+            borderRadius: 2,
+            whiteSpace: mobile ? "normal" : "nowrap",
+            textAlign: "center",
+            fontFamily: "var(--font-hand), cursive",
+            fontSize: mobile ? 17 : 19,
+            color: "#2b2622",
+            boxShadow: "1px 2px 4px rgba(20,10,4,.3)",
+            outline: up ? "2px solid #d9a02c" : "none",
+            outlineOffset: 2,
+          }}
+        >
+          {label}
+          {visited ? "  ✓" : ""}
+        </span>
       </div>
     </div>
   );

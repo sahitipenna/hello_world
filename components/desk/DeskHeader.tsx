@@ -14,6 +14,7 @@ export default function DeskHeader({
   dateISO,
   dayOfYear,
   onDateChange,
+  atArchiveStart,
   onOpenInterests,
   onOpenArrange,
   onOpenUpgrade,
@@ -28,6 +29,7 @@ export default function DeskHeader({
   dateISO: string;
   dayOfYear: number;
   onDateChange: (iso: string) => void;
+  atArchiveStart?: boolean;
   onOpenInterests: () => void;
   onOpenArrange: () => void;
   onOpenUpgrade: () => void;
@@ -72,7 +74,7 @@ export default function DeskHeader({
         </a>
       </div>
 
-      <DateStamp dateISO={dateISO} dayOfYear={dayOfYear} onChange={onDateChange} mobile={mobile} />
+      <DateStamp dateISO={dateISO} dayOfYear={dayOfYear} onChange={onDateChange} mobile={mobile} atArchiveStart={atArchiveStart} />
 
       <div
         style={{

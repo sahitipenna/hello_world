@@ -96,7 +96,8 @@ export interface WonderT {
 // ---------------------------------------------------------------------------
 // Per-section content, keyed by the section's `key`. `content` is `null` for
 // a section whose key the app doesn't know how to resolve yet (an admin
-// re-enabling one of the older, currently-unsupported keys like "quiz").
+// re-enabling one of the older, still-unsupported keys like "todolist" or
+// "writing" — see lib/dailyBundle.ts's resolveContent default case).
 // ---------------------------------------------------------------------------
 
 export interface KnowContent {
@@ -151,6 +152,12 @@ export interface DoContent {
   tasks: { title: string; category: string }[];
   totalCount: number;
 }
+// DailyQuiz.tsx is fully self-contained — fetches its own genres/questions
+// from /api/quiz* and tracks its own progress — so this carries no data,
+// it just marks the slot as resolved (non-null) so the desk tile renders.
+export interface QuizContent {
+  kind: "quiz";
+}
 
 export type EditionContent =
   | KnowContent
@@ -161,6 +168,7 @@ export type EditionContent =
   | ReadNextContent
   | WonderContent
   | DoContent
+  | QuizContent
   | null;
 
 export interface EditionSection extends SectionMeta {
@@ -177,6 +185,7 @@ export interface DailyEditionResponse {
   sections: EditionSection[];
   sideObjects: SideObject[];
   todoChecks: Record<number, boolean>;
+  archiveLocked?: boolean;
 }
 
 export type QuizDifficulty = "easy" | "medium" | "hard";

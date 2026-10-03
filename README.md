@@ -172,6 +172,24 @@ that. Without those env vars set, it falls back to a demo toggle
 (`components/UpgradeModal.tsx`) that just flips `User.plan` so you can see
 the full layout without a Razorpay account.
 
+**Archive limit**: free visitors can look back at most `FREE_ARCHIVE_DAYS`
+(7) days, including today — `lib/archive.ts` is the single source of truth,
+enforced both server-side (`/api/daily` skips building the edition
+entirely for a free visitor's date past the cutoff, returning
+`archiveLocked: true`) and client-side (`DateStamp`'s "Previous day" arrow
+disables itself at the boundary, same pattern as "Next day" at today).
+Premium has no limit.
+
+## Progressive Web App
+
+`public/manifest.json` + the icons in `public/icons/` make the site
+installable ("Add to Home Screen") on both iOS and Android, wired in via
+`app/layout.tsx`'s `metadata.manifest`/`metadata.icons`/`appleWebApp`. This
+is as far as the web platform goes, though — a real OS home-screen
+*widget* showing live content (today's wonder, a book recommendation)
+needs a native app shell (WidgetKit on iOS, App Widgets on Android); there
+is no browser API for that, PWA or not.
+
 ## Persistence & identity
 
 No signup is required — a visitor is identified by a random id in an
