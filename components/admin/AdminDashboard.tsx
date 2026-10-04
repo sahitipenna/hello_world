@@ -16,7 +16,10 @@ const CONTENT_TYPES = [
   { slug: "task", label: "Little things to do — DO" },
   { slug: "crossword-theme", label: "Crossword themes — PLAY" },
   { slug: "bonus-article", label: "Bonus articles — come back tomorrow" },
-  { slug: "side-object", label: "On the side — mug / plant / headphones / apple" },
+  { slug: "side-mug", label: "On the side — A tea break (mug)" },
+  { slug: "side-plant", label: "On the side — Something growing (plant)" },
+  { slug: "side-headphones", label: "On the side — Something to listen to (headphones)" },
+  { slug: "side-apple", label: "On the side — A little bite (apple)" },
 ];
 
 type Tab = "sections" | "pricing" | "content";

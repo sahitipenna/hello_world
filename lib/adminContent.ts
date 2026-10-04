@@ -19,6 +19,13 @@ export interface ContentTypeDef {
   // all eight content pools instead of eight bespoke ones.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delegate: any;
+  // Lets several content types share one underlying table, each scoped to
+  // its own slice of it — e.g. the four "on the side" objects all live in
+  // SideObjectItem, distinguished only by `pool`. Applied as a `where` on
+  // GET and merged into `data` on create, so each type's tab only ever
+  // sees (and only ever writes) its own rows; never a field the editor has
+  // to set themselves.
+  fixedFields?: Record<string, string>;
 }
 
 const CONTENT_TYPES: ContentTypeDef[] = [
@@ -152,13 +159,28 @@ const CONTENT_TYPES: ContentTypeDef[] = [
       { key: "category", label: "Category", kind: "text" },
     ],
   },
-  {
-    slug: "side-object",
-    label: "On the side (mug / plant / headphones / apple)",
+  ...sideObjectTypes(),
+];
+
+// The four "on the side" desk objects (lib/deskLayout.ts SIDE_OBJECT_META)
+// all draw from the same SideObjectItem table, one `pool` value each — but
+// get their own admin tab apiece (rather than one combined tab with a
+// pool field to fill in) so an editor picks the object by clicking its
+// tab, not by typing "mug" correctly into a text box every time.
+function sideObjectTypes(): ContentTypeDef[] {
+  const pools: { pool: string; label: string }[] = [
+    { pool: "mug", label: "A tea break (mug)" },
+    { pool: "plant", label: "Something growing (plant)" },
+    { pool: "headphones", label: "Something to listen to (headphones)" },
+    { pool: "apple", label: "A little bite (apple)" },
+  ];
+  return pools.map(({ pool, label }) => ({
+    slug: `side-${pool}`,
+    label,
     sectionKey: "side",
     delegate: prisma.sideObjectItem,
+    fixedFields: { pool },
     fields: [
-      { key: "pool", label: "Which object: mug, plant, headphones, or apple", kind: "text", required: true },
       { key: "title", label: "Title", kind: "text", required: true },
       { key: "sub", label: "Subtitle", kind: "text" },
       { key: "body", label: "Body", kind: "textarea", required: true },
@@ -168,8 +190,8 @@ const CONTENT_TYPES: ContentTypeDef[] = [
       { key: "category", label: "Category", kind: "text" },
       { key: "scheduledDate", label: "Scheduled date", kind: "date" },
     ],
-  },
-];
+  }));
+}
 
 export function getContentType(slug: string): ContentTypeDef | undefined {
   return CONTENT_TYPES.find((c) => c.slug === slug);
