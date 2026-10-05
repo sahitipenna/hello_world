@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdmin } from "@/lib/adminAuth";
 import { prisma } from "@/lib/db";
-import { resolveArtFromMet } from "@/lib/metArt";
+import { resolveArtFromMetWithDiagnostic } from "@/lib/metArt";
 
 export const maxDuration = 30;
 
@@ -22,9 +22,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!row) return NextResponse.json({ error: "not found" }, { status: 404 });
 
   const query = row.metQuery || row.title;
-  const result = await resolveArtFromMet(query, id);
+  const { result, diagnostic } = await resolveArtFromMetWithDiagnostic(query, id);
   if (!result) {
-    return NextResponse.json({ resolved: false });
+    return NextResponse.json({ resolved: false, diagnostic });
   }
 
   await prisma.artwork.update({

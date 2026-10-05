@@ -117,6 +117,7 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
   const [importingStarter, setImportingStarter] = useState(false);
   const [warming, setWarming] = useState(false);
   const [warmProgress, setWarmProgress] = useState<{ done: number; total: number } | null>(null);
+  const [warmDiagnostics, setWarmDiagnostics] = useState<{ title: string; diagnostic: string }[]>([]);
 
   function load() {
     setLoading(true);
@@ -152,12 +153,20 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
     if (uncached.length === 0) return;
     setWarming(true);
     setWarmProgress({ done: 0, total: uncached.length });
+    setWarmDiagnostics([]);
     let done = 0;
+    const failures: { title: string; diagnostic: string }[] = [];
     for (const row of uncached) {
-      await fetch(`/api/admin/artwork/${row.id}/resolve`, { method: "POST" }).catch(() => {});
+      const r = await fetch(`/api/admin/artwork/${row.id}/resolve`, { method: "POST" })
+        .then((res) => res.json())
+        .catch((e) => ({ resolved: false, diagnostic: e instanceof Error ? e.message : "request failed" }));
+      if (!r.resolved) {
+        failures.push({ title: String(row.title ?? row.id), diagnostic: r.diagnostic ?? "unknown error" });
+      }
       done += 1;
       setWarmProgress({ done, total: uncached.length });
     }
+    setWarmDiagnostics(failures);
     setWarming(false);
     load();
   }
@@ -245,16 +254,32 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
               {importingStarter ? "Adding…" : "Use starter content"}
             </button>
           )}
-          {!adding && (
-            <button
-              onClick={() => setAdding(true)}
-              className="text-xs font-semibold rounded-full px-3 py-1.5 bg-terracotta text-paper"
-            >
-              + Add new
-            </button>
-          )}
         </div>
       </div>
+
+      {warmDiagnostics.length > 0 && (
+        <div className="rounded-lg border border-terracotta/30 bg-terracotta/5 p-3 space-y-1">
+          <p className="text-xs font-semibold text-terracotta">
+            {warmDiagnostics.length} still unresolved — here's what actually happened for each:
+          </p>
+          {warmDiagnostics.map((d, i) => (
+            <p key={i} className="text-xs text-ink/60 font-mono">
+              <span className="text-ink/80">{d.title}:</span> {d.diagnostic}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {!adding && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => setAdding(true)}
+            className="text-xs font-semibold rounded-full px-3 py-1.5 bg-terracotta text-paper"
+          >
+            + Add new
+          </button>
+        </div>
+      )}
 
       {adding && (
         <div className="paper-card rounded-xl p-4 border border-dashed border-terracotta/50">
