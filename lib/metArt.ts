@@ -62,19 +62,36 @@ async function fetchWithTimeout(url: string, ms: number) {
   }
 }
 
-function sleep(ms: number) {
+function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Met throttles bursts from one source with 403s rather than a 429 — seen
- * firsthand running the warm-image-cache button over all 34 artworks back
- * to back, where the first few resolved fine and everything after turned
- * into a run of HTTP 403s. A short pause and one retry clears it; a real,
- * sustained block would still show up as a 403 after the retry too. */
+// The Met's own API docs: "Please limit request rate to 80 requests per
+// second." Previously this module only reacted to a 403 after the fact
+// (seen running "warm image cache" over all 34 artworks — the first few
+// resolved fine, then a burst of parallel + back-to-back requests tipped
+// it into a run of 403s). Pacing every request through one shared
+// scheduler, well under the documented ceiling, is the actual fix; the
+// 403 retry below stays as a backstop for noise this module doesn't
+// control (another tenant sharing the same egress IP, a request already
+// in flight when a cold start resets this module's state).
+const MET_MAX_REQUESTS_PER_SEC = 40;
+const MET_MIN_INTERVAL_MS = 1000 / MET_MAX_REQUESTS_PER_SEC;
+let metNextSlot = 0;
+
+function reserveMetSlot(): Promise<void> {
+  const now = Date.now();
+  const slot = Math.max(now, metNextSlot);
+  metNextSlot = slot + MET_MIN_INTERVAL_MS;
+  return slot > now ? sleep(slot - now) : Promise.resolve();
+}
+
 async function fetchMet(url: string, ms: number): Promise<Response> {
+  await reserveMetSlot();
   const res = await fetchWithTimeout(url, ms);
   if (res.status !== 403) return res;
   await sleep(1200 + Math.random() * 800);
+  await reserveMetSlot();
   return fetchWithTimeout(url, ms);
 }
 

@@ -165,13 +165,14 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
       }
       done += 1;
       setWarmProgress({ done, total: uncached.length });
-      // Each resolve already fires a burst of up to 7 requests at the Met
-      // (1 search + up to 6 object lookups) — back to back across 30+
-      // artworks with no gap is exactly what tripped its rate limiting
-      // (403s) last run. A pause between artworks, on top of the retry
-      // already built into lib/metArt.ts, keeps this run under whatever
-      // threshold that is.
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      // The real pacing — against the Met's documented 80 req/s ceiling —
+      // happens per-request inside lib/metArt.ts, shared by every call a
+      // single resolve makes (1 search + up to 6 object lookups). That
+      // only holds within one serverless invocation though, and each
+      // artwork here is its own POST (possibly its own cold start, with
+      // no memory of the last one's pacing) — this small gap is just
+      // extra margin for that.
+      await new Promise((resolve) => setTimeout(resolve, 150));
     }
     setWarmDiagnostics(failures);
     setWarming(false);
