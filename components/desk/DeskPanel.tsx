@@ -231,7 +231,7 @@ export default function DeskPanel({
   const nextLabel = nextKey ? sectionsByKey.get(nextKey)?.title ?? "" : "";
 
   const kickerColor = section ? SECTION_ACCENT[activeKey!] ?? "#a8441f" : sideObject?.accent ?? "#a8441f";
-  const kickerText = sideObject ? "On the side" : section ? `${idx + 1} of ${visibleKeys.length} · ${section.title}` : "";
+  const kickerText = sideObject ? sideObject.label : section ? `${idx + 1} of ${visibleKeys.length} · ${section.title}` : "";
   const panelTitle = sideObject ? sideObject.title : section?.title ?? "";
 
   const base: React.CSSProperties = {
@@ -330,6 +330,9 @@ export default function DeskPanel({
         <div style={{ flex: 1, overflow: "auto", padding: "10px 26px 28px" }}>
           {sideObject ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 8 }}>
+              {sideObject.description && (
+                <p style={{ margin: 0, fontSize: 13.5, color: "#8a8178", fontStyle: "italic" }}>{sideObject.description}</p>
+              )}
               <h2 style={{ margin: 0, fontFamily: "var(--font-serif), serif", fontWeight: 500, fontSize: 32, lineHeight: 1.1 }}>
                 {sideObject.title}
               </h2>

@@ -219,11 +219,13 @@ export const DECOR_LAYOUT_DESKTOP: Record<string, LayoutBox> = {
  * section: can't be hidden/locked, doesn't count toward "n of 8", and
  * isn't in the Arrange card. Each rotates through a content pool
  * (SideObjectItem rows, admin-editable at /admin) by date, resolved
- * server-side in lib/sideObjects.ts — this file only needs the shape and
- * the fixed per-object label/accent, which aren't editorial content. */
+ * server-side in lib/sideObjects.ts. `label`/`description` are the
+ * object's own admin-editable copy (SideObjectMeta, edited from /admin's
+ * Sections tab) — `accent` stays a fixed design decision, below. */
 export interface SideObject {
   id: string;
   label: string;
+  description: string;
   accent: string;
   title: string;
   sub: string;
@@ -233,11 +235,24 @@ export interface SideObject {
   linkLabel?: string;
 }
 
-export const SIDE_OBJECT_META: Record<string, { label: string; accent: string }> = {
-  mug: { label: "A tea break", accent: "#4f7d8c" },
-  plant: { label: "Something growing", accent: "#5a6b4b" },
-  headphones: { label: "Something to listen to", accent: "#6b4a63" },
-  apple: { label: "A little bite", accent: "#a8441f" },
+/** Fixed per-object accent color — a design decision, not editorial
+ * content, so it stays in code rather than SideObjectMeta. */
+export const SIDE_OBJECT_ACCENT: Record<string, string> = {
+  mug: "#4f7d8c",
+  plant: "#5a6b4b",
+  headphones: "#6b4a63",
+  apple: "#a8441f",
+};
+
+/** Used only when a pool has no SideObjectMeta row yet (a database
+ * migrated but not reseeded, e.g. staging) — so a missing admin-editable
+ * label never makes the object vanish from the desk the way a missing
+ * SideObjectItem pool correctly does. Once a real row exists, it wins. */
+export const SIDE_OBJECT_META_FALLBACK: Record<string, { label: string; description: string }> = {
+  mug: { label: "A tea break", description: "A short writing prompt, for whenever you want to put something down on paper." },
+  plant: { label: "Something growing", description: "A small, real piece of botany — something true about the living world." },
+  headphones: { label: "Something to listen to", description: "A song or a podcast worth the next few minutes." },
+  apple: { label: "A little bite", description: "A recipe worth trying, whenever you're hungry for one." },
 };
 
 export function percentBox(b: LayoutBox, W: number, H: number) {

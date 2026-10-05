@@ -173,8 +173,11 @@ const CONTENT_TYPES: ContentTypeDef[] = [
   ...sideObjectTypes(),
 ];
 
-// The four "on the side" desk objects (lib/deskLayout.ts SIDE_OBJECT_META)
-// all draw from the same SideObjectItem table, one `pool` value each — but
+// The four "on the side" desk objects (lib/deskLayout.ts SIDE_OBJECT_ACCENT —
+// their own title/description is SideObjectMeta, edited from the Sections
+// tab instead, see components/admin/SideObjectMetaAdmin.tsx) all draw their
+// rotating content from the same SideObjectItem table, one `pool` value
+// each — but
 // get their own admin tab apiece (rather than one combined tab with a
 // pool field to fill in) so an editor picks the object by clicking its
 // tab, not by typing "mug" correctly into a text box every time.

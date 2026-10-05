@@ -170,12 +170,22 @@ const BONUS_ARTICLES = [
 // ---------------------------------------------------------------------------
 // "On the side" desk objects (mug/plant/headphones/apple) — admin-editable
 // pools, one `pool` value each, same rotation model as every other content
-// pool. Fixed label/accent per object lives in lib/deskLayout.ts; the
-// editorial content itself lives in lib/sideObjectStarterContent.ts (also
-// offered as a one-click import from /admin for a database that's missing
-// it, e.g. staging — see app/api/admin/content/[type]/starter/route.ts).
+// pool. The editorial content itself lives in lib/sideObjectStarterContent.ts
+// (also offered as a one-click import from /admin for a database that's
+// missing it, e.g. staging — see app/api/admin/content/[type]/starter/
+// route.ts). SIDE_OBJECT_META below is the object's own label/description
+// (its accent color and SVG illustration stay in code, in
+// lib/deskLayout.ts, since those are design decisions, not editorial
+// content) — editable from /admin's Sections tab.
 // ---------------------------------------------------------------------------
 const SIDE_OBJECT_ITEMS = SIDE_OBJECT_STARTER_CONTENT;
+
+const SIDE_OBJECT_META = [
+  { pool: "mug", label: "A tea break", description: "A short writing prompt, for whenever you want to put something down on paper." },
+  { pool: "plant", label: "Something growing", description: "A small, real piece of botany — something true about the living world." },
+  { pool: "headphones", label: "Something to listen to", description: "A song or a podcast worth the next few minutes." },
+  { pool: "apple", label: "A little bite", description: "A recipe worth trying, whenever you're hungry for one." },
+];
 
 // ---------------------------------------------------------------------------
 // Pricing — the /pricing page reads this table directly.
@@ -347,6 +357,10 @@ async function main() {
     await prisma.sideObjectItem.upsert({ where: { id: `side-${i}` }, update: item, create: { id: `side-${i}`, ...item } });
   }
 
+  for (const meta of SIDE_OBJECT_META) {
+    await prisma.sideObjectMeta.upsert({ where: { pool: meta.pool }, update: meta, create: meta });
+  }
+
   for (const genre of QUIZ_GENRES) {
     await prisma.quizGenre.upsert({
       where: { slug: genre.slug },
@@ -378,6 +392,7 @@ async function main() {
       `${PRICING_PLANS.length} pricing plans`,
       `${BONUS_ARTICLES.length} bonus articles`,
       `${SIDE_OBJECT_ITEMS.length} side-object items`,
+      `${SIDE_OBJECT_META.length} side-object meta rows`,
       `${QUIZ_GENRES.length} quiz genres`,
       `${QUIZ_QUESTIONS.length} quiz questions`,
     ].join(", ")

@@ -266,6 +266,19 @@ model SideObjectItem {
   createdAt     DateTime @default(now())
 }
 
+/// Admin-editable label + description for each "on the side" object itself
+/// (not its rotating content, which is SideObjectItem) — the floating label
+/// shown under its icon on the desk, and a short line shown when its panel
+/// opens. Edited from /admin's Sections tab alongside the 9 real sections.
+/// Each object's accent color and SVG illustration stay in code
+/// (lib/deskLayout.ts) since those are design decisions, not editorial
+/// content.
+model SideObjectMeta {
+  pool        String @id // "mug" | "plant" | "headphones" | "apple"
+  label       String
+  description String @default("")
+}
+
 // ---------------------------------------------------------------------------
 // Personalization
 // ---------------------------------------------------------------------------
