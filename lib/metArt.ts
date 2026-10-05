@@ -62,6 +62,22 @@ async function fetchWithTimeout(url: string, ms: number) {
   }
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Met throttles bursts from one source with 403s rather than a 429 — seen
+ * firsthand running the warm-image-cache button over all 34 artworks back
+ * to back, where the first few resolved fine and everything after turned
+ * into a run of HTTP 403s. A short pause and one retry clears it; a real,
+ * sustained block would still show up as a 403 after the retry too. */
+async function fetchMet(url: string, ms: number): Promise<Response> {
+  const res = await fetchWithTimeout(url, ms);
+  if (res.status !== 403) return res;
+  await sleep(1200 + Math.random() * 800);
+  return fetchWithTimeout(url, ms);
+}
+
 /** The single live Met lookup both /api/art (one visitor, one artwork, on
  * demand) and the admin "warm image cache" action (many artworks, ahead of
  * time) share — kept in one place so a reliability fix here covers both
@@ -69,7 +85,7 @@ async function fetchWithTimeout(url: string, ms: number) {
 export async function resolveArtFromMetWithDiagnostic(query: string, seedParam: string): Promise<ResolveOutcome> {
   let searchRes: Response;
   try {
-    searchRes = await fetchWithTimeout(`${MET_SEARCH_URL}?hasImages=true&q=${encodeURIComponent(query)}`, 8000);
+    searchRes = await fetchMet(`${MET_SEARCH_URL}?hasImages=true&q=${encodeURIComponent(query)}`, 8000);
   } catch (e) {
     return { result: null, diagnostic: `search request failed: ${describeFetchError(e)}` };
   }
@@ -101,7 +117,7 @@ export async function resolveArtFromMetWithDiagnostic(query: string, seedParam: 
   const candidates = await Promise.all(
     order.map(async (id) => {
       try {
-        const objRes = await fetchWithTimeout(`${MET_BASE}/objects/${id}`, 8000);
+        const objRes = await fetchMet(`${MET_BASE}/objects/${id}`, 8000);
         if (!objRes.ok) {
           outcomes.push(`#${id}: HTTP ${objRes.status}`);
           return null;
