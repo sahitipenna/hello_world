@@ -1,6 +1,14 @@
 import { seededRandom, hashString } from "@/lib/dateUtils";
 
 const MET_BASE = "https://collectionapi.metmuseum.org/public/collection/v1";
+// The Met retired /v1/search on 2026-10-01 (it now returns 410 Gone for
+// every query) in favor of a paginated /v1.1/search — same filters
+// (q, hasImages, …), but it returns one page of objectIDs (default limit
+// 20, same as the slice we take below) plus total/nextOffset instead of
+// every matching id in one response. /objects/{id} is untouched by this
+// and stays on v1. See https://metmuseum.github.io/ "Migrating from
+// /v1/search".
+const MET_SEARCH_URL = "https://collectionapi.metmuseum.org/public/collection/v1.1/search";
 
 interface MetObject {
   objectID: number;
@@ -61,7 +69,7 @@ async function fetchWithTimeout(url: string, ms: number) {
 export async function resolveArtFromMetWithDiagnostic(query: string, seedParam: string): Promise<ResolveOutcome> {
   let searchRes: Response;
   try {
-    searchRes = await fetchWithTimeout(`${MET_BASE}/search?hasImages=true&q=${encodeURIComponent(query)}`, 8000);
+    searchRes = await fetchWithTimeout(`${MET_SEARCH_URL}?hasImages=true&q=${encodeURIComponent(query)}`, 8000);
   } catch (e) {
     return { result: null, diagnostic: `search request failed: ${describeFetchError(e)}` };
   }
