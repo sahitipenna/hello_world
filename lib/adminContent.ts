@@ -169,10 +169,10 @@ const CONTENT_TYPES: ContentTypeDef[] = [
 // tab, not by typing "mug" correctly into a text box every time.
 function sideObjectTypes(): ContentTypeDef[] {
   const pools: { pool: string; label: string }[] = [
-    { pool: "mug", label: "A tea break (mug)" },
-    { pool: "plant", label: "Something growing (plant)" },
-    { pool: "headphones", label: "Something to listen to (headphones)" },
-    { pool: "apple", label: "A little bite (apple)" },
+    { pool: "mug", label: "A tea break — MUG" },
+    { pool: "plant", label: "Something growing — PLANT" },
+    { pool: "headphones", label: "Something to listen to — HEADPHONES" },
+    { pool: "apple", label: "A little bite — APPLE" },
   ];
   return pools.map(({ pool, label }) => ({
     slug: `side-${pool}`,
