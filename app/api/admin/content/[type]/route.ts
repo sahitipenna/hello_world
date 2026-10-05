@@ -13,7 +13,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ typ
   if (!ct) return NextResponse.json({ error: "unknown content type" }, { status: 404 });
 
   const rows = await ct.delegate.findMany({ where: ct.fixedFields, orderBy: { id: "desc" } });
-  return NextResponse.json({ fields: ct.fields, rows }, { headers: { "Cache-Control": "private, no-store" } });
+  return NextResponse.json(
+    { fields: ct.fields, rows, hasStarterContent: !!ct.starterContent },
+    { headers: { "Cache-Control": "private, no-store" } }
+  );
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ type: string }> }) {

@@ -1,4 +1,5 @@
 import { prisma } from "./db";
+import { SIDE_OBJECT_STARTER_CONTENT } from "./sideObjectStarterContent";
 
 export type FieldKind = "text" | "textarea" | "number" | "date" | "json";
 
@@ -26,6 +27,16 @@ export interface ContentTypeDef {
   // sees (and only ever writes) its own rows; never a field the editor has
   // to set themselves.
   fixedFields?: Record<string, string>;
+  // When set, the admin UI offers a "Use starter content" button for this
+  // type — a one-click import of this ready-made copy, for a database that
+  // was never reseeded (see app/api/admin/content/[type]/starter/route.ts).
+  // Each item carries the SAME id prisma/seed.ts would upsert it under —
+  // not one derived from the admin type's own slug — so this button and a
+  // full `npm run db:seed` run are upserting the exact same rows rather
+  // than two parallel copies of the same content under different ids.
+  // Clicking the button twice, or seeding a DB that already has this
+  // content (either way), is a harmless no-op rather than a duplicate pile.
+  starterContent?: () => { id: string; data: Record<string, unknown> }[];
 }
 
 const CONTENT_TYPES: ContentTypeDef[] = [
@@ -180,6 +191,13 @@ function sideObjectTypes(): ContentTypeDef[] {
     sectionKey: "side",
     delegate: prisma.sideObjectItem,
     fixedFields: { pool },
+    // `side-${i}` is the exact id prisma/seed.ts upserts this same row
+    // under (i = this item's index in the FULL starter array, not just
+    // this pool's slice of it) — keeping both paths writing the same rows.
+    starterContent: () =>
+      SIDE_OBJECT_STARTER_CONTENT.map((item, i) => ({ id: `side-${i}`, item }))
+        .filter(({ item }) => item.pool === pool)
+        .map(({ id, item }) => ({ id, data: item as unknown as Record<string, unknown> })),
     fields: [
       { key: "title", label: "Title", kind: "text", required: true },
       { key: "sub", label: "Subtitle", kind: "text" },

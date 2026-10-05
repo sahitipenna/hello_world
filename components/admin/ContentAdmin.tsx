@@ -113,6 +113,8 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [hasStarterContent, setHasStarterContent] = useState(false);
+  const [importingStarter, setImportingStarter] = useState(false);
 
   function load() {
     setLoading(true);
@@ -121,11 +123,22 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
       .then((d) => {
         setFields(d.fields ?? []);
         setRows(d.rows ?? []);
+        setHasStarterContent(Boolean(d.hasStarterContent));
       })
       .finally(() => setLoading(false));
   }
 
   useEffect(load, [typeSlug]);
+
+  async function importStarterContent() {
+    setImportingStarter(true);
+    try {
+      await fetch(`/api/admin/content/${typeSlug}/starter`, { method: "POST" });
+      load();
+    } finally {
+      setImportingStarter(false);
+    }
+  }
 
   function blankValues(): Record<string, string> {
     const v: Record<string, string> = {};
@@ -181,14 +194,26 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm text-ink/60">{rows.length} items</p>
-        {!adding && (
-          <button
-            onClick={() => setAdding(true)}
-            className="text-xs font-semibold rounded-full px-3 py-1.5 bg-terracotta text-paper"
-          >
-            + Add new
-          </button>
-        )}
+        <div className="flex gap-2">
+          {hasStarterContent && (
+            <button
+              onClick={importStarterContent}
+              disabled={importingStarter}
+              title="Imports the ready-made content for this one — safe to click again later, it just re-syncs the same starter rows."
+              className="text-xs font-semibold rounded-full px-3 py-1.5 border border-terracotta/40 text-terracotta hover:bg-terracotta/10 disabled:opacity-50"
+            >
+              {importingStarter ? "Adding…" : "Use starter content"}
+            </button>
+          )}
+          {!adding && (
+            <button
+              onClick={() => setAdding(true)}
+              className="text-xs font-semibold rounded-full px-3 py-1.5 bg-terracotta text-paper"
+            >
+              + Add new
+            </button>
+          )}
+        </div>
       </div>
 
       {adding && (
