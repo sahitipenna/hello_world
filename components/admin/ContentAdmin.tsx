@@ -115,6 +115,8 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
   const [adding, setAdding] = useState(false);
   const [hasStarterContent, setHasStarterContent] = useState(false);
   const [importingStarter, setImportingStarter] = useState(false);
+  const [warming, setWarming] = useState(false);
+  const [warmProgress, setWarmProgress] = useState<{ done: number; total: number } | null>(null);
 
   function load() {
     setLoading(true);
@@ -138,6 +140,26 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
     } finally {
       setImportingStarter(false);
     }
+  }
+
+  // Artwork-only: resolves every row that has no cached image yet against
+  // the Met, one at a time, so a real visitor almost always finds the image
+  // already sitting in the DB instead of being the one who triggers (and
+  // waits on, and risks a flaky result from) a live lookup. See
+  // app/api/admin/artwork/[id]/resolve/route.ts for the actual fetch.
+  async function warmImageCache() {
+    const uncached = rows.filter((r) => !r.image);
+    if (uncached.length === 0) return;
+    setWarming(true);
+    setWarmProgress({ done: 0, total: uncached.length });
+    let done = 0;
+    for (const row of uncached) {
+      await fetch(`/api/admin/artwork/${row.id}/resolve`, { method: "POST" }).catch(() => {});
+      done += 1;
+      setWarmProgress({ done, total: uncached.length });
+    }
+    setWarming(false);
+    load();
   }
 
   function blankValues(): Record<string, string> {
@@ -189,12 +211,30 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
   if (loading) return <p className="text-sm text-ink/50">Loading…</p>;
 
   const titleField = fields.find((f) => f.key === "title" || f.key === "work") ?? fields[0];
+  const uncachedCount = typeSlug === "artwork" ? rows.filter((r) => !r.image).length : 0;
 
   return (
     <div className="space-y-3">
+      {typeSlug === "artwork" && (
+        <p className="text-xs text-ink/50">
+          {uncachedCount === 0
+            ? "Every artwork has a cached image — visitors never wait on a live Met lookup."
+            : `${uncachedCount} of ${rows.length} have no cached image yet — those visitors are the ones who could see "couldn't reach the museum's archive" if the Met is briefly slow.`}
+        </p>
+      )}
       <div className="flex items-center justify-between">
         <p className="text-sm text-ink/60">{rows.length} items</p>
         <div className="flex gap-2">
+          {typeSlug === "artwork" && uncachedCount > 0 && (
+            <button
+              onClick={warmImageCache}
+              disabled={warming}
+              title="Resolves every artwork with no cached image against the Met right now, so visitors read from the DB instead of triggering a live lookup themselves."
+              className="text-xs font-semibold rounded-full px-3 py-1.5 border border-terracotta/40 text-terracotta hover:bg-terracotta/10 disabled:opacity-50"
+            >
+              {warming && warmProgress ? `Resolving ${warmProgress.done}/${warmProgress.total}…` : "Warm image cache"}
+            </button>
+          )}
           {hasStarterContent && (
             <button
               onClick={importStarterContent}
