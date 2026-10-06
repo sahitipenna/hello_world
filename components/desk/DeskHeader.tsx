@@ -14,9 +14,12 @@ export default function DeskHeader({
   dateISO,
   dayOfYear,
   onDateChange,
+  atArchiveStart,
   onOpenInterests,
   onOpenArrange,
   onOpenUpgrade,
+  onOpenShelf,
+  shelfCount,
   user,
   onSignOut,
   mobile,
@@ -26,9 +29,12 @@ export default function DeskHeader({
   dateISO: string;
   dayOfYear: number;
   onDateChange: (iso: string) => void;
+  atArchiveStart?: boolean;
   onOpenInterests: () => void;
   onOpenArrange: () => void;
   onOpenUpgrade: () => void;
+  onOpenShelf: () => void;
+  shelfCount: number;
   user: Viewer | null;
   onSignOut: () => void;
   mobile: boolean;
@@ -68,7 +74,7 @@ export default function DeskHeader({
         </a>
       </div>
 
-      <DateStamp dateISO={dateISO} dayOfYear={dayOfYear} onChange={onDateChange} mobile={mobile} />
+      <DateStamp dateISO={dateISO} dayOfYear={dayOfYear} onChange={onDateChange} mobile={mobile} atArchiveStart={atArchiveStart} />
 
       <div
         style={{
@@ -111,6 +117,21 @@ export default function DeskHeader({
           }}
         >
           Arrange your desk
+        </button>
+        <button
+          onClick={onOpenShelf}
+          className="dd-linklike"
+          style={{
+            background: "transparent",
+            border: 0,
+            padding: "6px 2px",
+            fontFamily: "var(--font-sans), sans-serif",
+            fontSize: 14,
+            whiteSpace: "nowrap",
+            cursor: "pointer",
+          }}
+        >
+          Your shelf{shelfCount > 0 ? ` (${shelfCount})` : ""}
         </button>
         {/* Member / sign-in hidden for now, per request — not ready to surface yet. */}
       </div>

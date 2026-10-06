@@ -21,6 +21,7 @@ export default function ArrangeDeskCard({
   deskSkin,
   onSkinChange,
   mobile,
+  timeBudgetMinutes,
 }: {
   open: boolean;
   onClose: () => void;
@@ -34,6 +35,7 @@ export default function ArrangeDeskCard({
   deskSkin: DeskSkin;
   onSkinChange: (skin: DeskSkin) => void;
   mobile: boolean;
+  timeBudgetMinutes: number | null;
 }) {
   if (!open) return null;
 
@@ -126,8 +128,8 @@ export default function ArrangeDeskCard({
           if (!meta) return null;
           const on = !hidden.includes(key);
           return (
-            <div key={key} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 32 }}>
-              <div style={{ display: "flex", flexDirection: "column" }}>
+            <div key={key} style={{ display: "flex", alignItems: "flex-start", gap: 8, minHeight: 32, padding: "4px 0" }}>
+              <div style={{ display: "flex", flexDirection: "column", marginTop: 6 }}>
                 <button
                   disabled={i === 0}
                   onClick={() => move(key, -1)}
@@ -147,13 +149,14 @@ export default function ArrangeDeskCard({
               </div>
               <button
                 onClick={() => onToggleHidden(key)}
-                style={{ display: "flex", alignItems: "center", gap: 12, height: 32, flex: 1, background: "transparent", border: 0, padding: 0, cursor: "pointer", textAlign: "left", fontSize: 15, fontFamily: "var(--font-sans), sans-serif" }}
+                style={{ display: "flex", alignItems: "flex-start", gap: 12, minHeight: 32, flex: 1, background: "transparent", border: 0, padding: "4px 0", cursor: "pointer", textAlign: "left", fontSize: 15, fontFamily: "var(--font-sans), sans-serif" }}
               >
                 <span
                   style={{
                     flex: "none",
                     width: 20,
                     height: 20,
+                    marginTop: 2,
                     border: "1.8px solid #2b2622",
                     borderRadius: 3,
                     display: "grid",
@@ -167,10 +170,21 @@ export default function ArrangeDeskCard({
                 >
                   {on ? "✓" : ""}
                 </span>
-                <span style={{ color: on ? "#2b2622" : "rgba(43,38,34,.45)", textDecoration: on ? "none" : "line-through" }}>{meta.title}</span>
-                {meta.premium && (
-                  <span style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "#6b4a63" }}>members</span>
-                )}
+                <span style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ color: on ? "#2b2622" : "rgba(43,38,34,.45)", textDecoration: on ? "none" : "line-through" }}>
+                      {meta.title}
+                    </span>
+                    {meta.premium && (
+                      <span style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "#6b4a63" }}>members</span>
+                    )}
+                  </span>
+                  {on && timeBudgetMinutes != null && meta.minTimeMinutes > timeBudgetMinutes && (
+                    <span style={{ fontSize: 11.5, letterSpacing: ".02em", color: "#a8441f", fontStyle: "italic" }}>
+                      needs more time today
+                    </span>
+                  )}
+                </span>
               </button>
             </div>
           );

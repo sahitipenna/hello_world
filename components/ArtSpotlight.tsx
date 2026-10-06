@@ -35,11 +35,20 @@ export default function ArtSpotlight({
     let cancelled = false;
     setArt(null);
     setFailed(false);
-    fetch(`/api/art?q=${encodeURIComponent(query)}&seed=${dateISO}&date=${dateISO}&artworkId=${encodeURIComponent(artworkId)}`)
-      .then((r) => {
+
+    const url = `/api/art?q=${encodeURIComponent(query)}&seed=${dateISO}&date=${dateISO}&artworkId=${encodeURIComponent(artworkId)}`;
+    const attempt = (): Promise<ArtData> =>
+      fetch(url).then((r) => {
         if (!r.ok) throw new Error("bad response");
         return r.json();
-      })
+      });
+
+    // One retry before giving up — most un-cached artworks resolve from a
+    // single live Met lookup, but when that lookup is the rare one that
+    // times out or trips over a bad candidate, a visitor shouldn't see the
+    // failure message over something a few seconds later would have fixed.
+    attempt()
+      .catch(() => attempt())
       .then((d) => {
         if (!cancelled) setArt(d);
       })

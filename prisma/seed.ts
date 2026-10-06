@@ -1,6 +1,8 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { POEMS, TRAVEL_VIGNETTES, BOOKS, ART_SPOTLIGHT, DAILY_TASKS } from "../lib/contentBank";
 import { CROSSWORD_THEMES } from "../lib/crosswordBanks";
+import { QUIZ_GENRES, QUIZ_QUESTIONS } from "../lib/quizBanks";
+import { SIDE_OBJECT_STARTER_CONTENT } from "../lib/sideObjectStarterContent";
 
 try {
   // Loads .env when run bare (local dev). No-op (and no error) when the
@@ -42,18 +44,26 @@ const INTEREST_TAGS = [
 // Section configuration — the 8 canonical sections, plus a few earlier
 // features kept in the system but disabled by default (see ARCHITECTURE.md).
 // ---------------------------------------------------------------------------
+// minTimeMinutes groups sections into three meaningfully different
+// editions (not just "everything minus the crossword"): a 5-minute visitor
+// gets the quick-hit tier only; 15 adds the sit-with-it reading sections;
+// 30 adds the longer, more immersive ones (travel, crossword, quiz). See
+// /pricing and the onboarding time-budget picker for where visitors choose.
 const SECTIONS = [
+  // Tier 1 (5 min) — quick hits, readable at a glance.
   { key: "know", eyebrow: "KNOW", title: "5 things happening in the world", tagline: "a little more of what's going on, in about 5 minutes", order: 0, premium: false, enabled: true, minTimeMinutes: 5, freeCount: 3 },
-  { key: "play", eyebrow: "PLAY", title: "Today's crossword", tagline: "easy to medium, 5–15 minutes", order: 1, premium: false, enabled: true, minTimeMinutes: 15, freeCount: null },
-  { key: "look", eyebrow: "LOOK", title: "Artwork of the day", tagline: "one piece, looked at closely", order: 2, premium: false, enabled: true, minTimeMinutes: 5, freeCount: null },
-  { key: "read", eyebrow: "READ", title: "A literary moment", tagline: "a short excerpt to sit with", order: 3, premium: false, enabled: true, minTimeMinutes: 5, freeCount: null },
-  { key: "wander", eyebrow: "WANDER", title: "A place worth getting lost in", tagline: "a short piece of travel writing", order: 4, premium: true, enabled: true, minTimeMinutes: 5, freeCount: null },
-  { key: "readnext", eyebrow: "READ NEXT", title: "One book", tagline: "read this if you want something worth your evening", order: 5, premium: false, enabled: true, minTimeMinutes: 5, freeCount: null },
   { key: "wonder", eyebrow: "WONDER", title: "Something you'll want to tell someone", tagline: "wait, really?", order: 6, premium: false, enabled: true, minTimeMinutes: 5, freeCount: null },
   { key: "do", eyebrow: "DO", title: "Five little things", tagline: "small, optional, and not about productivity", order: 7, premium: false, enabled: true, minTimeMinutes: 5, freeCount: 3 },
+  // Tier 2 (15 min) — worth sitting with for a minute or two each.
+  { key: "look", eyebrow: "LOOK", title: "Artwork of the day", tagline: "one piece, looked at closely", order: 2, premium: false, enabled: true, minTimeMinutes: 15, freeCount: null },
+  { key: "read", eyebrow: "READ", title: "A literary moment", tagline: "a short excerpt to sit with", order: 3, premium: false, enabled: true, minTimeMinutes: 15, freeCount: null },
+  { key: "readnext", eyebrow: "READ NEXT", title: "One book", tagline: "read this if you want something worth your evening", order: 5, premium: false, enabled: true, minTimeMinutes: 15, freeCount: null },
+  // Tier 3 (30 min) — the longer, more immersive sections.
+  { key: "wander", eyebrow: "WANDER", title: "A place worth getting lost in", tagline: "a short piece of travel writing", order: 4, premium: true, enabled: true, minTimeMinutes: 30, freeCount: null },
+  { key: "play", eyebrow: "PLAY", title: "Today's crossword", tagline: "easy to medium, 5–15 minutes", order: 1, premium: false, enabled: true, minTimeMinutes: 30, freeCount: null },
+  { key: "quiz", eyebrow: "PLAY MORE", title: "Daily Quiz", tagline: "pick a genre, work your way up", order: 8, premium: true, enabled: true, minTimeMinutes: 30, freeCount: null },
   // Kept from the earlier build, off by default — a config change turns
   // any of these back on without touching code.
-  { key: "quiz", eyebrow: "PLAY MORE", title: "Daily Quiz", tagline: "pick a genre, work your way up", order: 8, premium: true, enabled: false, minTimeMinutes: 15, freeCount: null },
   { key: "todolist", eyebrow: "KEEP", title: "My To-Do List", tagline: "add and track your own tasks", order: 9, premium: false, enabled: false, minTimeMinutes: 5, freeCount: null },
   { key: "writing", eyebrow: "MAKE", title: "Write Something", tagline: "a small prompt for a poem or a story", order: 10, premium: true, enabled: false, minTimeMinutes: 15, freeCount: null },
   { key: "comic", eyebrow: "SMILE", title: "Comic of the Day", tagline: "licensing pending", order: 11, premium: true, enabled: false, minTimeMinutes: 5, freeCount: null },
@@ -158,6 +168,26 @@ const BONUS_ARTICLES = [
 ];
 
 // ---------------------------------------------------------------------------
+// "On the side" desk objects (mug/plant/headphones/apple) — admin-editable
+// pools, one `pool` value each, same rotation model as every other content
+// pool. The editorial content itself lives in lib/sideObjectStarterContent.ts
+// (also offered as a one-click import from /admin for a database that's
+// missing it, e.g. staging — see app/api/admin/content/[type]/starter/
+// route.ts). SIDE_OBJECT_META below is the object's own label/description
+// (its accent color and SVG illustration stay in code, in
+// lib/deskLayout.ts, since those are design decisions, not editorial
+// content) — editable from /admin's Sections tab.
+// ---------------------------------------------------------------------------
+const SIDE_OBJECT_ITEMS = SIDE_OBJECT_STARTER_CONTENT;
+
+const SIDE_OBJECT_META = [
+  { pool: "mug", label: "A tea break", description: "A short writing prompt, for whenever you want to put something down on paper." },
+  { pool: "plant", label: "Something growing", description: "A small, real piece of botany — something true about the living world." },
+  { pool: "headphones", label: "Something to listen to", description: "A song or a podcast worth the next few minutes." },
+  { pool: "apple", label: "A little bite", description: "A recipe worth trying, whenever you're hungry for one." },
+];
+
+// ---------------------------------------------------------------------------
 // Pricing — the /pricing page reads this table directly.
 // ---------------------------------------------------------------------------
 const PRICING_PLANS = [
@@ -169,6 +199,7 @@ const PRICING_PLANS = [
     interval: "month",
     order: 0,
     features: [
+      "Your daily Dilly",
       "3 of today's 5 world stories",
       "Artwork, crossword, and a wonder to chew on",
       "One book recommendation",
@@ -178,18 +209,17 @@ const PRICING_PLANS = [
   },
   {
     key: "premium",
-    name: "Premium",
-    priceINR: 99,
-    priceUSD: 1,
+    name: "Member",
+    priceINR: 249,
+    priceUSD: 3,
     interval: "month",
     order: 1,
     features: [
-      "The full daily edition, every section",
-      "All 5 world stories",
-      "A place worth getting lost in — travel writing, daily",
-      "The complete archive, every day",
-      "Deeper personalization and more interest categories",
-      "Save and revisit anything you liked",
+      "Your interests — get more of what you actually care about",
+      "Your time — 5, 15, or 30-minute editions",
+      "Your shelf — save and revisit anything you've discovered",
+      "Go deeper — the full daily edition, every section",
+      "Your archive — every past Dilly, not just the last 7 days",
     ],
   },
 ];
@@ -323,6 +353,30 @@ async function main() {
     await prisma.bonusArticle.upsert({ where: { id: `bonus-${i}` }, update: article, create: { id: `bonus-${i}`, ...article } });
   }
 
+  for (const [i, item] of SIDE_OBJECT_ITEMS.entries()) {
+    await prisma.sideObjectItem.upsert({ where: { id: `side-${i}` }, update: item, create: { id: `side-${i}`, ...item } });
+  }
+
+  for (const meta of SIDE_OBJECT_META) {
+    await prisma.sideObjectMeta.upsert({ where: { pool: meta.pool }, update: meta, create: meta });
+  }
+
+  for (const genre of QUIZ_GENRES) {
+    await prisma.quizGenre.upsert({
+      where: { slug: genre.slug },
+      update: { label: genre.label, emoji: genre.emoji, order: genre.order },
+      create: genre,
+    });
+  }
+
+  for (const q of QUIZ_QUESTIONS) {
+    await prisma.quizQuestion.upsert({
+      where: { genre_difficulty_index: { genre: q.genre, difficulty: q.difficulty, index: q.index } },
+      update: { question: q.question, answer: q.answer },
+      create: q,
+    });
+  }
+
   console.log(
     [
       `${INTEREST_TAGS.length} interest tags`,
@@ -337,6 +391,10 @@ async function main() {
       `${CROSSWORD_THEMES.length} crossword themes`,
       `${PRICING_PLANS.length} pricing plans`,
       `${BONUS_ARTICLES.length} bonus articles`,
+      `${SIDE_OBJECT_ITEMS.length} side-object items`,
+      `${SIDE_OBJECT_META.length} side-object meta rows`,
+      `${QUIZ_GENRES.length} quiz genres`,
+      `${QUIZ_QUESTIONS.length} quiz questions`,
     ].join(", ")
   );
 }

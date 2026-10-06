@@ -172,6 +172,24 @@ that. Without those env vars set, it falls back to a demo toggle
 (`components/UpgradeModal.tsx`) that just flips `User.plan` so you can see
 the full layout without a Razorpay account.
 
+**Archive limit**: free visitors can look back at most `FREE_ARCHIVE_DAYS`
+(7) days, including today — `lib/archive.ts` is the single source of truth,
+enforced both server-side (`/api/daily` skips building the edition
+entirely for a free visitor's date past the cutoff, returning
+`archiveLocked: true`) and client-side (`DateStamp`'s "Previous day" arrow
+disables itself at the boundary, same pattern as "Next day" at today).
+Premium has no limit.
+
+## Progressive Web App
+
+`public/manifest.json` + the icons in `public/icons/` make the site
+installable ("Add to Home Screen") on both iOS and Android, wired in via
+`app/layout.tsx`'s `metadata.manifest`/`metadata.icons`/`appleWebApp`. This
+is as far as the web platform goes, though — a real OS home-screen
+*widget* showing live content (today's wonder, a book recommendation)
+needs a native app shell (WidgetKit on iOS, App Widgets on Android); there
+is no browser API for that, PWA or not.
+
 ## Persistence & identity
 
 No signup is required — a visitor is identified by a random id in an
@@ -264,6 +282,38 @@ for actual cohort/retention charts, set `NEXT_PUBLIC_POSTHOG_KEY` (see
 and identifies each visitor by their own `User.id`, so repeat visits (and,
 once signed in, the same person across devices) roll up as one person in
 PostHog's dashboards instead of one row per browser session.
+
+### North Star: Weekly Dilly Rituals
+
+Not MAUs, not pageviews, not time on site — the number of visitors who
+voluntarily open their Dilly on **3 or more distinct days in a trailing
+7-day window**. The product's whole bet is turning "a website" into "a
+thing I do"; this is the one number that actually says whether that's
+happening. Everything else — notifications, personalization, the shelf,
+membership — only matters in service of moving this number.
+
+`User.visitCount` (`lib/auth.ts`) counts distinct calendar days a visitor
+has ever been seen on, bumped at most once per day — useful for lifetime
+engagement ("has this person ever formed the habit at all?") and for
+product moments like the personalization invite (`app/page.tsx` waits for
+`visitCount >= 3`), but it's a cumulative counter, not a sliding window, so
+it can't answer "3+ days in the *last* 7" on its own:
+
+```sql
+-- Proxy, not the real thing: lifetime distinct-day visitors with 3+ days
+-- total, seen recently. Overcounts anyone who built up visitCount long ago
+-- and happened to come back once this week.
+select count(*) from "User"
+where "visitCount" >= 3 and "lastSeenAt" > now() - interval '7 days';
+```
+
+For the real rolling-window number, use PostHog (already capturing
+pageviews per `User.id` — see above): build an Insight on the pageview
+event, breakdown by person, counting distinct calendar days per person in
+the trailing 7 days, filtered to >= 3. That's a few clicks in PostHog's UI
+with data already flowing in, versus a new per-visit log table and a
+retention/cleanup policy for it on our own side — not worth building until
+this specific number is one you're checking regularly.
 
 **Heatmaps and session recordings** are a different lens than the
 funnel/retention numbers above — two options, not mutually exclusive:

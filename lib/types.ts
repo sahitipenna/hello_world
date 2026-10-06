@@ -1,3 +1,5 @@
+import type { SideObject } from "./deskLayout";
+
 export type Plan = "free" | "premium";
 
 /** A section's config, as stored in the `Section` table — drives the whole
@@ -19,6 +21,10 @@ export interface SectionMeta {
 // ---------------------------------------------------------------------------
 
 export interface Poem {
+  // Present when this came from the live daily edition (dailyBundle.ts) —
+  // absent on the raw seed-bank entries in lib/contentBank.ts, which have
+  // no stable id of their own until Prisma assigns one at seed time.
+  id?: string;
   title: string;
   poet: string;
   year?: string;
@@ -29,6 +35,7 @@ export interface Poem {
 }
 
 export interface TravelVignette {
+  id?: string; // see Poem.id
   title: string;
   place: string;
   body: string;
@@ -36,6 +43,7 @@ export interface TravelVignette {
 }
 
 export interface BookRec {
+  id?: string; // see Poem.id
   title: string;
   author: string;
   reason: string;
@@ -88,7 +96,8 @@ export interface WonderT {
 // ---------------------------------------------------------------------------
 // Per-section content, keyed by the section's `key`. `content` is `null` for
 // a section whose key the app doesn't know how to resolve yet (an admin
-// re-enabling one of the older, currently-unsupported keys like "quiz").
+// re-enabling one of the older, still-unsupported keys like "todolist" or
+// "writing" — see lib/dailyBundle.ts's resolveContent default case).
 // ---------------------------------------------------------------------------
 
 export interface KnowContent {
@@ -143,6 +152,12 @@ export interface DoContent {
   tasks: { title: string; category: string }[];
   totalCount: number;
 }
+// DailyQuiz.tsx is fully self-contained — fetches its own genres/questions
+// from /api/quiz* and tracks its own progress — so this carries no data,
+// it just marks the slot as resolved (non-null) so the desk tile renders.
+export interface QuizContent {
+  kind: "quiz";
+}
 
 export type EditionContent =
   | KnowContent
@@ -153,6 +168,7 @@ export type EditionContent =
   | ReadNextContent
   | WonderContent
   | DoContent
+  | QuizContent
   | null;
 
 export interface EditionSection extends SectionMeta {
@@ -167,7 +183,9 @@ export interface DailyEditionResponse {
   plan: Plan;
   timeBudgetMinutes: number | null;
   sections: EditionSection[];
+  sideObjects: SideObject[];
   todoChecks: Record<number, boolean>;
+  archiveLocked?: boolean;
 }
 
 export type QuizDifficulty = "easy" | "medium" | "hard";

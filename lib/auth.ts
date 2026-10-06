@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { randomUUID } from "crypto";
 import { prisma } from "./db";
+import { toISODate } from "./dateUtils";
 
 export const COOKIE_NAME = "godilly_uid";
 
@@ -43,9 +44,15 @@ export async function getOrCreateUser() {
     jar.set(COOKIE_NAME, uid, cookieOptions);
   }
 
+  const now = new Date();
+  // visitCount counts distinct calendar days, not requests — check whether
+  // today is a new day for this visitor BEFORE overwriting lastSeenAt below.
+  const existing = await prisma.user.findUnique({ where: { id: uid }, select: { lastSeenAt: true } });
+  const isNewDay = !existing || toISODate(existing.lastSeenAt) !== toISODate(now);
+
   return prisma.user.upsert({
     where: { id: uid },
-    update: { lastSeenAt: new Date() },
-    create: { id: uid },
+    update: { lastSeenAt: now, ...(isNewDay ? { visitCount: { increment: 1 } } : {}) },
+    create: { id: uid, lastSeenAt: now, visitCount: 1 },
   });
 }

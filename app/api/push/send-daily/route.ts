@@ -28,8 +28,8 @@ async function handle(req: NextRequest) {
     subscriptions.map(async (sub) => {
       try {
         await sendPush(sub, {
-          title: "Go Dilly",
-          body: "Good morning — a few small things are waiting for you today.",
+          title: "☀️ Your Dilly is ready",
+          body: "A few good things are waiting for you.",
           url: "/",
         });
         sent++;

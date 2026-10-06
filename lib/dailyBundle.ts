@@ -3,7 +3,9 @@ import { prisma } from "./db";
 import { dayOfYear, parseISODate, getISOWeekKey, hashString } from "./dateUtils";
 import { resolveOneForDate, resolveManyForDate } from "./contentPicker";
 import { generateBestCrossword } from "./crosswordGen";
+import { resolveSideObjects } from "./sideObjects";
 import { EditionContent, NewsItemT } from "./types";
+import { SideObject } from "./deskLayout";
 
 export interface ResolvedSection {
   meta: Section;
@@ -15,6 +17,7 @@ export interface ResolvedEdition {
   dayOfYear: number;
   weekKey: string;
   sections: ResolvedSection[];
+  sideObjects: SideObject[];
 }
 
 /**
@@ -34,11 +37,12 @@ export async function buildEdition(
   const weekKey = getISOWeekKey(date);
 
   const sections = await prisma.section.findMany({ where: { enabled: true }, orderBy: { order: "asc" } });
-  const resolved = await Promise.all(
-    sections.map(async (meta) => ({ meta, content: await resolveContent(meta.key, dateISO, weights) }))
-  );
+  const [resolved, sideObjects] = await Promise.all([
+    Promise.all(sections.map(async (meta) => ({ meta, content: await resolveContent(meta.key, dateISO, weights) }))),
+    resolveSideObjects(dateISO),
+  ]);
 
-  return { dateISO, dayOfYear: doy, weekKey, sections: resolved };
+  return { dateISO, dayOfYear: doy, weekKey, sections: resolved, sideObjects };
 }
 
 async function resolveContent(
@@ -95,6 +99,7 @@ async function resolveContent(
       return {
         kind: "read",
         poem: {
+          id: item.id,
           title: item.work,
           poet: item.author,
           lines: item.excerpt.split("\n"),
@@ -110,7 +115,7 @@ async function resolveContent(
       if (!item) return null;
       return {
         kind: "wander",
-        travel: { title: item.title, place: item.location, body: item.text, category: item.category },
+        travel: { id: item.id, title: item.title, place: item.location, body: item.text, category: item.category },
       };
     }
     case "readnext": {
@@ -119,7 +124,7 @@ async function resolveContent(
       if (!book) return null;
       return {
         kind: "readnext",
-        book: { title: book.title, author: book.author, reason: book.whyRead, category: book.category },
+        book: { id: book.id, title: book.title, author: book.author, reason: book.whyRead, category: book.category },
       };
     }
     case "wonder": {
@@ -143,6 +148,8 @@ async function resolveContent(
       const tasks = resolveManyForDate(schedulable, dateISO, "do", 5, weights);
       return { kind: "do", tasks: tasks.map((t) => ({ title: t.title, category: t.category })), totalCount: tasks.length };
     }
+    case "quiz":
+      return { kind: "quiz" };
     default:
       // A section key the app doesn't have a content resolver for yet (an
       // admin re-enabling an older section like "quiz" or "comic"). The

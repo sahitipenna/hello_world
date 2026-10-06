@@ -21,6 +21,7 @@ model User {
   id                String   @id
   createdAt         DateTime @default(now())
   lastSeenAt        DateTime @default(now()) // bumped on every request that resolves a visitor (lib/auth.ts) — basis for return-rate/DAU queries, see README
+  visitCount        Int      @default(1) // distinct CALENDAR DAYS seen on, not request count — bumped at most once per day in lib/auth.ts, comparing lastSeenAt's date to today's before overwriting it. Basis for "after N visits" product moments (e.g. when to invite personalization) and the "Weekly Dilly Rituals" North Star metric, see README
   plan              String   @default("free") // "free" | "premium" — kept in sync by the Razorpay webhook (lib/razorpay.ts); falls back to a manual demo toggle when Razorpay isn't configured
   razorpaySubscriptionId String? @unique // Razorpay's sub_... id, once this visitor has started checkout
   timeBudgetMinutes Int? // 5 | 15 | 30 | 45 — personalization from onboarding
@@ -244,6 +245,38 @@ model BonusArticle {
   teaser    String   @default("")
   category  String   @default("")
   createdAt DateTime @default(now())
+}
+
+/// Content pool for the four "on the side" desk objects (mug/plant/
+/// headphones/apple — see lib/deskLayout.ts SIDE_OBJECT_META for their fixed
+/// label/accent). `pool` picks which object a row belongs to; within a pool,
+/// rows rotate the same scheduled-then-deterministic way as every other
+/// content pool (lib/contentPicker.ts).
+model SideObjectItem {
+  id            String   @id @default(cuid())
+  pool          String // "mug" | "plant" | "headphones" | "apple"
+  title         String
+  sub           String   @default("")
+  body          String
+  note          String   @default("")
+  url           String?
+  linkLabel     String?
+  category      String   @default("")
+  scheduledDate String?
+  createdAt     DateTime @default(now())
+}
+
+/// Admin-editable label + description for each "on the side" object itself
+/// (not its rotating content, which is SideObjectItem) — the floating label
+/// shown under its icon on the desk, and a short line shown when its panel
+/// opens. Edited from /admin's Sections tab alongside the 9 real sections.
+/// Each object's accent color and SVG illustration stay in code
+/// (lib/deskLayout.ts) since those are design decisions, not editorial
+/// content.
+model SideObjectMeta {
+  pool        String @id // "mug" | "plant" | "headphones" | "apple"
+  label       String
+  description String @default("")
 }
 
 // ---------------------------------------------------------------------------

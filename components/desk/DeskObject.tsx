@@ -88,26 +88,42 @@ export default function DeskObject({
         style={{
           position: "absolute",
           top: "calc(100% + 8px)",
-          left: "50%",
-          transform: `translateX(-50%) rotate(-2deg) translateY(${labelsAlways || up ? 0 : -4}px)`,
-          background: "#faf3e6",
-          padding: "1px 10px 2px",
-          borderRadius: 2,
-          whiteSpace: "nowrap",
+          left: 0,
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          transform: `rotate(-2deg) translateY(${labelsAlways || up ? 0 : -4}px)`,
           pointerEvents: "none",
-          fontFamily: "var(--font-hand), cursive",
-          fontWeight: 600,
-          fontSize: mobile ? 17 : 19,
-          color: "#2b2622",
-          boxShadow: "1px 2px 4px rgba(20,10,4,.3)",
           opacity: labelsAlways || up ? 1 : 0,
           transition: "opacity .2s, transform .25s",
-          outline: up && !mobile ? "2px solid #d9a02c" : "none",
-          outlineOffset: 2,
         }}
       >
-        {label}
-        {visited ? "  ✓" : ""}
+        <span
+          style={{
+            display: "inline-block",
+            maxWidth: "100%",
+            background: "#faf3e6",
+            padding: "1px 10px 2px",
+            borderRadius: 2,
+            // Mobile shows every label at once in a single-column flow, so
+            // it wraps within its own item's width instead of overflowing
+            // sideways into whatever comes next. Desktop only ever shows
+            // one label at a time (on hover), with room to spare, so it
+            // keeps the tidier single-line look.
+            whiteSpace: mobile ? "normal" : "nowrap",
+            textAlign: "center",
+            fontFamily: "var(--font-hand), cursive",
+            fontWeight: 600,
+            fontSize: mobile ? 17 : 19,
+            color: "#2b2622",
+            boxShadow: "1px 2px 4px rgba(20,10,4,.3)",
+            outline: up && !mobile ? "2px solid #d9a02c" : "none",
+            outlineOffset: 2,
+          }}
+        >
+          {label}
+          {visited ? "  ✓" : ""}
+        </span>
       </div>
     </div>
   );

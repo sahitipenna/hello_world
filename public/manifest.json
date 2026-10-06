@@ -1,0 +1,15 @@
+{
+  "name": "Go Dilly — a few good things for your day",
+  "short_name": "Go Dilly",
+  "description": "A daily cultural daybook: world curiosities, art, a literary moment, travel, a book, a wonder, a crossword, and a few little things to do.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2b2622",
+  "theme_color": "#2b2622",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

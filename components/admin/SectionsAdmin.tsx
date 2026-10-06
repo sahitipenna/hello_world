@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import SideObjectMetaAdmin from "./SideObjectMetaAdmin";
 
 interface SectionRow {
   id: string;
@@ -192,6 +193,13 @@ export default function SectionsAdmin() {
           </div>
         );
       })}
+
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink/40 pt-4">On the side</p>
+      <p className="text-sm text-ink/60 mb-2">
+        The mug, plant, headphones, and apple — decor on the desk, not real sections (can't be hidden or reordered
+        here). Title is the floating label under each icon; description shows when its panel opens.
+      </p>
+      <SideObjectMetaAdmin />
     </div>
   );
 }

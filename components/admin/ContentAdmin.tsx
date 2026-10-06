@@ -113,6 +113,11 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [hasStarterContent, setHasStarterContent] = useState(false);
+  const [importingStarter, setImportingStarter] = useState(false);
+  const [warming, setWarming] = useState(false);
+  const [warmProgress, setWarmProgress] = useState<{ done: number; total: number } | null>(null);
+  const [warmDiagnostics, setWarmDiagnostics] = useState<{ title: string; diagnostic: string }[]>([]);
 
   function load() {
     setLoading(true);
@@ -121,11 +126,58 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
       .then((d) => {
         setFields(d.fields ?? []);
         setRows(d.rows ?? []);
+        setHasStarterContent(Boolean(d.hasStarterContent));
       })
       .finally(() => setLoading(false));
   }
 
   useEffect(load, [typeSlug]);
+
+  async function importStarterContent() {
+    setImportingStarter(true);
+    try {
+      await fetch(`/api/admin/content/${typeSlug}/starter`, { method: "POST" });
+      load();
+    } finally {
+      setImportingStarter(false);
+    }
+  }
+
+  // Artwork-only: resolves every row that has no cached image yet against
+  // the Met, one at a time, so a real visitor almost always finds the image
+  // already sitting in the DB instead of being the one who triggers (and
+  // waits on, and risks a flaky result from) a live lookup. See
+  // app/api/admin/artwork/[id]/resolve/route.ts for the actual fetch.
+  async function warmImageCache() {
+    const uncached = rows.filter((r) => !r.image);
+    if (uncached.length === 0) return;
+    setWarming(true);
+    setWarmProgress({ done: 0, total: uncached.length });
+    setWarmDiagnostics([]);
+    let done = 0;
+    const failures: { title: string; diagnostic: string }[] = [];
+    for (const row of uncached) {
+      const r = await fetch(`/api/admin/artwork/${row.id}/resolve`, { method: "POST" })
+        .then((res) => res.json())
+        .catch((e) => ({ resolved: false, diagnostic: e instanceof Error ? e.message : "request failed" }));
+      if (!r.resolved) {
+        failures.push({ title: String(row.title ?? row.id), diagnostic: r.diagnostic ?? "unknown error" });
+      }
+      done += 1;
+      setWarmProgress({ done, total: uncached.length });
+      // The real pacing — against the Met's documented 80 req/s ceiling —
+      // happens per-request inside lib/metArt.ts, shared by every call a
+      // single resolve makes (1 search + up to 6 object lookups). That
+      // only holds within one serverless invocation though, and each
+      // artwork here is its own POST (possibly its own cold start, with
+      // no memory of the last one's pacing) — this small gap is just
+      // extra margin for that.
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    }
+    setWarmDiagnostics(failures);
+    setWarming(false);
+    load();
+  }
 
   function blankValues(): Record<string, string> {
     const v: Record<string, string> = {};
@@ -176,20 +228,66 @@ export default function ContentAdmin({ typeSlug }: { typeSlug: string }) {
   if (loading) return <p className="text-sm text-ink/50">Loading…</p>;
 
   const titleField = fields.find((f) => f.key === "title" || f.key === "work") ?? fields[0];
+  const uncachedCount = typeSlug === "artwork" ? rows.filter((r) => !r.image).length : 0;
 
   return (
     <div className="space-y-3">
+      {typeSlug === "artwork" && (
+        <p className="text-xs text-ink/50">
+          {uncachedCount === 0
+            ? "Every artwork has a cached image — visitors never wait on a live Met lookup."
+            : `${uncachedCount} of ${rows.length} have no cached image yet — those visitors are the ones who could see "couldn't reach the museum's archive" if the Met is briefly slow.`}
+        </p>
+      )}
       <div className="flex items-center justify-between">
         <p className="text-sm text-ink/60">{rows.length} items</p>
-        {!adding && (
+        <div className="flex gap-2">
+          {typeSlug === "artwork" && uncachedCount > 0 && (
+            <button
+              onClick={warmImageCache}
+              disabled={warming}
+              title="Resolves every artwork with no cached image against the Met right now, so visitors read from the DB instead of triggering a live lookup themselves."
+              className="text-xs font-semibold rounded-full px-3 py-1.5 border border-terracotta/40 text-terracotta hover:bg-terracotta/10 disabled:opacity-50"
+            >
+              {warming && warmProgress ? `Resolving ${warmProgress.done}/${warmProgress.total}…` : "Warm image cache"}
+            </button>
+          )}
+          {hasStarterContent && (
+            <button
+              onClick={importStarterContent}
+              disabled={importingStarter}
+              title="Imports the ready-made content for this one — safe to click again later, it just re-syncs the same starter rows."
+              className="text-xs font-semibold rounded-full px-3 py-1.5 border border-terracotta/40 text-terracotta hover:bg-terracotta/10 disabled:opacity-50"
+            >
+              {importingStarter ? "Adding…" : "Use starter content"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {warmDiagnostics.length > 0 && (
+        <div className="rounded-lg border border-terracotta/30 bg-terracotta/5 p-3 space-y-1">
+          <p className="text-xs font-semibold text-terracotta">
+            {warmDiagnostics.length} still unresolved — here's what actually happened for each:
+          </p>
+          {warmDiagnostics.map((d, i) => (
+            <p key={i} className="text-xs text-ink/60 font-mono">
+              <span className="text-ink/80">{d.title}:</span> {d.diagnostic}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {!adding && (
+        <div className="flex justify-end">
           <button
             onClick={() => setAdding(true)}
             className="text-xs font-semibold rounded-full px-3 py-1.5 bg-terracotta text-paper"
           >
             + Add new
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {adding && (
         <div className="paper-card rounded-xl p-4 border border-dashed border-terracotta/50">

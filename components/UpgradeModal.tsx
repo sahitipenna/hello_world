@@ -55,8 +55,8 @@ export default function UpgradeModal({
       const razorpay = new window.Razorpay!({
         key: keyId,
         subscription_id: subscriptionId,
-        name: "Go Dilly Premium",
-        description: "₹399 / month",
+        name: "Go Dilly Member",
+        description: price ? `₹${price.inr} / month` : undefined,
         theme: { color: "#c1552c" },
         handler: async (response: {
           razorpay_payment_id: string;
@@ -90,15 +90,16 @@ export default function UpgradeModal({
         >
           {"×"}
         </button>
-        <p className="text-xs font-semibold uppercase tracking-wide text-mustard mb-2">Go Dilly Premium</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-mustard mb-2">Make your Dilly yours</p>
         <h2 className="font-serif text-2xl mb-3" style={{ fontFamily: "var(--font-serif), serif" }}>
-          More to look forward to, every day
+          Your Dilly, shaped around you
         </h2>
         <ul className="text-sm text-ink/80 space-y-1.5 mb-5">
-          <li>{"•"} All 5 world stories, and all 5 little things to do</li>
-          <li>{"•"} A place worth getting lost in, every day</li>
-          <li>{"•"} Reorder and hide sections to fit your day</li>
-          <li>{"•"} Full archive of past days</li>
+          <li>{"•"} Your interests — more of what you actually care about</li>
+          <li>{"•"} Your time — 5, 15, or 30-minute editions</li>
+          <li>{"•"} Your shelf — save and revisit anything you've discovered</li>
+          <li>{"•"} Go deeper — the full daily edition, every section</li>
+          <li>{"•"} Your archive — every past Dilly, not just the last 7 days</li>
         </ul>
         <div className="flex items-baseline gap-1 mb-1">
           <span className="font-serif text-3xl" style={{ fontFamily: "var(--font-serif), serif" }}>
@@ -112,7 +113,7 @@ export default function UpgradeModal({
           disabled={status === "starting"}
           className="w-full text-sm font-semibold bg-terracotta text-paper rounded-full px-4 py-2.5 hover:bg-rust transition-colors disabled:opacity-60"
         >
-          {status === "starting" ? "Starting checkout…" : "Go Premium"}
+          {status === "starting" ? "Starting checkout…" : "Become a member"}
         </button>
         {status === "error" && (
           <p className="mt-3 text-[11px] text-rust text-center">

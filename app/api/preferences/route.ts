@@ -53,6 +53,10 @@ export async function GET() {
       // repeat visits are recognized as the same person.
       userId: user.id,
       user: user.email ? { email: user.email, name: user.name, image: user.image } : null,
+      // Distinct calendar days this visitor has been seen on (lib/auth.ts)
+      // — drives the first-visit landing gate and the delayed invitation
+      // to personalize after a few visits, see app/page.tsx.
+      visitCount: user.visitCount,
     },
     { headers: { "Cache-Control": "private, no-store" } }
   );

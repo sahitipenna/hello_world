@@ -18,6 +18,14 @@ export default function OnboardingModal({
   initialTimeBudget,
   onClose,
   onSave,
+  // This modal opens two different ways, which need two different
+  // greetings: auto-invited after a few visits ("you're becoming a
+  // regular") vs. opened any time by anyone via the header's "Interests"
+  // link — including a first-time visitor, for whom "regular" makes no
+  // sense. Caller decides which copy fits; default is the neutral one,
+  // safe for any visitor at any point.
+  kicker = "Make it yours",
+  title = "What draws your attention?",
 }: {
   open: boolean;
   tags: Tag[];
@@ -25,6 +33,8 @@ export default function OnboardingModal({
   initialTimeBudget: number | null;
   onClose: () => void;
   onSave: (slugs: string[], timeBudgetMinutes: number | null) => Promise<void>;
+  kicker?: string;
+  title?: string;
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set(initialSelected));
   const [timeBudget, setTimeBudget] = useState<number | null>(initialTimeBudget);
@@ -61,12 +71,12 @@ export default function OnboardingModal({
         >
           ×
         </button>
-        <p className="text-xs font-semibold uppercase tracking-wide text-mustard mb-2">Make it yours</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-mustard mb-2">{kicker}</p>
         <h2 className="font-serif text-2xl mb-2" style={{ fontFamily: "var(--font-serif), serif" }}>
-          What draws your attention?
+          {title}
         </h2>
         <p className="text-sm text-ink/60 mb-5">
-          Pick a few — we&apos;ll lean your edition toward them. Change this anytime.
+          Pick what you&apos;d like more of — we&apos;ll lean your edition that way. Change this anytime.
         </p>
         <div className="flex flex-wrap gap-2 mb-6">
           {tags.map((tag) => {

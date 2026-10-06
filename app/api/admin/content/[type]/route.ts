@@ -12,8 +12,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ typ
   const ct = getContentType(type);
   if (!ct) return NextResponse.json({ error: "unknown content type" }, { status: 404 });
 
-  const rows = await ct.delegate.findMany({ orderBy: { id: "desc" } });
-  return NextResponse.json({ fields: ct.fields, rows }, { headers: { "Cache-Control": "private, no-store" } });
+  const rows = await ct.delegate.findMany({ where: ct.fixedFields, orderBy: { id: "desc" } });
+  return NextResponse.json(
+    { fields: ct.fields, rows, hasStarterContent: !!ct.starterContent },
+    { headers: { "Cache-Control": "private, no-store" } }
+  );
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ type: string }> }) {
@@ -25,7 +28,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ typ
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object") return NextResponse.json({ error: "invalid body" }, { status: 400 });
 
-  const data = parseContentBody(ct.fields, body);
+  const data = { ...parseContentBody(ct.fields, body), ...ct.fixedFields };
   for (const f of ct.fields) {
     if (f.required && !data[f.key]) {
       return NextResponse.json({ error: `${f.label} is required` }, { status: 400 });

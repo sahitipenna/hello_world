@@ -34,6 +34,16 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.godilly.life"),
   title: "Go Dilly — a few good things for your day",
   description,
+  manifest: "/manifest.json",
+  icons: {
+    icon: [{ url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" }],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Go Dilly",
+  },
   openGraph: {
     title: "Go Dilly — a few good things for your day",
     description,
@@ -46,6 +56,10 @@ export const metadata: Metadata = {
     title: "Go Dilly — a few good things for your day",
     description,
   },
+};
+
+export const viewport = {
+  themeColor: "#2b2622",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
