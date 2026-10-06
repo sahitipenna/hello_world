@@ -112,12 +112,13 @@ const FLOW_ROTATIONS = [-3, 2.5, -2, 3, -3.5, 2, -2.5, 3.5];
 
 /** Generates the two-column mobile "table" from whichever section keys are
  * actually visible (pairing them two at a time, in order, with
- * WIDE_MOBILE_KEYS spanning alone), followed by the side-object decor as
- * its own small grid (decor isn't time-budget-filtered, but still needs to
- * compact upward if the sections above it are fewer). Returns the same
- * `{W,H,items}` shape as DESK_LAYOUT_DESKTOP so DeskScene's existing
- * percentBox/stageH scaling needs no change beyond calling this instead of
- * a fixed table. */
+ * WIDE_MOBILE_KEYS spanning alone), with the side-object decor spread
+ * between section rows rather than dumped as a block at the end — closer
+ * to how they sit scattered among sections on the desktop collage, and it
+ * means a decor item never ends up stranded below everything else on a
+ * short (time-budget-trimmed) edition. Returns the same `{W,H,items}`
+ * shape as DESK_LAYOUT_DESKTOP so DeskScene's existing percentBox/stageH
+ * scaling needs no change beyond calling this instead of a fixed table. */
 export function mobileFlowLayout(
   sectionKeys: string[],
   decorKeys: string[]
@@ -138,65 +139,77 @@ export function mobileFlowLayout(
     return h;
   }
 
+  // Phase 1: group section keys into rows (pairs, or a lone wide/leftover
+  // card) without placing them yet, so phase 2 can decide where among
+  // these rows each decor item lands before any Y coordinates are fixed.
+  const rows: string[][] = [];
   let pendingNarrow: string | null = null;
   for (const key of sectionKeys) {
     if (WIDE_MOBILE_KEYS.has(key)) {
       if (pendingNarrow) {
-        y += place(pendingNarrow, MOBILE_MARGIN, MOBILE_COL_W, y) + MOBILE_ROW_GAP;
+        rows.push([pendingNarrow]);
         pendingNarrow = null;
       }
-      const w = Math.round(MOBILE_FLOW_W * (WIDE_MOBILE_WIDTH_FRACTION[key] ?? 0.8));
-      const x = Math.round((MOBILE_FLOW_W - w) / 2);
-      y += place(key, x, w, y) + MOBILE_ROW_GAP;
+      rows.push([key]);
     } else if (pendingNarrow) {
-      const hA = place(pendingNarrow, MOBILE_MARGIN, MOBILE_COL_W, y);
-      const hB = place(key, MOBILE_MARGIN + MOBILE_COL_W + MOBILE_COL_GAP, MOBILE_COL_W, y);
-      y += Math.max(hA, hB) + MOBILE_ROW_GAP;
+      rows.push([pendingNarrow, key]);
       pendingNarrow = null;
     } else {
       pendingNarrow = key;
     }
   }
-  if (pendingNarrow) {
-    // Odd one out: give it the full-width treatment rather than leaving
-    // half a row empty.
-    const w = Math.round(MOBILE_FLOW_W * 0.6);
-    const x = Math.round((MOBILE_FLOW_W - w) / 2);
-    y += place(pendingNarrow, x, w, y) + MOBILE_ROW_GAP;
+  if (pendingNarrow) rows.push([pendingNarrow]);
+
+  function placeRow(row: string[]) {
+    if (row.length === 1) {
+      const key = row[0];
+      const isWide = WIDE_MOBILE_KEYS.has(key);
+      const w = Math.round(MOBILE_FLOW_W * (isWide ? WIDE_MOBILE_WIDTH_FRACTION[key] ?? 0.8 : 0.6));
+      const x = Math.round((MOBILE_FLOW_W - w) / 2);
+      y += place(key, x, w, y) + MOBILE_ROW_GAP;
+    } else {
+      const [a, b] = row;
+      const hA = place(a, MOBILE_MARGIN, MOBILE_COL_W, y);
+      const hB = place(b, MOBILE_MARGIN + MOBILE_COL_W + MOBILE_COL_GAP, MOBILE_COL_W, y);
+      y += Math.max(hA, hB) + MOBILE_ROW_GAP;
+    }
   }
 
+  function placeDecor(key: string) {
+    const w = Math.round(MOBILE_COL_W * 0.62);
+    const aspect = DECOR_ASPECT[key] ?? 1;
+    const h = Math.round(w / aspect);
+    const x = Math.round((MOBILE_FLOW_W - w) / 2);
+    decorItems[key] = [x, y, w, h, FLOW_ROTATIONS[i % FLOW_ROTATIONS.length], 1];
+    i++;
+    y += h + MOBILE_ROW_GAP;
+  }
+
+  // Phase 2: spread the decor keys across the gaps *after* section rows —
+  // one roughly every rows.length/decorKeys.length rows — rather than
+  // bunching them all after the last row. decorIndex -> row index it
+  // follows (-1 meaning "before any rows", only reachable when there are
+  // no sections at all).
+  const decorAfterRow = new Map<number, string[]>();
   if (decorKeys.length > 0) {
-    y += 8;
-    let pendingDecor: string | null = null;
-    for (const key of decorKeys) {
-      if (pendingDecor) {
-        const w = Math.round(MOBILE_COL_W * 0.62);
-        const aspectA = DECOR_ASPECT[pendingDecor] ?? 1;
-        const aspectB = DECOR_ASPECT[key] ?? 1;
-        const hA = Math.round(w / aspectA);
-        const hB = Math.round(w / aspectB);
-        const xA = Math.round(MOBILE_FLOW_W / 2 - MOBILE_COL_GAP / 2 - w);
-        const xB = Math.round(MOBILE_FLOW_W / 2 + MOBILE_COL_GAP / 2);
-        decorItems[pendingDecor] = [xA, y, w, hA, FLOW_ROTATIONS[i % FLOW_ROTATIONS.length], 1];
-        i++;
-        decorItems[key] = [xB, y, w, hB, FLOW_ROTATIONS[i % FLOW_ROTATIONS.length], 1];
-        i++;
-        y += Math.max(hA, hB) + MOBILE_ROW_GAP;
-        pendingDecor = null;
-      } else {
-        pendingDecor = key;
-      }
-    }
-    if (pendingDecor) {
-      const w = Math.round(MOBILE_COL_W * 0.62);
-      const aspect = DECOR_ASPECT[pendingDecor] ?? 1;
-      const h = Math.round(w / aspect);
-      const x = Math.round((MOBILE_FLOW_W - w) / 2);
-      decorItems[pendingDecor] = [x, y, w, h, FLOW_ROTATIONS[i % FLOW_ROTATIONS.length], 1];
-      i++;
-      y += h + MOBILE_ROW_GAP;
+    if (rows.length === 0) {
+      decorAfterRow.set(-1, [...decorKeys]);
+    } else {
+      const gap = rows.length / decorKeys.length;
+      decorKeys.forEach((key, idx) => {
+        const rowIndex = Math.min(rows.length - 1, Math.round(gap * (idx + 1)) - 1);
+        const list = decorAfterRow.get(rowIndex) ?? [];
+        list.push(key);
+        decorAfterRow.set(rowIndex, list);
+      });
     }
   }
+
+  for (const key of decorAfterRow.get(-1) ?? []) placeDecor(key);
+  rows.forEach((row, idx) => {
+    placeRow(row);
+    for (const key of decorAfterRow.get(idx) ?? []) placeDecor(key);
+  });
 
   return { W: MOBILE_FLOW_W, H: y + 10, items, decorItems };
 }
