@@ -12,6 +12,7 @@ import DeskPanel from "@/components/desk/DeskPanel";
 import ArrangeDeskCard from "@/components/desk/ArrangeDeskCard";
 import { useDeskWidth } from "@/components/desk/useDeskWidth";
 import { identifyVisitor } from "@/components/PostHogProvider";
+import { track } from "@/lib/track";
 import ComeBackTomorrow from "@/components/ComeBackTomorrow";
 import ArchiveLocked from "@/components/ArchiveLocked";
 import { isWithinFreeArchive } from "@/lib/archive";
@@ -258,6 +259,7 @@ export default function Home() {
         body: JSON.stringify({ contentType, contentId }),
       }).catch(() => {});
     } else {
+      track("bookmark_add", key);
       await fetch("/api/bookmarks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -280,11 +282,13 @@ export default function Home() {
   function openSection(key: string) {
     setActiveKey(key);
     markVisited(key);
+    track("panel_open", key);
   }
 
   function openSide(id: string) {
     setActiveKey(id);
     markVisited(id);
+    track("panel_open", id);
   }
 
   function openArrange() {

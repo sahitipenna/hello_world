@@ -329,6 +329,23 @@ funnel/retention numbers above — two options, not mutually exclusive:
   Set `NEXT_PUBLIC_CLARITY_PROJECT_ID` (see `.env.example`); without it,
   the provider simply doesn't load anything.
 
+  **If you've set the project ID and Clarity's dashboard still shows no
+  data**: `NEXT_PUBLIC_*` variables are baked into the JS bundle at *build*
+  time, not read at request time — adding or changing one in Vercel's
+  dashboard only takes effect on the *next* deploy. Check the var is set
+  on the right environment (Production vs. Preview), then trigger a new
+  deploy (any push, or Vercel's "Redeploy") rather than waiting on the
+  existing one to notice it.
+
+**Per-visitor usage** (minutes spent, what's opened, what's
+bookmarked/completed) doesn't need either third-party tool: `/admin`'s
+**Insights** tab reads this straight from our own `UsageEvent` table
+(`lib/track.ts` fires events client-side on panel opens, bookmark adds,
+quiz completions, and active-tab-time pings; `app/api/admin/insights`
+aggregates them). No account, no API key, works the moment it's deployed —
+a glance-level view of "how is this actually being used" rather than a
+full analytics product.
+
 ## Branching & deploy workflow
 
 `master` is Vercel's Production Branch — anything merged there deploys to

@@ -3,6 +3,7 @@ import { La_Belle_Aurore, Spectral, Hanken_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import PostHogProvider from "@/components/PostHogProvider";
 import ClarityProvider from "@/components/ClarityProvider";
+import SessionTimeTracker from "@/components/SessionTimeTracker";
 import "./globals.css";
 
 const hand = La_Belle_Aurore({
@@ -68,6 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans bg-paper bg-grain bg-repeat min-h-screen text-ink" style={{ fontFamily: "var(--font-sans), sans-serif" }}>
         <PostHogProvider>{children}</PostHogProvider>
         <ClarityProvider />
+        <SessionTimeTracker />
         <Analytics />
       </body>
     </html>

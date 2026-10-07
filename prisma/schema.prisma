@@ -50,6 +50,32 @@ model User {
   bookmarks           Bookmark[]
   categoryEngagement  CategoryEngagement[]
   pushSubscriptions   PushSubscription[]
+  usageEvents         UsageEvent[]
+}
+
+/// A generic usage-event log — every panel open (section or side-object),
+/// bookmark add, and quiz completion a visitor does, plus periodic
+/// active-tab-time pings (lib/track.ts, app/api/track/route.ts). Exists so
+/// /admin's Insights tab can answer "how are people actually using this"
+/// (minutes spent, what's opened, what's bookmarked) from our own data —
+/// no third-party analytics account required, same reasoning as the
+/// lastSeenAt/visitCount queries in README's Analytics section. `key` is
+/// the thing acted on (a section key, side-object id, "contentType:id" for
+/// a bookmark, a quiz genre slug) — loosely typed on purpose, the same
+/// tradeoff as ContentTypeDef's delegate: one table instead of one per
+/// event type. `valueMs` is only set for "session_time" rows.
+model UsageEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // "panel_open" | "bookmark_add" | "quiz_complete" | "session_time"
+  key       String?
+  valueMs   Int?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
 }
 
 /// A browser's Web Push subscription (app/api/push/*, lib/webPush.ts) — how
