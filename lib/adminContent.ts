@@ -1,5 +1,6 @@
 import { prisma } from "./db";
 import { SIDE_OBJECT_STARTER_CONTENT } from "./sideObjectStarterContent";
+import { CROSSWORD_THEMES } from "./crosswordBanks";
 
 export type FieldKind = "text" | "textarea" | "number" | "date" | "json";
 
@@ -151,6 +152,14 @@ const CONTENT_TYPES: ContentTypeDef[] = [
     label: "Crossword themes",
     sectionKey: "play",
     delegate: prisma.crosswordTheme,
+    // `crossword-${i}` (i = this theme's index in the full array) is the
+    // exact id prisma/seed.ts upserts this same row under — same
+    // duplicate-safe reasoning as the side-object pools above.
+    starterContent: () =>
+      CROSSWORD_THEMES.map((theme, i) => ({
+        id: `crossword-${i}`,
+        data: { title: theme.title, category: theme.category, words: theme.words } as unknown as Record<string, unknown>,
+      })),
     fields: [
       { key: "title", label: "Theme title", kind: "text", required: true },
       { key: "category", label: "Category", kind: "text" },
