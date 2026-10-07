@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getOrCreateUser, setUserCookie } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { fetchGoogleProfile } from "@/lib/googleAuth";
+import { mergeUserInto } from "@/lib/userMerge";
 
 const STATE_COOKIE = "godilly_oauth_state";
 
@@ -41,7 +42,10 @@ export async function GET(req: NextRequest) {
 
   if (existing && existing.id !== currentUser.id) {
     // This Google account already belongs to an established row (signing
-    // in on a new device, or after clearing cookies) — reunite with it.
+    // in on a new device, or after clearing cookies) — reunite with it,
+    // first merging in whatever this about-to-be-abandoned session had
+    // already saved (lib/userMerge.ts), so it isn't silently stranded.
+    await mergeUserInto(currentUser.id, existing.id);
     await setUserCookie(existing.id);
   } else if (!existing) {
     try {
@@ -58,7 +62,10 @@ export async function GET(req: NextRequest) {
       // Race: another request linked this googleId/email between our
       // check and this write. Fall back to whichever row now holds it.
       const winner = await prisma.user.findUnique({ where: { googleId: profile.sub } });
-      if (winner && winner.id !== currentUser.id) await setUserCookie(winner.id);
+      if (winner && winner.id !== currentUser.id) {
+        await mergeUserInto(currentUser.id, winner.id);
+        await setUserCookie(winner.id);
+      }
     }
   }
   // else: existing.id === currentUser.id — already linked, nothing to do.

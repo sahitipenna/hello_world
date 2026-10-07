@@ -133,7 +133,78 @@ export default function DeskHeader({
         >
           Your shelf{shelfCount > 0 ? ` (${shelfCount})` : ""}
         </button>
-        {/* Member / sign-in hidden for now, per request — not ready to surface yet. */}
+        {plan === "free" ? (
+          wide && (
+            <button
+              onClick={onOpenUpgrade}
+              className="dd-member-pill"
+              style={{
+                background: "transparent",
+                border: "1.5px solid #2b2622",
+                borderRadius: 999,
+                padding: "7px 14px",
+                fontFamily: "var(--font-sans), sans-serif",
+                fontSize: 13.5,
+                whiteSpace: "nowrap",
+                fontWeight: 500,
+                cursor: "pointer",
+              }}
+            >
+              Become a member
+            </button>
+          )
+        ) : (
+          <span
+            style={{
+              fontFamily: "var(--font-sans), sans-serif",
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: ".08em",
+              textTransform: "uppercase",
+              color: "#9a6d12",
+              border: "1.5px solid rgba(154,109,18,.5)",
+              borderRadius: 999,
+              padding: "6px 12px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Member
+          </span>
+        )}
+        {user ? (
+          <button
+            onClick={onSignOut}
+            title={`Signed in as ${user.name ?? user.email} — click to sign out`}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              overflow: "hidden",
+              border: "1px solid rgba(43,38,34,.15)",
+              display: "grid",
+              placeItems: "center",
+              fontSize: 12,
+              fontWeight: 600,
+              background: "#f2e8d5",
+              cursor: "pointer",
+            }}
+          >
+            {user.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} referrerPolicy="no-referrer" />
+            ) : (
+              (user.name ?? user.email).slice(0, 1).toUpperCase()
+            )}
+          </button>
+        ) : (
+          <a
+            href="/api/auth/google"
+            className="dd-linklike"
+            style={{ fontFamily: "var(--font-sans), sans-serif", fontSize: 14, whiteSpace: "nowrap" }}
+          >
+            Sign in
+          </a>
+        )}
       </div>
     </header>
   );
