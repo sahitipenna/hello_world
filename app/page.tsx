@@ -17,12 +17,14 @@ import ComeBackTomorrow from "@/components/ComeBackTomorrow";
 import ArchiveLocked from "@/components/ArchiveLocked";
 import { isWithinFreeArchive } from "@/lib/archive";
 import UpgradeModal from "@/components/UpgradeModal";
+import SaveSignInPrompt from "@/components/SaveSignInPrompt";
 import OnboardingModal from "@/components/OnboardingModal";
 import NotifyMeButton from "@/components/NotifyMeButton";
 import LandingGate from "@/components/LandingGate";
 import ShelfModal, { ShelfItem } from "@/components/ShelfModal";
 
 const LANDING_SEEN_KEY = "godilly-started";
+const SAVE_PROMPT_SEEN_KEY = "godilly-save-signin-shown";
 
 interface Tag {
   id: string;
@@ -60,6 +62,8 @@ export default function Home() {
   const [hasChosenInterests, setHasChosenInterests] = useState<boolean | null>(null);
   const [savedItems, setSavedItems] = useState<ShelfItem[]>([]);
   const [shelfOpen, setShelfOpen] = useState(false);
+  const [googleConfigured, setGoogleConfigured] = useState(false);
+  const [saveSignInOpen, setSaveSignInOpen] = useState(false);
   const savedKeys = new Set(savedItems.map((it) => `${it.contentType}:${it.contentId}`));
 
   const { ref: rootRef, width } = useDeskWidth();
@@ -97,6 +101,7 @@ export default function Home() {
         setPremiumPrice(p.premiumPrice ?? null);
         setViewer(p.user ?? null);
         setVisitCount(p.visitCount ?? 0);
+        setGoogleConfigured(Boolean(p.googleConfigured));
         if (p.deskSkin === "dark" || p.deskSkin === "light" || p.deskSkin === "white") setDeskSkin(p.deskSkin);
         if (p.userId) identifyVisitor(p.userId, p.user ? { email: p.user.email, name: p.user.name } : undefined);
       })
@@ -272,7 +277,24 @@ export default function Home() {
         .then((r) => r.json())
         .then((d) => setSavedItems(d.items ?? []))
         .catch(() => {});
+      maybeShowSaveSignInPrompt();
     }
+  }
+
+  // Invites (never blocks — the save above already went through) an
+  // anonymous visitor to sign in the first time they save anything, so
+  // their shelf follows them to an account instead of living only in this
+  // browser's cookie. Shown at most once per browser, ever — not once per
+  // save — and only when there's actually a working sign-in to offer.
+  function maybeShowSaveSignInPrompt() {
+    if (viewer || !googleConfigured) return;
+    try {
+      if (localStorage.getItem(SAVE_PROMPT_SEEN_KEY) === "1") return;
+      localStorage.setItem(SAVE_PROMPT_SEEN_KEY, "1");
+    } catch {
+      return;
+    }
+    setSaveSignInOpen(true);
   }
 
   function markVisited(key: string) {
@@ -480,6 +502,7 @@ export default function Home() {
         onPaymentSuccess={handlePaymentSuccess}
         price={premiumPrice}
       />
+      <SaveSignInPrompt open={saveSignInOpen} onClose={() => setSaveSignInOpen(false)} />
       <OnboardingModal
         open={onboardingOpen}
         tags={tags}
