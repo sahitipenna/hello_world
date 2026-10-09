@@ -133,27 +133,10 @@ export default function DeskHeader({
         >
           Your shelf{shelfCount > 0 ? ` (${shelfCount})` : ""}
         </button>
-        {plan === "free" ? (
-          wide && (
-            <button
-              onClick={onOpenUpgrade}
-              className="dd-member-pill"
-              style={{
-                background: "transparent",
-                border: "1.5px solid #2b2622",
-                borderRadius: 999,
-                padding: "7px 14px",
-                fontFamily: "var(--font-sans), sans-serif",
-                fontSize: 13.5,
-                whiteSpace: "nowrap",
-                fontWeight: 500,
-                cursor: "pointer",
-              }}
-            >
-              Become a member
-            </button>
-          )
-        ) : (
+        {/* "Become a member" removed — Sign in is now the only header CTA;
+            upgrade is still reachable via the archive-locked screen,
+            footer "See plans" link, and the Upgrade modal itself. */}
+        {plan !== "free" && (
           <span
             style={{
               fontFamily: "var(--font-sans), sans-serif",
