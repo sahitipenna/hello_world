@@ -1,13 +1,11 @@
 "use client";
 
-/** Shown once, the first time an anonymous visitor saves something —
- * their bookmark already saved to this browser's own session (toggleBookmark
- * in app/page.tsx never waits on this), so this is an invitation layered on
+/** Shown every time an anonymous visitor saves something — their bookmark
+ * already saved to this browser's own session (toggleBookmark in
+ * app/page.tsx never waits on this), so this is an invitation layered on
  * top, not a gate: declining it loses nothing today, it just means the
  * save only lives in this browser's cookie instead of following them to a
- * signed-in account. app/page.tsx tracks the "already shown" flag in
- * localStorage (a per-viewer convenience, not data that needs to survive
- * anywhere else) so it never nags on a second save. */
+ * signed-in account. */
 export default function SaveSignInPrompt({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null;
 

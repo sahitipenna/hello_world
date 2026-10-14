@@ -154,7 +154,10 @@ export default function DeskHeader({
             Member
           </span>
         )}
-        {user ? (
+        {/* Header "Sign in" CTA removed — signing in is now only prompted
+            from the save flow (see SaveSignInPrompt), not offered here.
+            A signed-in user still sees their avatar so they can sign out. */}
+        {user && (
           <button
             onClick={onSignOut}
             title={`Signed in as ${user.name ?? user.email} — click to sign out`}
@@ -179,14 +182,6 @@ export default function DeskHeader({
               (user.name ?? user.email).slice(0, 1).toUpperCase()
             )}
           </button>
-        ) : (
-          <a
-            href="/api/auth/google"
-            className="dd-linklike"
-            style={{ fontFamily: "var(--font-sans), sans-serif", fontSize: 14, whiteSpace: "nowrap" }}
-          >
-            Sign in
-          </a>
         )}
       </div>
     </header>
