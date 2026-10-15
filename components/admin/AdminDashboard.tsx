@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import SectionsAdmin from "./SectionsAdmin";
 import PricingAdmin from "./PricingAdmin";
 import ContentAdmin from "./ContentAdmin";
+import InsightsAdmin from "./InsightsAdmin";
 
 const CONTENT_TYPES = [
   { slug: "news", label: "News items — KNOW" },
@@ -22,7 +23,7 @@ const CONTENT_TYPES = [
   { slug: "side-apple", label: "A little bite — APPLE" },
 ];
 
-type Tab = "sections" | "pricing" | "content";
+type Tab = "sections" | "pricing" | "content" | "insights";
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("sections");
@@ -38,7 +39,7 @@ export default function AdminDashboard() {
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <nav className="flex gap-2">
-          {(["sections", "pricing", "content"] as Tab[]).map((t) => (
+          {(["sections", "pricing", "content", "insights"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -57,6 +58,7 @@ export default function AdminDashboard() {
 
       {tab === "sections" && <SectionsAdmin />}
       {tab === "pricing" && <PricingAdmin />}
+      {tab === "insights" && <InsightsAdmin />}
       {tab === "content" && (
         <div>
           <div className="flex flex-wrap gap-2 mb-5">

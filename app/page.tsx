@@ -12,10 +12,12 @@ import DeskPanel from "@/components/desk/DeskPanel";
 import ArrangeDeskCard from "@/components/desk/ArrangeDeskCard";
 import { useDeskWidth } from "@/components/desk/useDeskWidth";
 import { identifyVisitor } from "@/components/PostHogProvider";
+import { track } from "@/lib/track";
 import ComeBackTomorrow from "@/components/ComeBackTomorrow";
 import ArchiveLocked from "@/components/ArchiveLocked";
 import { isWithinFreeArchive } from "@/lib/archive";
 import UpgradeModal from "@/components/UpgradeModal";
+import SaveSignInPrompt from "@/components/SaveSignInPrompt";
 import OnboardingModal from "@/components/OnboardingModal";
 import NotifyMeButton from "@/components/NotifyMeButton";
 import LandingGate from "@/components/LandingGate";
@@ -59,6 +61,8 @@ export default function Home() {
   const [hasChosenInterests, setHasChosenInterests] = useState<boolean | null>(null);
   const [savedItems, setSavedItems] = useState<ShelfItem[]>([]);
   const [shelfOpen, setShelfOpen] = useState(false);
+  const [googleConfigured, setGoogleConfigured] = useState(false);
+  const [saveSignInOpen, setSaveSignInOpen] = useState(false);
   const savedKeys = new Set(savedItems.map((it) => `${it.contentType}:${it.contentId}`));
 
   const { ref: rootRef, width } = useDeskWidth();
@@ -96,6 +100,7 @@ export default function Home() {
         setPremiumPrice(p.premiumPrice ?? null);
         setViewer(p.user ?? null);
         setVisitCount(p.visitCount ?? 0);
+        setGoogleConfigured(Boolean(p.googleConfigured));
         if (p.deskSkin === "dark" || p.deskSkin === "light" || p.deskSkin === "white") setDeskSkin(p.deskSkin);
         if (p.userId) identifyVisitor(p.userId, p.user ? { email: p.user.email, name: p.user.name } : undefined);
       })
@@ -258,6 +263,7 @@ export default function Home() {
         body: JSON.stringify({ contentType, contentId }),
       }).catch(() => {});
     } else {
+      track("bookmark_add", key);
       await fetch("/api/bookmarks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -270,7 +276,18 @@ export default function Home() {
         .then((r) => r.json())
         .then((d) => setSavedItems(d.items ?? []))
         .catch(() => {});
+      maybeShowSaveSignInPrompt();
     }
+  }
+
+  // Invites (never blocks — the save above already went through) an
+  // anonymous visitor to sign in every time they save something, so their
+  // shelf follows them to an account instead of living only in this
+  // browser's cookie — and only when there's actually a working sign-in to
+  // offer.
+  function maybeShowSaveSignInPrompt() {
+    if (viewer || !googleConfigured) return;
+    setSaveSignInOpen(true);
   }
 
   function markVisited(key: string) {
@@ -280,11 +297,13 @@ export default function Home() {
   function openSection(key: string) {
     setActiveKey(key);
     markVisited(key);
+    track("panel_open", key);
   }
 
   function openSide(id: string) {
     setActiveKey(id);
     markVisited(id);
+    track("panel_open", id);
   }
 
   function openArrange() {
@@ -476,6 +495,7 @@ export default function Home() {
         onPaymentSuccess={handlePaymentSuccess}
         price={premiumPrice}
       />
+      <SaveSignInPrompt open={saveSignInOpen} onClose={() => setSaveSignInOpen(false)} />
       <OnboardingModal
         open={onboardingOpen}
         tags={tags}

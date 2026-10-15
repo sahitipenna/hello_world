@@ -13,6 +13,15 @@ export function parseISODate(iso: string): Date {
   return new Date(Date.UTC(y, m - 1, d));
 }
 
+/** `iso` shifted by `deltaDays` (negative for earlier). Used to look back at
+ * recent dates' picks without needing any stored history — see
+ * lib/personalize.ts's pickWeightedIndexNoRepeat. */
+export function shiftISODate(iso: string, deltaDays: number): string {
+  const d = parseISODate(iso);
+  d.setUTCDate(d.getUTCDate() + deltaDays);
+  return toISODate(d);
+}
+
 /** ISO-8601 week key like "2026-W39" — stable Monday-to-Sunday, for weekly (not daily) content. */
 export function getISOWeekKey(date: Date): string {
   const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));

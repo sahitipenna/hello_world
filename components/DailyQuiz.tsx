@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import EditPencil from "./EditPencil";
 import { QuizDifficulty } from "@/lib/types";
+import { track } from "@/lib/track";
 
 interface GenreInfo {
   slug: string;
@@ -115,6 +116,7 @@ export default function DailyQuiz() {
         body: JSON.stringify({ genre: genre.slug, difficulty }),
       });
       if (res.ok) {
+        track("quiz_complete", genre.slug);
         const data = await res.json();
         const nextTiers: QuizDifficulty[] = ["easy", "medium", "hard"];
         const idx = nextTiers.indexOf(difficulty);

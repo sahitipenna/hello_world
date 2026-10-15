@@ -133,7 +133,56 @@ export default function DeskHeader({
         >
           Your shelf{shelfCount > 0 ? ` (${shelfCount})` : ""}
         </button>
-        {/* Member / sign-in hidden for now, per request — not ready to surface yet. */}
+        {/* "Become a member" removed — Sign in is now the only header CTA;
+            upgrade is still reachable via the archive-locked screen,
+            footer "See plans" link, and the Upgrade modal itself. */}
+        {plan !== "free" && (
+          <span
+            style={{
+              fontFamily: "var(--font-sans), sans-serif",
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: ".08em",
+              textTransform: "uppercase",
+              color: "#9a6d12",
+              border: "1.5px solid rgba(154,109,18,.5)",
+              borderRadius: 999,
+              padding: "6px 12px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Member
+          </span>
+        )}
+        {/* Header "Sign in" CTA removed — signing in is now only prompted
+            from the save flow (see SaveSignInPrompt), not offered here.
+            A signed-in user still sees their avatar so they can sign out. */}
+        {user && (
+          <button
+            onClick={onSignOut}
+            title={`Signed in as ${user.name ?? user.email} — click to sign out`}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              overflow: "hidden",
+              border: "1px solid rgba(43,38,34,.15)",
+              display: "grid",
+              placeItems: "center",
+              fontSize: 12,
+              fontWeight: 600,
+              background: "#f2e8d5",
+              cursor: "pointer",
+            }}
+          >
+            {user.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} referrerPolicy="no-referrer" />
+            ) : (
+              (user.name ?? user.email).slice(0, 1).toUpperCase()
+            )}
+          </button>
+        )}
       </div>
     </header>
   );

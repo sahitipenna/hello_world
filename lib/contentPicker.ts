@@ -1,16 +1,27 @@
-import { pickWeightedIndex, pickWeightedIndices } from "./personalize";
+import { pickWeightedIndexNoRepeat, pickWeightedIndices } from "./personalize";
 
 interface Schedulable {
   scheduledDate: string | null;
   category?: string;
 }
 
+// How many preceding days' picks a pool should try to avoid repeating —
+// capped at 6 (a trailing week) and, inside pickWeightedIndexNoRepeat,
+// clamped again so a pool never excludes itself down to zero candidates.
+// A big pool (books, crossword themes, ...) is in no real danger of
+// repeating within a week regardless; this mainly matters for the
+// smallest pools (the "on the side" objects, 8-9 items each), where a
+// plain random pick repeats within 6 days close to even odds.
+const MAX_AVOID_DAYS = 6;
+
 /**
  * The hybrid selection model (see ARCHITECTURE.md §2): a row scheduled for
  * this exact date wins outright (real editorial control); otherwise pick
  * deterministically from the unscheduled pool, weighted by interest
- * category, so every date still resolves to something without an editor
- * having hand-curated it.
+ * category — and steered away from whatever the same pool would have
+ * picked on each of the last few days, so every date still resolves to
+ * something without an editor having hand-curated it, and a small pool
+ * doesn't noticeably repeat itself within a week.
  */
 export function resolveOneForDate<T extends Schedulable>(
   items: T[],
@@ -25,7 +36,7 @@ export function resolveOneForDate<T extends Schedulable>(
   if (pool.length === 0) return null;
 
   const categories = pool.map((i) => i.category ?? "");
-  const idx = pickWeightedIndex(categories, dateISO, salt, weights);
+  const idx = pickWeightedIndexNoRepeat(categories, dateISO, salt, weights, MAX_AVOID_DAYS);
   return pool[idx];
 }
 

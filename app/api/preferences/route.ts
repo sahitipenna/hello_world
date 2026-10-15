@@ -3,6 +3,7 @@ import { getOrCreateUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getEnabledSections } from "@/lib/sections";
 import { SectionMeta } from "@/lib/types";
+import { googleConfigured } from "@/lib/googleAuth";
 
 function parseJsonArray(raw: string | null): string[] | null {
   if (!raw) return null;
@@ -53,6 +54,11 @@ export async function GET() {
       // repeat visits are recognized as the same person.
       userId: user.id,
       user: user.email ? { email: user.email, name: user.name, image: user.image } : null,
+      // Lets the client decide whether to even offer the "sign in to save"
+      // prompt (components/SaveSignInPrompt.tsx) — pointing it at a
+      // sign-in link that 503s because Google isn't configured on this
+      // deploy would be worse than not offering it at all.
+      googleConfigured: googleConfigured(),
       // Distinct calendar days this visitor has been seen on (lib/auth.ts)
       // — drives the first-visit landing gate and the delayed invitation
       // to personalize after a few visits, see app/page.tsx.
