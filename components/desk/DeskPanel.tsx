@@ -48,7 +48,7 @@ function contentHeadline(section: EditionSection): string | null {
  * handled separately (KnowSection has its own per-item save buttons, since
  * one section holds several distinct news items); "play" and "do" aren't
  * bookmarkable the way a single discovery is. */
-function bookmarkTarget(content: NonNullable<EditionSection["content"]>): { contentType: string; contentId: string } | null {
+export function bookmarkTarget(content: NonNullable<EditionSection["content"]>): { contentType: string; contentId: string } | null {
   switch (content.kind) {
     case "look":
       return { contentType: "artwork", contentId: content.artworkId };

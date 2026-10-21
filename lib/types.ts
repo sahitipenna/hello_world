@@ -32,6 +32,11 @@ export interface Poem {
   category: string;
   context?: string;
   sourceUrl?: string;
+  // Both default (in prisma/seed.ts's transform) to "public_domain" /
+  // "Public domain" — set only on the rare entry that isn't a real public-
+  // domain poem (see lib/contentBank.ts's POEMS array comment).
+  rightsStatus?: string;
+  source?: string;
 }
 
 export interface TravelVignette {

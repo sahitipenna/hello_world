@@ -1,6 +1,8 @@
 import { Poem, TravelVignette, BookRec, ArtSpotlightEntry } from "./types";
 
-// All poems below are in the public domain (poets died before 1955 / works pre-1929).
+// All poems below are in the public domain (poets died before 1955 / works
+// pre-1929) except one marked rightsStatus: "editorial" — original writing
+// for the one category too modern to have an honest public-domain match.
 export const POEMS: Poem[] = [
   {
     title: "“Hope” is the thing with feathers",
@@ -235,6 +237,138 @@ export const POEMS: Poem[] = [
       "A host, of golden daffodils;",
     ],
   },
+  {
+    title: "Travel",
+    poet: "Robert Louis Stevenson",
+    year: "1885",
+    category: "travel",
+    lines: [
+      "I should like to rise and go",
+      "Where the golden apples grow;—",
+      "Where below another sky",
+      "Parrot islands anchored lie,",
+    ],
+  },
+  {
+    title: "When I Heard the Learn'd Astronomer",
+    poet: "Walt Whitman",
+    year: "1865",
+    category: "science",
+    lines: [
+      "When I heard the learn'd astronomer,",
+      "When the proofs, the figures, were ranged in columns before me,",
+      "When I was shown the charts and diagrams, to add, divide, and measure them,",
+      "How soon unaccountable I became tired and sick,",
+      "Till rising and gliding out I wander'd off by myself,",
+      "Look'd up in perfect silence at the stars.",
+    ],
+  },
+  {
+    title: "Ozymandias",
+    poet: "Percy Bysshe Shelley",
+    year: "1818",
+    category: "architecture",
+    lines: [
+      "I met a traveller from an antique land",
+      "Who said: Two vast and trunkless legs of stone",
+      "Stand in the desert. Near them, on the sand,",
+      "Half sunk, a shattered visage lies, whose frown,",
+      "And wrinkled lip, and sneer of cold command,",
+      "Tell that its sculptor well those passions read",
+    ],
+  },
+  {
+    title: "Goblin Market",
+    poet: "Christina Rossetti",
+    year: "1862",
+    category: "food",
+    lines: [
+      "Apples and quinces,",
+      "Lemons and oranges,",
+      "Plump unpecked cherries,",
+      "Melons and raspberries,",
+      "Bloom-down-cheeked peaches,",
+      "Swart-headed mulberries,",
+    ],
+  },
+  {
+    title: "Ode to a Nightingale",
+    poet: "John Keats",
+    year: "1819",
+    category: "music",
+    lines: [
+      "Thou wast not born for death, immortal Bird!",
+      "No hungry generations tread thee down;",
+      "The voice I hear this passing night was heard",
+      "In ancient days by emperor and clown:",
+    ],
+  },
+  {
+    title: "Ode on a Grecian Urn",
+    poet: "John Keats",
+    year: "1819",
+    category: "design",
+    lines: [
+      "Thou still unravish'd bride of quietness,",
+      "Thou foster-child of silence and slow time,",
+      "Sylvan historian, who canst thus express",
+      "A flowery tale more sweetly than our rhyme:",
+    ],
+  },
+  {
+    title: "Gitanjali (35)",
+    poet: "Rabindranath Tagore",
+    year: "1912",
+    category: "world_culture",
+    lines: [
+      "Where the mind is without fear and the head is held high;",
+      "Where knowledge is free;",
+      "Where the world has not been broken up into fragments",
+      "By narrow domestic walls;",
+    ],
+  },
+  {
+    title: "In the Bazaars of Hyderabad",
+    poet: "Sarojini Naidu",
+    year: "1912",
+    category: "indian_culture",
+    lines: [
+      "What do you sell, O ye merchants?",
+      "Richly your wares are displayed.",
+      "Turbans of crimson and silver,",
+      "Tunics of purple brocade,",
+    ],
+  },
+  {
+    title: "To a Locomotive in Winter",
+    poet: "Walt Whitman",
+    year: "1876",
+    category: "technology",
+    lines: [
+      "Thee for my recitative,",
+      "Thee in the driving storm even as now, the snow, the winter-day declining,",
+      "Thee in thy panoply, thy measur'd dual throbbing and thy beat convulsive,",
+      "Thy black cylindric body, golden brass and silvery steel,",
+    ],
+  },
+  {
+    // The one non-public-domain entry in this bank — see rightsStatus below
+    // — written for the rare category (film) with no honest pre-1929 match:
+    // cinema was barely a decade old by the public-domain cutoff this file
+    // otherwise holds to.
+    title: "Twenty-Four Frames",
+    poet: "Go Dilly editorial",
+    category: "film",
+    rightsStatus: "editorial",
+    source: "Go Dilly editorial",
+    lines: [
+      "Nothing here is moving.",
+      "Each still frame waits its turn, exact and silent,",
+      "caught mid-gesture like a held breath —",
+      "and only in the blur between them, where the eye",
+      "can't quite keep up, does anything begin to run.",
+    ],
+  },
 ];
 
 // Original short vignettes written for Go Dilly — not excerpts of any published author.
@@ -340,6 +474,96 @@ export const TRAVEL_VIGNETTES: TravelVignette[] = [
     place: "A village square with running water two streets over",
     category: "travel",
     body: "The village got piped water decades ago, but the old stone well in the square never stopped being used — not from necessity anymore, but because it's where the gossip happens. Someone showed me the trick to the rope and pulley, and mentioned, almost as an afterthought, that the water still tastes better than what comes from the tap. I didn't have the heart to disagree.",
+  },
+  {
+    title: "The Mural That Changes Every Spring",
+    place: "A back alley behind a covered market",
+    category: "art",
+    body: "Someone repaints the same wall every year, a different scene each time, and never signs it. A shopkeeper told me the artist is a retired schoolteacher who won't take credit — “the wall belongs to whoever walks past it, not to her.” I went back the following spring half-expecting the old scene, and found an entirely new one waiting, as promised, unexplained.",
+  },
+  {
+    title: "The Shop With No Sign",
+    place: "A stairwell off a side street",
+    category: "books",
+    body: "No sign, no name, just a narrow stairwell down and a door that sticks. Inside: floor-to-ceiling shelves, a cat asleep on a stack of atlases, and an owner who sorts books by how they made him feel rather than by subject or author. I asked for something “about leaving home,” and he handed me exactly the right book without a second's hesitation.",
+  },
+  {
+    title: "A Line of Verse on a Footbridge",
+    place: "A pedestrian bridge over a narrow river",
+    category: "poetry",
+    body: "Someone carved four lines of a local poem into the handrail decades ago, and the wood has been worn smooth exactly where thousands of hands have rested while reading them. Nobody I asked could recite the rest of the poem by heart, only those four lines — which felt right, somehow, a whole bridge's worth of people united by one fragment they'd each stopped to touch.",
+  },
+  {
+    title: "The House Where the Novel Was Written",
+    place: "A writer's preserved house, admission by donation",
+    category: "literature",
+    body: "The desk is roped off but close enough to see the ink stains, and the guide points out the window the writer apparently stared out of for hours before any sentence came. Tourists move through quickly, but I stayed long enough to watch the afternoon light cross the same desk at the same slant it must have a century ago, while someone, somewhere in this house, finished a book I'd read three times.",
+  },
+  {
+    title: "Standing Where the Wall Used to Be",
+    place: "A city once divided by a border that no longer exists",
+    category: "history",
+    body: "A thin double line of bricks set into the pavement is the only trace left of a wall that once ran straight through the middle of ordinary streets, cafés, apartment blocks. A local pointed out the line without much ceremony, the way you'd mention a pothole — but then added that her grandmother still crosses it slowly, every time, out of some old habit the street itself has long forgotten.",
+  },
+  {
+    title: "The Observatory at the End of the Road",
+    place: "A mountain research station, open one night a month",
+    category: "science",
+    body: "The road up switches back so many times the lights of the town below seem to rearrange themselves. At the top, a researcher lets visitors take turns at the telescope for exactly ninety seconds each, timed by a kitchen egg-timer, because the queue is long and the sky doesn't wait for anyone. My ninety seconds was Saturn, rings and all, and I have never once begrudged the other eighty-nine people theirs.",
+  },
+  {
+    title: "A Chair Built for the Climate",
+    place: "A roadside café with handmade furniture",
+    category: "design",
+    body: "The café's chairs are woven from a local reed, slightly concave, angled just enough to catch the cross-breeze rather than block it — a design, the owner explained, unchanged for three generations because nobody has found a way to improve on it. I sat in one for an hour longer than I meant to, which felt like the actual proof of the thing working.",
+  },
+  {
+    title: "The Ceiling You Have to Lie Down For",
+    place: "A centuries-old painted hall",
+    category: "architecture",
+    body: "The only way to properly see the ceiling is to lie flat on the stone floor, which the attendants not only allow but quietly encourage — there are even a few worn spots where generations of visitors have done exactly that. Looking straight up at vaulting built without a single modern tool, I understood for the first time why people used to describe buildings as acts of devotion rather than construction.",
+  },
+  {
+    title: "Three Chords on a Train Platform",
+    place: "A regional train platform, evening",
+    category: "music",
+    body: "A busker had exactly one song in good enough shape to play, and played it on a loop for the forty minutes our train was delayed, never once apologizing or varying it. By the third repetition the whole platform was quietly singing the chorus along with him, strangers synchronized by nothing but boredom and a decent hook, and somehow nobody seemed to mind the delay anymore.",
+  },
+  {
+    title: "The Cinema Under the Stars",
+    place: "A rooftop screening, once a week in summer",
+    category: "film",
+    body: "Folding chairs, a bedsheet for a screen, and a projector someone's cousin rigged up to play films in the original language with handwritten subtitle cards held up by a volunteer when the translation got too far behind. The film itself was forgettable; the sound of an entire rooftop laughing in three different languages, slightly out of sync with the joke, was not.",
+  },
+  {
+    title: "A Conversation That Outlasted the Tea",
+    place: "A guesthouse courtyard, past midnight",
+    category: "philosophy",
+    body: "A stranger and I argued pleasantly for three hours about whether a place can really change a person or just reveals who they already were, refilling the same pot of tea until it had nothing left to give. We never settled it, and said as much at the end, shaking hands over the question itself rather than any answer — which felt, in hindsight, like the actual point.",
+  },
+  {
+    title: "The Hotel Run Almost Entirely by Machines",
+    place: "A capsule hotel near the station",
+    category: "technology",
+    body: "Check-in happened at a kiosk, a small robot delivered a forgotten toothbrush to my door, and the only human I spoke to in eighteen hours was someone equally lost in the elevator. It should have felt cold, and somehow didn't — more like staying somewhere built entirely around not needing to bother anyone, which is its own, oddly considerate kind of hospitality.",
+  },
+  {
+    title: "The Longest I've Gone Without My Own Language",
+    place: "A town where no one spoke mine",
+    category: "psychology",
+    body: "Nine days in, I caught myself relieved rather than lonely at not understanding a word around me — no small talk to perform, no tone to manage, just gesture and goodwill doing most of the work. I came home oddly quieter than I left, having learned less about the place, I suspect, than about how much of my usual self was built entirely out of talking.",
+  },
+  {
+    title: "Rangoli Before Sunrise",
+    place: "A courtyard, swept clean before dawn",
+    category: "indian_culture",
+    body: "Every morning before the heat set in, the woman next door knelt at her threshold and traced an intricate pattern in rice flour, freehand, finished in minutes, gone by evening under the day's foot traffic — and redrawn again the next dawn without complaint. She told me, when I finally asked, that the impermanence was the actual point: a small, daily proof that beauty doesn't need to last to be worth the effort.",
+  },
+  {
+    title: "The Tea Ceremony That Took Longer Than Expected",
+    place: "A small tatami room, four guests only",
+    category: "world_culture",
+    body: "Every motion — the fold of the cloth, the turn of the bowl, the particular angle of a bow — had a reason behind it that our host explained only after performing it, never before, so that understanding always arrived a half-second after the gesture itself. Two hours produced perhaps four sips of tea each, and I left understanding, for the first time, that slowness itself can be the entire content of a tradition.",
   },
 ];
 
@@ -701,5 +925,41 @@ export const ART_SPOTLIGHT: ArtSpotlightEntry[] = [
     category: "architecture",
     analysis:
       "Geometric tilework across mosques and palaces builds dazzlingly complex patterns from a small set of repeating shapes — stars, polygons, interlacing lines — governed by strict mathematical symmetry. Since figurative imagery was largely avoided in religious spaces, this abstract precision became its own tradition of devotion: infinity suggested through pattern rather than picture. Unlike a figurative religious image, which depicts a specific scene or figure and then stops, a pattern built to repeat without a natural edge can suggest something that doesn't end — the eye keeps tracing the interlace outward, implying a structure that continues past the edge of the wall, the room, the building itself. That mathematical infinity, built from nothing but a compass, a straightedge, and extraordinary patience, became its own quiet argument for the presence of something larger than any single viewer standing beneath it.",
+  },
+  {
+    query: "Blake illustrations Book of Job",
+    category: "poetry",
+    analysis:
+      "William Blake was a poet first and an engraver second, or perhaps never really separated the two — his illustrations for the Book of Job weren't decoration for someone else's text but his own argument about it, made in a different medium. He gives Job's suffering and eventual restoration a physical, almost theatrical staging: bodies arched in anguish, then unfurled in relief, light pouring in at the moments the text turns. Blake believed, and wrote elsewhere, that imagination was the one faculty through which the divine actually reached people — so illustrating scripture wasn't illustration in the ordinary sense, it was a second act of interpretation standing alongside the words rather than beneath them. Looking at these plates without reading a line of the poem that accompanied his own books is still to watch a poet think in a form other than language.",
+  },
+  {
+    query: "Gustave Doré Dante Inferno illustration",
+    category: "literature",
+    analysis:
+      "Doré illustrated Dante's Inferno in 1861, and for many readers since, his engravings — crowded, vertiginous, lit like a thunderstorm — have quietly become how Hell actually looks, more than Dante's own eight-hundred-year-old description ever specified. That's a strange kind of power for an illustrator to hold: Dante wrote the architecture, the circles and the sinners in them, but left enormous gaps for the texture of the place, and it's largely Doré's crowded, churning images that filled them in the popular imagination afterward. He was twenty-nine when the volume appeared and already famous across Europe for doing exactly this — taking a canonical text everyone already thought they knew and making it visible in a way specific enough to stick. The real subject of these plates isn't really Hell; it's the gap between what a poem describes and what a reader pictures, and how easily one artist's guess can fill that gap for everyone after him.",
+  },
+  {
+    query: "Chardin still life kitchen",
+    category: "food",
+    analysis:
+      "Chardin painted the unglamorous contents of an ordinary French kitchen — a copper pot, a few eggs, a cut of raw meat, a bowl of plums — at a moment when history painting (gods, battles, myth) was what actually earned an artist status at the Salon. Still life sat near the bottom of the period's official hierarchy of subjects, and Chardin painted it anyway, with a patience that borders on reverence: thick, granular paint built up in layers to get the specific way light sits on a copper surface versus a ceramic one versus skin. There's no story here, no moral, nothing being proven — just the conviction that a kitchen table, looked at closely enough and for long enough, is exactly as worth painting as anything a myth could supply. Diderot, reviewing Chardin's work in his own lifetime, called him a magician for exactly this: making you believe you could reach out and touch a two-hundred-year-old loaf of bread.",
+  },
+  {
+    query: "Eadweard Muybridge motion study",
+    category: "film",
+    analysis:
+      "Before film existed, Muybridge spent the 1870s and 80s photographing animals and people in motion — a horse galloping, a man walking, a bird in flight — using banks of cameras triggered in rapid sequence to break movement into still frames too fast for the eye to catch unaided. He was originally hired to settle a bet about whether a galloping horse ever has all four hooves off the ground at once (it does), and the method he built to answer that single question became, almost as a side effect, one of the direct ancestors of motion-picture film. Flipped through quickly enough, his sequential plates move; that discovery — that a fast-enough series of stills reads to the brain as continuous motion — is the entire technical premise cinema still runs on. It's a strange kind of origin story: an answer to a bar bet about a horse's hooves turning out to be the first working blueprint for the movies.",
+  },
+  {
+    query: "astrolabe Islamic",
+    category: "technology",
+    analysis:
+      "An astrolabe is an analog computer built centuries before the word existed — a hand-held brass instrument of interlocking rotating plates that could calculate the time, find the direction of prayer, chart the positions of stars, or survey a building's height, all from a single reading of the sun or a star's altitude. Islamic astronomers refined the instrument for centuries, engraving each plate for a specific latitude with an intricacy that doubled as fine metalwork, so that a tool for navigation and timekeeping was also, inescapably, a small object of real beauty. Holding one and turning its plates is the closest thing to operating a piece of medieval software: input a single measurement, and the device mechanically works through what would otherwise be a page of trigonometry. It's a useful reminder that “technology” didn't begin with electricity — it began with exactly this instinct, to build a physical object that does the calculating so a person doesn't have to.",
+  },
+  {
+    query: "Mughal miniature painting",
+    category: "indian_culture",
+    analysis:
+      "Mughal miniature painting flourished under emperors who kept full workshops of artists on staff, producing small, intensely detailed paintings — court scenes, hunts, portraits, illustrated manuscripts — meant to be held close and studied, not viewed from across a room. The style itself is a visible history lesson: Persian technique arrived with the dynasty's origins, then absorbed Indian color and subject matter and, after European traders arrived, even borrowed tricks of perspective and shading from the art they brought with them. A single painting can hold dozens of figures rendered in individually distinct detail — specific fabric patterns, specific facial features, specific gestures — built with brushes sometimes down to a single hair, by artists who were named and credited rather than anonymous. Looking closely at one is to watch several centuries of cultural exchange settle into a few square inches of paper, each influence still legible if you know where to look.",
   },
 ];

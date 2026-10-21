@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOrCreateUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-
-const ALLOWED_TYPES = ["news", "artwork", "literary", "travel", "book", "wonder"] as const;
-type ContentType = (typeof ALLOWED_TYPES)[number];
-
-function isContentType(v: unknown): v is ContentType {
-  return typeof v === "string" && (ALLOWED_TYPES as readonly string[]).includes(v);
-}
+import { isBookmarkableType as isContentType, resolveContentCategory, bumpCategoryEngagement } from "@/lib/contentLookup";
+import type { BookmarkableType as ContentType } from "@/lib/contentLookup";
 
 /** My Dilly Shelf — everything a visitor has saved, resolved with enough
  * display info to render without the client needing to know which table
@@ -67,6 +62,13 @@ export async function POST(req: NextRequest) {
     update: {},
     create: { userId: user.id, contentType, contentId },
   });
+
+  // A save is a deliberate, high-confidence personalization signal — feed
+  // it into the same adaptive weighting a DO-check does (see
+  // lib/contentLookup.ts), not just raw bookmark storage.
+  const category = await resolveContentCategory(contentType, contentId);
+  await bumpCategoryEngagement(user.id, category);
+
   return NextResponse.json({ ok: true });
 }
 
