@@ -22,6 +22,8 @@ import OnboardingModal from "@/components/OnboardingModal";
 import NotifyMeButton from "@/components/NotifyMeButton";
 import LandingGate from "@/components/LandingGate";
 import ShelfModal, { ShelfItem } from "@/components/ShelfModal";
+import AccountModal from "@/components/AccountModal";
+import SettingsModal from "@/components/SettingsModal";
 
 const LANDING_SEEN_KEY = "godilly-started";
 
@@ -63,6 +65,8 @@ export default function Home() {
   const [shelfOpen, setShelfOpen] = useState(false);
   const [googleConfigured, setGoogleConfigured] = useState(false);
   const [saveSignInOpen, setSaveSignInOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const savedKeys = new Set(savedItems.map((it) => `${it.contentType}:${it.contentId}`));
 
   const { ref: rootRef, width } = useDeskWidth();
@@ -342,11 +346,12 @@ export default function Home() {
           setOnboardingOpen(true);
         }}
         onOpenArrange={openArrange}
-        onOpenUpgrade={() => setUpgradeOpen(true)}
         onOpenShelf={() => setShelfOpen(true)}
         shelfCount={savedItems.length}
         user={viewer}
         onSignOut={handleSignOut}
+        onOpenAccount={() => setAccountOpen(true)}
+        onOpenSettings={() => setSettingsOpen(true)}
         mobile={mobile}
         wide={wide}
       />
@@ -486,6 +491,8 @@ export default function Home() {
         items={savedItems}
         onClose={() => setShelfOpen(false)}
         onRemove={toggleBookmark}
+        viewer={viewer}
+        googleConfigured={googleConfigured}
       />
 
       <UpgradeModal
@@ -496,6 +503,17 @@ export default function Home() {
         price={premiumPrice}
       />
       <SaveSignInPrompt open={saveSignInOpen} onClose={() => setSaveSignInOpen(false)} />
+      {viewer && (
+        <AccountModal
+          open={accountOpen}
+          onClose={() => setAccountOpen(false)}
+          user={viewer}
+          plan={plan}
+          onOpenUpgrade={() => setUpgradeOpen(true)}
+          onSignOut={handleSignOut}
+        />
+      )}
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} user={viewer} />
       <OnboardingModal
         open={onboardingOpen}
         tags={tags}
