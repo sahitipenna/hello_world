@@ -72,7 +72,7 @@ export default function ShelfModal({
         {!viewer && googleConfigured && (
           <div className="flex items-center justify-between gap-3 rounded-xl border border-ink/10 bg-mustard/5 px-4 py-3 mb-4">
             <p className="text-xs text-ink/70">
-              This shelf lives in this browser for now — sign in to keep it on every device.
+              Sign in to enter your space — the same shelf, wherever you open Go Dilly.
             </p>
             <a
               href="/api/auth/google"
