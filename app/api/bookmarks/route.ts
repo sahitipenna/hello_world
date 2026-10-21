@@ -3,6 +3,7 @@ import { getOrCreateUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isBookmarkableType as isContentType, resolveContentCategory, bumpCategoryEngagement } from "@/lib/contentLookup";
 import type { BookmarkableType as ContentType } from "@/lib/contentLookup";
+import { wikipediaSearchUrl, goodreadsSearchUrl } from "@/lib/externalLink";
 
 /** My Dilly Shelf — everything a visitor has saved, resolved with enough
  * display info to render without the client needing to know which table
@@ -30,13 +31,28 @@ export async function GET() {
     idsByType.wonder.length ? prisma.wonder.findMany({ where: { id: { in: idsByType.wonder } } }) : [],
   ]);
 
+  // Every saved item gets a link out, even content with no curated
+  // sourceUrl of its own (nearly all of it — see lib/externalLink.ts):
+  // falls back to a Wikipedia search built from the item's own title, or
+  // a Goodreads search for Book specifically (matching /api/book's own
+  // convention — readers go there, not Wikipedia, to save or review one).
   const byKey = new Map<string, { title: string; subtitle: string; sourceUrl: string | null }>();
-  for (const n of news) byKey.set(`news:${n.id}`, { title: n.title, subtitle: n.source, sourceUrl: n.sourceUrl });
-  for (const a of artwork) byKey.set(`artwork:${a.id}`, { title: a.title, subtitle: a.artist || a.museum, sourceUrl: a.sourceUrl });
-  for (const l of literary) byKey.set(`literary:${l.id}`, { title: l.work, subtitle: l.author, sourceUrl: l.sourceUrl });
-  for (const t of travel) byKey.set(`travel:${t.id}`, { title: t.title, subtitle: t.location, sourceUrl: t.sourceUrl });
-  for (const bk of book) byKey.set(`book:${bk.id}`, { title: bk.title, subtitle: bk.author, sourceUrl: null });
-  for (const w of wonder) byKey.set(`wonder:${w.id}`, { title: w.title, subtitle: w.source, sourceUrl: null });
+  for (const n of news) byKey.set(`news:${n.id}`, { title: n.title, subtitle: n.source, sourceUrl: n.sourceUrl || wikipediaSearchUrl(n.title) });
+  for (const a of artwork)
+    byKey.set(`artwork:${a.id}`, {
+      title: a.title,
+      subtitle: a.artist || a.museum,
+      sourceUrl: a.sourceUrl || wikipediaSearchUrl([a.title, a.artist].filter(Boolean).join(" ")),
+    });
+  for (const l of literary)
+    byKey.set(`literary:${l.id}`, {
+      title: l.work,
+      subtitle: l.author,
+      sourceUrl: l.sourceUrl || wikipediaSearchUrl([l.work, l.author].filter(Boolean).join(" ")),
+    });
+  for (const t of travel) byKey.set(`travel:${t.id}`, { title: t.title, subtitle: t.location, sourceUrl: t.sourceUrl || wikipediaSearchUrl(t.title) });
+  for (const bk of book) byKey.set(`book:${bk.id}`, { title: bk.title, subtitle: bk.author, sourceUrl: goodreadsSearchUrl(bk.title, bk.author) });
+  for (const w of wonder) byKey.set(`wonder:${w.id}`, { title: w.title, subtitle: w.source, sourceUrl: wikipediaSearchUrl(w.title) });
 
   const items = bookmarks
     .map((b) => {

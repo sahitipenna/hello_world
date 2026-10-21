@@ -369,6 +369,30 @@ export const POEMS: Poem[] = [
       "can't quite keep up, does anything begin to run.",
     ],
   },
+  {
+    title: "Casey at the Bat",
+    poet: "Ernest Thayer",
+    year: "1888",
+    category: "sports",
+    lines: [
+      "The outlook wasn't brilliant for the Mudville nine that day;",
+      "The score stood four to two, with but one inning more to play.",
+      "And then when Cooney died at first, and Barrows did the same,",
+      "A sickly silence fell upon the patrons of the game.",
+    ],
+  },
+  {
+    title: "Jabberwocky",
+    poet: "Lewis Carroll",
+    year: "1871",
+    category: "linguistics",
+    lines: [
+      "'Twas brillig, and the slithy toves",
+      "Did gyre and gimble in the wabe;",
+      "All mimsy were the borogoves,",
+      "And the mome raths outgrabe.",
+    ],
+  },
 ];
 
 // Original short vignettes written for Go Dilly — not excerpts of any published author.
@@ -565,6 +589,18 @@ export const TRAVEL_VIGNETTES: TravelVignette[] = [
     category: "world_culture",
     body: "Every motion — the fold of the cloth, the turn of the bowl, the particular angle of a bow — had a reason behind it that our host explained only after performing it, never before, so that understanding always arrived a half-second after the gesture itself. Two hours produced perhaps four sips of tea each, and I left understanding, for the first time, that slowness itself can be the entire content of a tradition.",
   },
+  {
+    title: "Recruited for a Pickup Match I Didn't Ask to Join",
+    place: "A dirt pitch behind the last row of houses",
+    category: "sports",
+    body: "Two kids waved me over before I'd even set my bag down, and within a minute I was barefoot at right-back for a team whose names I never fully caught, playing to rules that seemed to change depending on who was losing. Nobody kept real score past the first half hour. When the sun finally went down mid-match, both sides just agreed, without discussion, that it had been a draw.",
+  },
+  {
+    title: "The Word I Couldn't Translate Back",
+    place: "A guesthouse kitchen, mid-conversation",
+    category: "linguistics",
+    body: "My host used a word for the specific, pleasant tiredness after a long day of good work, and spent ten minutes failing to translate it properly, trying three different English words and rejecting each one as not quite it. I wrote it phonetically on my hand so I wouldn't lose it, and have since used it privately, in my own head, for exactly that feeling — the only souvenir from that trip that still gets used daily.",
+  },
 ];
 
 export const BOOKS: BookRec[] = [
@@ -620,6 +656,8 @@ export const BOOKS: BookRec[] = [
   { title: "The Soul of an Octopus", author: "Sy Montgomery", category: "nature", reason: "A naturalist falls for octopuses at an aquarium and ends up questioning what counts as a mind at all." },
   { title: "Quiet", author: "Susan Cain", category: "psychology", reason: "A case for introverts in a culture built for extroverts, and for the quiet, deliberate kind of thinking the world still needs." },
   { title: "The Shallows", author: "Nicholas Carr", category: "technology", reason: "An argument, written before most people were worried about it, that the internet is quietly rewiring how we read and think." },
+  { title: "Open", author: "Andre Agassi", category: "sports", reason: "A tennis memoir unlike any other — surprisingly literary, often reluctant, and honest about hating the sport it made him famous for." },
+  { title: "The Language Instinct", author: "Steven Pinker", category: "linguistics", reason: "A lively case that language isn't taught so much as grown — wired into us the way spiders are wired to spin webs." },
 ];
 
 /** Category matches an InterestTag slug so a chosen interest actually
@@ -715,6 +753,8 @@ export const DAILY_TASKS: { title: string; category: string }[] = [
   { title: "Write a one-line horoscope for tomorrow, for yourself, to be kind.", category: "psychology" },
   { title: "Plan a single-day trip somewhere within an hour of you.", category: "travel" },
   { title: "Look at a map of somewhere you've never been and pick a street name you like.", category: "travel" },
+  { title: "Go for a brisk 10-minute walk or run, just enough to raise your pulse.", category: "sports" },
+  { title: "Notice one word in your own language that has no good translation elsewhere, and look up why.", category: "linguistics" },
 ];
 
 // Search terms for the Met Museum's Open Access collection (public domain / CC0 artworks),
@@ -961,5 +1001,17 @@ export const ART_SPOTLIGHT: ArtSpotlightEntry[] = [
     category: "indian_culture",
     analysis:
       "Mughal miniature painting flourished under emperors who kept full workshops of artists on staff, producing small, intensely detailed paintings — court scenes, hunts, portraits, illustrated manuscripts — meant to be held close and studied, not viewed from across a room. The style itself is a visible history lesson: Persian technique arrived with the dynasty's origins, then absorbed Indian color and subject matter and, after European traders arrived, even borrowed tricks of perspective and shading from the art they brought with them. A single painting can hold dozens of figures rendered in individually distinct detail — specific fabric patterns, specific facial features, specific gestures — built with brushes sometimes down to a single hair, by artists who were named and credited rather than anonymous. Looking closely at one is to watch several centuries of cultural exchange settle into a few square inches of paper, each influence still legible if you know where to look.",
+  },
+  {
+    query: "ancient Greek vase athletes",
+    category: "sports",
+    analysis:
+      "Ancient Greek potters covered vases with athletes mid-motion — wrestlers locked together, discus throwers coiled at the top of their swing, runners caught at full stride — painted not as decoration layered on top of a pot but as the pot's entire reason for existing. Some of the finest examples are Panathenaic prize amphorae, awarded filled with olive oil to victors at Athens's games and stamped with an image of the specific event they'd won, turning a trophy into a kind of receipt. The painters worked from memory and convention rather than from a model holding a pose, which is part of why the bodies read as slightly impossible — balanced at angles no one could actually hold, exaggerated just enough to make a split second of effort legible at a glance. Looking at one today, centuries before slow-motion replay existed, is to watch someone solve the exact same problem a sports photographer solves now: how to freeze a single instant of motion so it still reads as motion.",
+  },
+  {
+    query: "ancient cuneiform tablet",
+    category: "linguistics",
+    analysis:
+      "The earliest known writing survives on clay: small tablets pressed with a reed stylus into wedge-shaped marks — cuneiform — developed in ancient Mesopotamia initially to track grain, livestock, and debts, centuries before anyone used it to write a story or a law. What looks, at a glance, like abstract scratches is actually a full writing system mid-invention, moving from simple pictures of the things being counted toward the more abstract, sound-based signs that writing eventually became everywhere else. Scholars spent decades in the 19th century learning to read it again from scratch, essentially reverse-engineering a dead language from thousands of broken fragments with no dictionary and no living speaker to ask. A tablet recording someone's grain shipment, filed away and forgotten four thousand years ago, turns out to be exactly the kind of unglamorous, everyday record that ends up teaching linguists the most about how a language actually worked.",
   },
 ];

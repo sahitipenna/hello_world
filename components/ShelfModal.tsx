@@ -101,7 +101,7 @@ export default function ShelfModal({
                     rel="noopener noreferrer"
                     className="inline-block mt-1 text-xs text-sky underline decoration-dotted underline-offset-4"
                   >
-                    Open source
+                    Look it up ↗
                   </a>
                 )}
               </div>

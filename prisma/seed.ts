@@ -38,6 +38,8 @@ const INTEREST_TAGS = [
   { slug: "psychology", label: "Psychology", emoji: "\u{1F9E0}" },
   { slug: "indian_culture", label: "Indian culture", emoji: "\u{1FA94}" },
   { slug: "world_culture", label: "World culture", emoji: "\u{1F30D}" },
+  { slug: "sports", label: "Sports", emoji: "\u{26BD}" },
+  { slug: "linguistics", label: "Linguistics", emoji: "\u{1F5E3}\u{FE0F}" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -122,6 +124,8 @@ const NEWS_ITEMS = [
   { title: "Marcus Aurelius never meant his notebook to be published", summary: "The Roman emperor's private journal, written to himself during military campaigns and never intended for an audience, survived to become one of philosophy's most widely read books: Meditations.", category: "philosophy", readingTimeMin: 1 },
   { title: "Forgetting may be a feature, not a bug", summary: "Some memory researchers now argue the brain actively prunes unneeded memories to keep decision-making flexible, reframing ordinary forgetting as a working process rather than a flaw in it.", category: "psychology", readingTimeMin: 1 },
   { title: "India's census counts over 19,000 mother tongues", summary: "India's most recent linguistic census identified more than 19,000 distinct mother tongues, later grouped by linguists into over a hundred major languages and thousands of dialects.", category: "indian_culture", readingTimeMin: 1 },
+  { title: "The marathon distance was set by one specific race", summary: "The standard 26.2-mile marathon wasn't planned — organizers extended the 1908 London Olympics course so it would finish in front of the royal box, and the odd distance simply became the standard afterward.", category: "sports", readingTimeMin: 1 },
+  { title: "A language goes extinct every few months", summary: "Of the roughly 7,000 languages spoken today, linguists estimate a significant share will fall silent this century as the last fluent speakers age, prompting a global push to record endangered languages before they're gone.", category: "linguistics", readingTimeMin: 1 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -162,6 +166,8 @@ const WONDERS = [
   { title: "Socrates never wrote anything down", body: "Everything known of Socrates comes secondhand, mostly through his student Plato's dialogues — Socrates himself apparently distrusted writing, reportedly arguing it would weaken memory and let ideas be repeated without being truly understood.", category: "philosophy" },
   { title: "The first computer bug was an actual bug", body: "In 1947, engineers working on Harvard's Mark II computer found a moth trapped in a relay, taped it into the logbook, and noted they had \"debugged\" the machine — helping popularize a term that stuck long after the insects stopped being literal.", category: "technology" },
   { title: "India has no single national language", body: "India's constitution designates Hindi and English as official languages for government use, but names no single \"national language\" among the 22 scheduled languages — a deliberate choice reflecting the scale of the country's linguistic diversity.", category: "indian_culture" },
+  { title: "Table tennis started as an after-dinner game", body: "Table tennis began in Victorian England as a parlor game for the upper class, played after dinner on the dining table itself — early sets used cigar box lids as paddles and a carved-off champagne cork as a ball.", category: "sports" },
+  { title: "Some languages have no word for the color blue", body: "Several ancient languages, including Homeric Greek, had no distinct word for blue, describing the sea instead as \"wine-dark\" — a gap that shows up across unrelated ancient languages and has shaped decades of research into how language affects color perception.", category: "linguistics" },
 ];
 
 // ---------------------------------------------------------------------------
