@@ -18,3 +18,10 @@ export function wikipediaSearchUrl(query: string): string {
 export function goodreadsSearchUrl(title: string, author: string): string {
   return `https://www.goodreads.com/search?q=${encodeURIComponent(`${title} ${author}`.trim())}`;
 }
+
+/** A dictionary entry's own page, not a search — Wiktionary URLs are the
+ * word itself (en.wiktionary.org/wiki/<word>), so this is accurate for any
+ * single real word rather than a fallback search like the other helpers. */
+export function wiktionaryUrl(word: string): string {
+  return `https://en.wiktionary.org/wiki/${encodeURIComponent(word.trim())}`;
+}

@@ -13,8 +13,9 @@ import WonderCard from "../WonderCard";
 import TodoList from "../TodoList";
 import SaveButton from "../SaveButton";
 import DailyQuiz from "../DailyQuiz";
+import WordOfDayCard from "../WordOfDayCard";
 
-const OWN_HEADING_KINDS = new Set(["look", "wander", "readnext", "wonder"]);
+const OWN_HEADING_KINDS = new Set(["look", "wander", "readnext", "wonder", "word"]);
 
 /** A body heading more specific than the section's own title (which the
  * kicker already shows as "{n} of {total} · {title}") — avoids literally
@@ -36,6 +37,8 @@ function contentHeadline(section: EditionSection): string | null {
       return c.wonder.title;
     case "look":
       return c.custom?.title ?? null;
+    case "word":
+      return c.word.word;
     default:
       return null;
   }
@@ -59,6 +62,8 @@ export function bookmarkTarget(content: NonNullable<EditionSection["content"]>):
       return content.book.id ? { contentType: "book", contentId: content.book.id } : null;
     case "wonder":
       return { contentType: "wonder", contentId: content.wonder.id };
+    case "word":
+      return { contentType: "word", contentId: content.word.id };
     default:
       return null;
   }
@@ -156,6 +161,13 @@ function renderSectionContent(
       // DailyQuiz fetches its own genres/questions and tracks its own
       // progress — nothing from `content` to pass it.
       return <DailyQuiz />;
+    case "word":
+      return (
+        <>
+          {saveRow}
+          <WordOfDayCard word={content.word} />
+        </>
+      );
     default:
       return null;
   }

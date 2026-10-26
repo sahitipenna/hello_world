@@ -114,7 +114,7 @@ export default function NotifyMeButton({ user, deskSkin }: { user: Viewer | null
 
   if (status === "checking" || status === "hidden") return null;
 
-  const color = deskSkin === "dark" ? "rgba(250,243,230,.7)" : "rgba(43,38,34,.6)";
+  const color = deskSkin === "dark" || deskSkin === "green" ? "rgba(250,243,230,.7)" : "rgba(43,38,34,.6)";
   const wrap = { textAlign: "center" as const, fontFamily: "var(--font-sans), sans-serif", fontSize: 13, color, marginTop: 4 };
   const button = {
     background: "transparent",

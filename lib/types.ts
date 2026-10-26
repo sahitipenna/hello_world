@@ -98,6 +98,16 @@ export interface WonderT {
   source: string;
 }
 
+export interface WordOfDayT {
+  id: string;
+  word: string;
+  pronunciation: string;
+  partOfSpeech: string;
+  definition: string;
+  example: string;
+  category: string;
+}
+
 // ---------------------------------------------------------------------------
 // Per-section content, keyed by the section's `key`. `content` is `null` for
 // a section whose key the app doesn't know how to resolve yet (an admin
@@ -163,6 +173,10 @@ export interface DoContent {
 export interface QuizContent {
   kind: "quiz";
 }
+export interface WordContent {
+  kind: "word";
+  word: WordOfDayT;
+}
 
 export type EditionContent =
   | KnowContent
@@ -174,6 +188,7 @@ export type EditionContent =
   | WonderContent
   | DoContent
   | QuizContent
+  | WordContent
   | null;
 
 export interface EditionSection extends SectionMeta {
@@ -221,7 +236,7 @@ export interface InterestTag {
   emoji: string;
 }
 
-export type DeskSkin = "dark" | "light" | "white";
+export type DeskSkin = "dark" | "light" | "white" | "green";
 
 export interface UserPreferences {
   plan: Plan;

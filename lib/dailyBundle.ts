@@ -150,6 +150,23 @@ async function resolveContent(
     }
     case "quiz":
       return { kind: "quiz" };
+    case "word": {
+      const pool = await prisma.wordOfDay.findMany();
+      const word = resolveOneForDate(pool, dateISO, "word", weights);
+      if (!word) return null;
+      return {
+        kind: "word",
+        word: {
+          id: word.id,
+          word: word.word,
+          pronunciation: word.pronunciation,
+          partOfSpeech: word.partOfSpeech,
+          definition: word.definition,
+          example: word.example,
+          category: word.category,
+        },
+      };
+    }
     default:
       // A section key the app doesn't have a content resolver for yet (an
       // admin re-enabling an older section like "quiz" or "comic"). The

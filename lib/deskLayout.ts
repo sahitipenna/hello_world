@@ -12,6 +12,7 @@ import PlantIllustration from "@/components/desk/illustrations/PlantIllustration
 import HeadphonesIllustration from "@/components/desk/illustrations/HeadphonesIllustration";
 import AppleIllustration from "@/components/desk/illustrations/AppleIllustration";
 import QuizIllustration from "@/components/desk/illustrations/QuizIllustration";
+import PenIllustration from "@/components/desk/illustrations/PenIllustration";
 
 /** [x, y, w, h, rotateDeg, z] in layout units — see design_handoff_daily_desk/README.md §Layout. */
 export type LayoutBox = [x: number, y: number, w: number, h: number, rotateDeg: number, z: number];
@@ -29,6 +30,7 @@ export const DESK_ART: Record<string, { svg: ComponentType<Record<string, unknow
   wonder: { svg: FactIllustration },
   do: { svg: TodoIllustration },
   quiz: { svg: QuizIllustration },
+  word: { svg: PenIllustration },
 };
 
 /** Kicker/accent colour for each section's panel header — fixed per key,
@@ -43,6 +45,7 @@ export const SECTION_ACCENT: Record<string, string> = {
   wonder: "#a8441f",
   do: "#5a6b4b",
   quiz: "#6b4a9e",
+  word: "#2d4a63",
 };
 
 export const DESK_LAYOUT_DESKTOP: { W: number; H: number; items: Record<string, LayoutBox> } = {
@@ -58,6 +61,9 @@ export const DESK_LAYOUT_DESKTOP: { W: number; H: number; items: Record<string, 
     do: [525, 440, 140, 165, 4, 3],
     wander: [712, 330, 220, 150, -7, 3],
     quiz: [735, 485, 150, 130, 5, 4],
+    // The one gap left in the collage: between readnext's right edge (455)
+    // and mug's left edge (560), above read's top (225).
+    word: [460, 15, 95, 190, -5, 3],
   },
 };
 
@@ -99,6 +105,7 @@ const MOBILE_ASPECT: Record<string, number> = {
   wonder: 150 / 130,
   do: 140 / 165,
   quiz: 150 / 130,
+  word: 95 / 190,
 };
 
 const DECOR_ASPECT: Record<string, number> = {

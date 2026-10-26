@@ -27,6 +27,8 @@ function surfaceLayers(kind: DeskSkin): { image: string; color: string } {
         image: `radial-gradient(110% 80% at 6% -8%, rgba(255,236,200,.45), transparent 55%), linear-gradient(118deg, transparent 0 34%, rgba(255,240,210,.25) 34% 44%, transparent 44% 47%, rgba(255,240,210,.25) 47% 57%, transparent 57%), radial-gradient(140% 100% at 50% 40%, transparent 55%, rgba(60,45,30,.16)), ${grain(0.22, "0.003 0.14")}`,
         color: "#f3efe7",
       };
+    case "green":
+      return { image: `${LIGHT}, ${PANES}, ${VIG}, ${grain(1.1, "0.0025 0.11")}`, color: "#3f5c45" };
   }
 }
 

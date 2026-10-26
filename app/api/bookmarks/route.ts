@@ -3,7 +3,7 @@ import { getOrCreateUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { isBookmarkableType as isContentType, resolveContentCategory, bumpCategoryEngagement } from "@/lib/contentLookup";
 import type { BookmarkableType as ContentType } from "@/lib/contentLookup";
-import { wikipediaSearchUrl, goodreadsSearchUrl } from "@/lib/externalLink";
+import { wikipediaSearchUrl, goodreadsSearchUrl, wiktionaryUrl } from "@/lib/externalLink";
 
 /** My Dilly Shelf — everything a visitor has saved, resolved with enough
  * display info to render without the client needing to know which table
@@ -17,18 +17,19 @@ export async function GET() {
     return NextResponse.json({ items: [] }, { headers: { "Cache-Control": "private, no-store" } });
   }
 
-  const idsByType: Record<ContentType, string[]> = { news: [], artwork: [], literary: [], travel: [], book: [], wonder: [] };
+  const idsByType: Record<ContentType, string[]> = { news: [], artwork: [], literary: [], travel: [], book: [], wonder: [], word: [] };
   for (const b of bookmarks) {
     if (isContentType(b.contentType)) idsByType[b.contentType].push(b.contentId);
   }
 
-  const [news, artwork, literary, travel, book, wonder] = await Promise.all([
+  const [news, artwork, literary, travel, book, wonder, word] = await Promise.all([
     idsByType.news.length ? prisma.newsItem.findMany({ where: { id: { in: idsByType.news } } }) : [],
     idsByType.artwork.length ? prisma.artwork.findMany({ where: { id: { in: idsByType.artwork } } }) : [],
     idsByType.literary.length ? prisma.literaryItem.findMany({ where: { id: { in: idsByType.literary } } }) : [],
     idsByType.travel.length ? prisma.travelItem.findMany({ where: { id: { in: idsByType.travel } } }) : [],
     idsByType.book.length ? prisma.book.findMany({ where: { id: { in: idsByType.book } } }) : [],
     idsByType.wonder.length ? prisma.wonder.findMany({ where: { id: { in: idsByType.wonder } } }) : [],
+    idsByType.word.length ? prisma.wordOfDay.findMany({ where: { id: { in: idsByType.word } } }) : [],
   ]);
 
   // Every saved item gets a link out, even content with no curated
@@ -53,6 +54,7 @@ export async function GET() {
   for (const t of travel) byKey.set(`travel:${t.id}`, { title: t.title, subtitle: t.location, sourceUrl: t.sourceUrl || wikipediaSearchUrl(t.title) });
   for (const bk of book) byKey.set(`book:${bk.id}`, { title: bk.title, subtitle: bk.author, sourceUrl: goodreadsSearchUrl(bk.title, bk.author) });
   for (const w of wonder) byKey.set(`wonder:${w.id}`, { title: w.title, subtitle: w.source, sourceUrl: wikipediaSearchUrl(w.title) });
+  for (const wd of word) byKey.set(`word:${wd.id}`, { title: wd.word, subtitle: wd.partOfSpeech, sourceUrl: wiktionaryUrl(wd.word) });
 
   const items = bookmarks
     .map((b) => {

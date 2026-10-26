@@ -230,6 +230,19 @@ model Wonder {
   createdAt     DateTime @default(now())
 }
 
+/// WORD — one word worth knowing, with enough context to actually use it.
+model WordOfDay {
+  id            String   @id @default(cuid())
+  word          String
+  pronunciation String   @default("")
+  partOfSpeech  String   @default("")
+  definition    String
+  example       String   @default("")
+  category      String   @default("literature")
+  scheduledDate String?
+  createdAt     DateTime @default(now())
+}
+
 /// DO — small, optional, non-productivity activities. Pooled and drawn 5 at
 /// a time per ISO week (not per day), same rotation as before.
 model DailyTask {
