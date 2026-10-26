@@ -386,7 +386,7 @@ export default function Home() {
           padding: "8px 16px",
         }}
       >
-        Good morning. Take a little time for yourself.
+        Hello there. Take a little time for yourself.
       </p>
 
       {hiddenByTimeBudget.length > 0 && (
@@ -539,7 +539,7 @@ export default function Home() {
         initialTimeBudget={timeBudget}
         onClose={() => setOnboardingOpen(false)}
         onSave={handleSaveOnboarding}
-        kicker={onboardingTrigger === "auto" ? (hasChosenInterests ? "Good morning" : "You're becoming a regular") : undefined}
+        kicker={onboardingTrigger === "auto" ? (hasChosenInterests ? "Hello there" : "You're becoming a regular") : undefined}
         title={onboardingTrigger === "auto" ? (hasChosenInterests ? "Still want more of this?" : "Want to make your Dilly yours?") : undefined}
       />
     </div>
