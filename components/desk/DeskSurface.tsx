@@ -28,7 +28,9 @@ function surfaceLayers(kind: DeskSkin): { image: string; color: string } {
         color: "#f3efe7",
       };
     case "green":
-      return { image: `${LIGHT}, ${PANES}, ${VIG}, ${grain(1.1, "0.0025 0.11")}`, color: "#3f5c45" };
+      // Solid, untextured — no wood-grain/vignette layers, unlike the other
+      // three skins, per explicit request.
+      return { image: "none", color: "#3f5c45" };
   }
 }
 
