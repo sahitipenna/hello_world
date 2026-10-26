@@ -4,7 +4,6 @@ import { prisma } from "@/lib/db";
 import { getEnabledSections } from "@/lib/sections";
 import { SectionMeta } from "@/lib/types";
 import { googleConfigured } from "@/lib/googleAuth";
-import { STICKERS } from "@/lib/stickers";
 
 function parseJsonArray(raw: string | null): string[] | null {
   if (!raw) return null;
@@ -42,7 +41,6 @@ export async function GET() {
       hiddenSections: parseJsonArray(user.hiddenSections) ?? [],
       timeBudgetMinutes: user.timeBudgetMinutes ?? null,
       deskSkin: user.deskSkin ?? "dark",
-      stickers: parseJsonArray(user.stickers) ?? [],
       // Every enabled section, regardless of today's time-budget filtering —
       // the customizer needs the full catalog to reorder/hide, not just
       // whatever made today's edition.
@@ -85,7 +83,6 @@ export async function PATCH(req: NextRequest) {
     hiddenSections?: string;
     timeBudgetMinutes?: number | null;
     deskSkin?: string;
-    stickers?: string;
   } = {};
 
   if (body.plan === "free" || body.plan === "premium") {
@@ -100,11 +97,8 @@ export async function PATCH(req: NextRequest) {
   if (body.timeBudgetMinutes === null || VALID_TIME_BUDGETS.includes(body.timeBudgetMinutes)) {
     data.timeBudgetMinutes = body.timeBudgetMinutes;
   }
-  if (["dark", "light", "white", "green"].includes(body.deskSkin)) {
+  if (["dark", "light", "white"].includes(body.deskSkin)) {
     data.deskSkin = body.deskSkin;
-  }
-  if (Array.isArray(body.stickers) && body.stickers.every((s: unknown) => typeof s === "string" && STICKERS.some((def) => def.id === s))) {
-    data.stickers = JSON.stringify(body.stickers);
   }
 
   if (Object.keys(data).length === 0) {
@@ -121,7 +115,6 @@ export async function PATCH(req: NextRequest) {
     hiddenSections: parseJsonArray(updated.hiddenSections) ?? [],
     timeBudgetMinutes: updated.timeBudgetMinutes ?? null,
     deskSkin: updated.deskSkin ?? "dark",
-    stickers: parseJsonArray(updated.stickers) ?? [],
     allSections,
   });
 }

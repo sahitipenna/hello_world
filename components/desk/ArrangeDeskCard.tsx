@@ -1,7 +1,6 @@
 "use client";
 
 import { DeskSkin, SectionMeta } from "@/lib/types";
-import { STICKERS } from "@/lib/stickers";
 
 const SKINS: { id: DeskSkin; label: string; chip: string }[] = [
   { id: "dark", label: "Dark wood", chip: "#5d3c27" },
@@ -22,8 +21,6 @@ export default function ArrangeDeskCard({
   hasInterests,
   deskSkin,
   onSkinChange,
-  stickers,
-  onToggleSticker,
   mobile,
   timeBudgetMinutes,
 }: {
@@ -38,8 +35,6 @@ export default function ArrangeDeskCard({
   hasInterests: boolean;
   deskSkin: DeskSkin;
   onSkinChange: (skin: DeskSkin) => void;
-  stickers: string[];
-  onToggleSticker: (id: string) => void;
   mobile: boolean;
   timeBudgetMinutes: number | null;
 }) {
@@ -122,37 +117,6 @@ export default function ArrangeDeskCard({
                   }}
                 />
                 <span style={{ fontSize: 12.5, lineHeight: 1.2, fontFamily: "var(--font-sans), sans-serif" }}>{k.label}</span>
-              </button>
-            );
-          })}
-        </div>
-        <div style={{ fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", lineHeight: "32px", color: "#5b524a" }}>
-          Stickers
-        </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingBottom: 6 }}>
-          {STICKERS.map((s) => {
-            const on = stickers.includes(s.id);
-            return (
-              <button
-                key={s.id}
-                onClick={() => onToggleSticker(s.id)}
-                aria-pressed={on}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "4px 10px 4px 6px",
-                  borderRadius: 999,
-                  border: `1.5px solid ${on ? s.color : "rgba(43,38,34,.25)"}`,
-                  background: on ? `${s.color}1a` : "transparent",
-                  cursor: "pointer",
-                  fontFamily: "var(--font-sans), sans-serif",
-                  fontSize: 12.5,
-                  color: "#2b2622",
-                }}
-              >
-                <span style={{ width: 14, height: 14, borderRadius: "50%", background: s.color, flex: "none" }} />
-                {s.text}
               </button>
             );
           })}

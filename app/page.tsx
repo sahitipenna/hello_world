@@ -47,7 +47,6 @@ export default function Home() {
   const [viewer, setViewer] = useState<{ email: string; name: string | null; image: string | null } | null>(null);
   const [timeBudget, setTimeBudget] = useState<number | null>(null);
   const [deskSkin, setDeskSkin] = useState<DeskSkin>("dark");
-  const [stickers, setStickers] = useState<string[]>([]);
   const [arrangeOpen, setArrangeOpen] = useState(false);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [visited, setVisited] = useState<string[]>([]);
@@ -108,7 +107,6 @@ export default function Home() {
         setVisitCount(p.visitCount ?? 0);
         setGoogleConfigured(Boolean(p.googleConfigured));
         if (p.deskSkin === "dark" || p.deskSkin === "light" || p.deskSkin === "white" || p.deskSkin === "green") setDeskSkin(p.deskSkin);
-        if (Array.isArray(p.stickers)) setStickers(p.stickers);
         if (p.userId) identifyVisitor(p.userId, p.user ? { email: p.user.email, name: p.user.name } : undefined);
       })
       .catch(() => {});
@@ -265,16 +263,6 @@ export default function Home() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ deskSkin: skin }),
-    }).catch(() => {});
-  }
-
-  function handleToggleSticker(id: string) {
-    const next = stickers.includes(id) ? stickers.filter((s) => s !== id) : [...stickers, id];
-    setStickers(next);
-    fetch("/api/preferences", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stickers: next }),
     }).catch(() => {});
   }
 
@@ -441,7 +429,6 @@ export default function Home() {
             containerWidth={width}
             visited={visited}
             sideObjects={bundle.sideObjects}
-            stickers={stickers}
             showStartHint={showStartHint}
             onOpenSection={openSection}
             onOpenSide={openSide}
@@ -492,8 +479,6 @@ export default function Home() {
           hasInterests={selectedInterests.length > 0}
           deskSkin={deskSkin}
           onSkinChange={handleSkinChange}
-          stickers={stickers}
-          onToggleSticker={handleToggleSticker}
           mobile={mobile}
           timeBudgetMinutes={timeBudget}
         />
