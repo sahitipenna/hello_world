@@ -22,6 +22,7 @@ interface QuizQ {
 }
 
 const DIFFICULTY_LABEL: Record<QuizDifficulty, string> = { easy: "Easy", medium: "Medium", hard: "Hard" };
+const TIERS: QuizDifficulty[] = ["easy", "medium", "hard"];
 
 function normalize(s: string): string {
   return s
@@ -51,6 +52,11 @@ export default function DailyQuiz() {
   const [checked, setChecked] = useState(false);
   const [correct, setCorrect] = useState(false);
   const [justFinished, setJustFinished] = useState<QuizDifficulty | null>(null);
+  // True once every question in the current tier has been answered through —
+  // stops the question loop from wrapping back to question 1 of the same
+  // tier, and shows a completion screen (with a "next level" button) instead.
+  const [levelComplete, setLevelComplete] = useState(false);
+  const [unlockedAfterComplete, setUnlockedAfterComplete] = useState<QuizDifficulty[] | null>(null);
   const [editing, setEditing] = useState(false);
   const [draftQ, setDraftQ] = useState("");
   const [draftA, setDraftA] = useState("");
@@ -71,12 +77,16 @@ export default function DailyQuiz() {
     setGenre(g);
     setDifficulty(null);
     setJustFinished(null);
+    setLevelComplete(false);
+    setUnlockedAfterComplete(null);
   }
 
   function backToGenres() {
     setGenre(null);
     setDifficulty(null);
     setQuestions(null);
+    setLevelComplete(false);
+    setUnlockedAfterComplete(null);
   }
 
   function startDifficulty(d: QuizDifficulty) {
@@ -86,6 +96,8 @@ export default function DailyQuiz() {
     setCurrent(0);
     resetAnswerState();
     setJustFinished(null);
+    setLevelComplete(false);
+    setUnlockedAfterComplete(null);
     fetch(`/api/quiz?genre=${genre.slug}&difficulty=${d}`)
       .then((r) => r.json())
       .then((data) => setQuestions(data.questions ?? []))
@@ -118,15 +130,19 @@ export default function DailyQuiz() {
       if (res.ok) {
         track("quiz_complete", genre.slug);
         const data = await res.json();
-        const nextTiers: QuizDifficulty[] = ["easy", "medium", "hard"];
-        const idx = nextTiers.indexOf(difficulty);
-        const newlyUnlocked = idx >= 0 && idx + 1 < nextTiers.length && data.unlocked?.includes(nextTiers[idx + 1]);
-        setJustFinished(newlyUnlocked ? nextTiers[idx + 1] : null);
+        const idx = TIERS.indexOf(difficulty);
+        const newlyUnlocked = idx >= 0 && idx + 1 < TIERS.length && data.unlocked?.includes(TIERS[idx + 1]);
+        setJustFinished(newlyUnlocked ? TIERS[idx + 1] : null);
+        setUnlockedAfterComplete(data.unlocked ?? null);
         loadGenres();
       }
-    } else {
-      setJustFinished(null);
+      // Finishing the last question ends the tier here — no more wrapping
+      // back to question 1 of the same 15 questions. The completion screen
+      // (rendered below) offers the next tier instead, once it's unlocked.
+      setLevelComplete(true);
+      return;
     }
+    setJustFinished(null);
     setCurrent((c) => (c + delta + questions.length) % questions.length);
     resetAnswerState();
   }
@@ -232,7 +248,42 @@ export default function DailyQuiz() {
     );
   }
 
-  // Screen 3: the questions themselves
+  // Screen 3: a tier just finished — offer the next one instead of
+  // looping back through the same questions.
+  if (levelComplete) {
+    const nextTier = TIERS[TIERS.indexOf(difficulty) + 1] as QuizDifficulty | undefined;
+    const nextReady = Boolean(nextTier && unlockedAfterComplete?.includes(nextTier) && genre.available[nextTier]);
+    return (
+      <div>
+        <button onClick={backToGenres} className="text-xs text-ink/50 hover:text-ink mb-3">
+          {"←"} Genres
+        </button>
+        <p className="text-xs font-semibold uppercase tracking-wide text-plum mb-2">
+          {genre.emoji} {genre.label} &middot; {DIFFICULTY_LABEL[difficulty]}
+        </p>
+        <p className="text-[15px] font-medium mb-3">{"✓"} {DIFFICULTY_LABEL[difficulty]} complete!</p>
+        {nextReady && nextTier ? (
+          <>
+            <p className="text-sm text-ink/60 mb-4">
+              {justFinished === nextTier
+                ? `Nice work — ${DIFFICULTY_LABEL[nextTier]} is now unlocked.`
+                : `${DIFFICULTY_LABEL[nextTier]} is ready whenever you are.`}
+            </p>
+            <button
+              onClick={() => startDifficulty(nextTier)}
+              className="rounded-lg bg-ink text-paper text-sm font-semibold px-4 py-2 hover:opacity-90"
+            >
+              Next: {DIFFICULTY_LABEL[nextTier]} {"→"}
+            </button>
+          </>
+        ) : (
+          <p className="text-sm text-ink/60">You&apos;ve finished every level for {genre.label} &mdash; nice work.</p>
+        )}
+      </div>
+    );
+  }
+
+  // Screen 4: the questions themselves
   const q = questions[current];
 
   return (
@@ -246,12 +297,6 @@ export default function DailyQuiz() {
       <p className="text-xs font-semibold uppercase tracking-wide text-plum mb-2">
         {genre.emoji} {genre.label} &middot; {DIFFICULTY_LABEL[difficulty]} &middot; {current + 1} of {questions.length}
       </p>
-
-      {justFinished && (
-        <p className="text-xs font-semibold text-sage mb-3 bg-sage/10 rounded-md px-2.5 py-1.5">
-          Nice work &mdash; {DIFFICULTY_LABEL[justFinished]} is now unlocked for {genre.label}.
-        </p>
-      )}
 
       {editing ? (
         <div className="space-y-2 mb-3">
