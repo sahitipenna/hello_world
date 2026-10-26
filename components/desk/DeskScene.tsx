@@ -3,6 +3,7 @@
 import { EditionSection } from "@/lib/types";
 import DeskObject from "./DeskObject";
 import DeskDecorObject from "./DeskDecorObject";
+import DeskSticker from "./DeskSticker";
 import StartHereHint from "./StartHereHint";
 import {
   DESK_ART,
@@ -12,6 +13,7 @@ import {
   DECOR_LAYOUT_DESKTOP,
   SideObject,
 } from "@/lib/deskLayout";
+import { STICKERS } from "@/lib/stickers";
 
 export default function DeskScene({
   sectionsByKey,
@@ -20,6 +22,7 @@ export default function DeskScene({
   containerWidth,
   visited,
   sideObjects,
+  stickers,
   showStartHint,
   onOpenSection,
   onOpenSide,
@@ -30,6 +33,7 @@ export default function DeskScene({
   containerWidth: number;
   visited: string[];
   sideObjects: SideObject[];
+  stickers: string[];
   showStartHint: boolean;
   onOpenSection: (key: string) => void;
   onOpenSide: (id: string) => void;
@@ -77,6 +81,23 @@ export default function DeskScene({
             />
           );
         })}
+        {/* Fixed-position decoration in the desktop collage's own margins —
+            mobile's dynamically-packed flow layout has no equivalent open
+            space, so stickers only show on desktop. */}
+        {!mobile &&
+          stickers.map((id) => {
+            const sticker = STICKERS.find((s) => s.id === id);
+            if (!sticker) return null;
+            return (
+              <DeskSticker
+                key={id}
+                box={sticker.box}
+                stage={{ W: DESK_LAYOUT_DESKTOP.W, H: DESK_LAYOUT_DESKTOP.H }}
+                text={sticker.text}
+                color={sticker.color}
+              />
+            );
+          })}
         {visibleKeys.map((key) => {
           const section = sectionsByKey.get(key);
           const box = layout.items[key];
