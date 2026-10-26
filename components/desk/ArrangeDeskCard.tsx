@@ -6,6 +6,7 @@ const SKINS: { id: DeskSkin; label: string; chip: string }[] = [
   { id: "dark", label: "Dark wood", chip: "#5d3c27" },
   { id: "light", label: "Light wood", chip: "#c89a66" },
   { id: "white", label: "White", chip: "#f3efe7" },
+  { id: "green", label: "Green", chip: "#3f5c45" },
 ];
 
 export default function ArrangeDeskCard({

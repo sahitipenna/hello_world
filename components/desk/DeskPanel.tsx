@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import { DailyEditionResponse, EditionSection } from "@/lib/types";
 import { SECTION_ACCENT } from "@/lib/deskLayout";
-import LockSeal from "./illustrations/LockSeal";
 import KnowSection from "../KnowSection";
 import CrosswordPuzzle from "../CrosswordPuzzle";
 import ArtSpotlight from "../ArtSpotlight";
@@ -14,8 +13,9 @@ import WonderCard from "../WonderCard";
 import TodoList from "../TodoList";
 import SaveButton from "../SaveButton";
 import DailyQuiz from "../DailyQuiz";
+import WordOfDayCard from "../WordOfDayCard";
 
-const OWN_HEADING_KINDS = new Set(["look", "wander", "readnext", "wonder"]);
+const OWN_HEADING_KINDS = new Set(["look", "wander", "readnext", "wonder", "word"]);
 
 /** A body heading more specific than the section's own title (which the
  * kicker already shows as "{n} of {total} · {title}") — avoids literally
@@ -37,6 +37,8 @@ function contentHeadline(section: EditionSection): string | null {
       return c.wonder.title;
     case "look":
       return c.custom?.title ?? null;
+    case "word":
+      return c.word.word;
     default:
       return null;
   }
@@ -60,6 +62,8 @@ export function bookmarkTarget(content: NonNullable<EditionSection["content"]>):
       return content.book.id ? { contentType: "book", contentId: content.book.id } : null;
     case "wonder":
       return { contentType: "wonder", contentId: content.wonder.id };
+    case "word":
+      return { contentType: "word", contentId: content.word.id };
     default:
       return null;
   }
@@ -157,6 +161,13 @@ function renderSectionContent(
       // DailyQuiz fetches its own genres/questions and tracks its own
       // progress — nothing from `content` to pass it.
       return <DailyQuiz />;
+    case "word":
+      return (
+        <>
+          {saveRow}
+          <WordOfDayCard word={content.word} />
+        </>
+      );
     default:
       return null;
   }
@@ -361,50 +372,6 @@ export default function DeskPanel({
                 </a>
               )}
               <p style={{ margin: 0, fontFamily: "var(--font-hand), cursive", fontSize: 22, color: "#a8441f" }}>{sideObject.note}</p>
-            </div>
-          ) : section?.locked ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 8 }}>
-              <h2 style={{ margin: 0, fontFamily: "var(--font-serif), serif", fontWeight: 500, fontSize: 32, lineHeight: 1.1 }}>
-                {contentHeadline(section) ?? section.title}
-              </h2>
-              <p style={{ margin: 0, fontSize: 16, lineHeight: 1.6, color: "#4a423b" }}>{section.tagline}</p>
-              <div
-                style={{
-                  marginTop: 8,
-                  padding: 22,
-                  border: "1.5px dashed rgba(107,74,99,.5)",
-                  borderRadius: 6,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  gap: 12,
-                  background: "rgba(107,74,99,.05)",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <LockSeal size={30} />
-                  <span style={{ fontFamily: "var(--font-hand), cursive", fontSize: 24, color: "#6b4a63" }}>Sealed for members</span>
-                </div>
-                <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.55, color: "#4a423b" }}>
-                  Members get the daily crossword, the postcards, and the whole back catalogue of desks.
-                </p>
-                <button
-                  onClick={onUnlockClick}
-                  style={{
-                    background: "#6b4a63",
-                    color: "#faf3e6",
-                    border: 0,
-                    borderRadius: 999,
-                    padding: "10px 18px",
-                    fontSize: 14.5,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    fontFamily: "var(--font-sans), sans-serif",
-                  }}
-                >
-                  Become a member
-                </button>
-              </div>
             </div>
           ) : section && bundle ? (
             <>

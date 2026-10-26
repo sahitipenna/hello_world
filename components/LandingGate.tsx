@@ -44,7 +44,7 @@ export default function LandingGate({ onStart }: { onStart: () => void }) {
           color: "#4a423b",
         }}
       >
-        Good morning.
+        Hello there.
         <br />
         A handful of good things for your day.
       </p>

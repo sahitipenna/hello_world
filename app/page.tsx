@@ -80,7 +80,7 @@ export default function Home() {
 
     try {
       const stored = localStorage.getItem("godilly-skin");
-      if (stored === "dark" || stored === "light" || stored === "white") setDeskSkin(stored);
+      if (stored === "dark" || stored === "light" || stored === "white" || stored === "green") setDeskSkin(stored);
     } catch {}
 
     // Local, not server-driven: resolves instantly (no flash of the gate
@@ -106,7 +106,7 @@ export default function Home() {
         setViewer(p.user ?? null);
         setVisitCount(p.visitCount ?? 0);
         setGoogleConfigured(Boolean(p.googleConfigured));
-        if (p.deskSkin === "dark" || p.deskSkin === "light" || p.deskSkin === "white") setDeskSkin(p.deskSkin);
+        if (p.deskSkin === "dark" || p.deskSkin === "light" || p.deskSkin === "white" || p.deskSkin === "green") setDeskSkin(p.deskSkin);
         if (p.userId) identifyVisitor(p.userId, p.user ? { email: p.user.email, name: p.user.name } : undefined);
       })
       .catch(() => {});
@@ -386,7 +386,7 @@ export default function Home() {
           padding: "8px 16px",
         }}
       >
-        Good morning. Take a little time for yourself.
+        Hello there. Take a little time for yourself.
       </p>
 
       {hiddenByTimeBudget.length > 0 && (
@@ -439,7 +439,7 @@ export default function Home() {
             textAlign: "center",
             fontFamily: "var(--font-hand), cursive",
             fontSize: 20,
-            color: deskSkin === "dark" ? "rgba(250,243,230,.7)" : "rgba(43,38,34,.6)",
+            color: deskSkin === "dark" || deskSkin === "green" ? "rgba(250,243,230,.7)" : "rgba(43,38,34,.6)",
             padding: mobile ? "24px 0 10px" : "56px 0 10px",
           }}
         >
@@ -455,7 +455,7 @@ export default function Home() {
             fontFamily: "var(--font-sans), sans-serif",
             fontSize: 12,
             lineHeight: 1.6,
-            color: deskSkin === "dark" ? "rgba(250,243,230,.5)" : "rgba(43,38,34,.5)",
+            color: deskSkin === "dark" || deskSkin === "green" ? "rgba(250,243,230,.5)" : "rgba(43,38,34,.5)",
           }}
         >
           <p>
@@ -539,7 +539,7 @@ export default function Home() {
         initialTimeBudget={timeBudget}
         onClose={() => setOnboardingOpen(false)}
         onSave={handleSaveOnboarding}
-        kicker={onboardingTrigger === "auto" ? (hasChosenInterests ? "Good morning" : "You're becoming a regular") : undefined}
+        kicker={onboardingTrigger === "auto" ? (hasChosenInterests ? "Hello there" : "You're becoming a regular") : undefined}
         title={onboardingTrigger === "auto" ? (hasChosenInterests ? "Still want more of this?" : "Want to make your Dilly yours?") : undefined}
       />
     </div>

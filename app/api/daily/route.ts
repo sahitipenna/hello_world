@@ -4,7 +4,7 @@ import { toISODate } from "@/lib/dateUtils";
 import { getOrCreateUser } from "@/lib/auth";
 import { getPromptEdits, getTodoChecks } from "@/lib/userOverlay";
 import { getUserWeights } from "@/lib/interests";
-import { DailyEditionResponse, EditionContent, EditionSection, Plan } from "@/lib/types";
+import { DailyEditionResponse, EditionSection, Plan } from "@/lib/types";
 import { isWithinFreeArchive } from "@/lib/archive";
 
 function isValidISODate(s: string): boolean {
@@ -56,10 +56,10 @@ export async function GET(req: NextRequest) {
       if (resolved?.kind === "do") {
         resolved = { ...resolved, tasks: resolved.tasks.map((t, i) => (promptEdits[i] ? { ...t, title: promptEdits[i] } : t)) };
       }
-      const locked = meta.premium && plan === "free";
-      if (!locked && plan === "free") {
-        resolved = applyFreeLimit(resolved, meta.freeCount);
-      }
+      // Every section is fully open to every visitor, regardless of plan —
+      // only the archive-date limit above still distinguishes free from
+      // premium. Section.premium/freeCount stay in the schema (admin can
+      // still see/set them) but no longer gate or truncate anything here.
       return {
         key: meta.key,
         eyebrow: meta.eyebrow,
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
         tagline: meta.tagline,
         premium: meta.premium,
         minTimeMinutes: meta.minTimeMinutes,
-        locked,
+        locked: false,
         content: resolved,
       };
     });
@@ -84,13 +84,4 @@ export async function GET(req: NextRequest) {
   };
 
   return NextResponse.json(response, { headers: { "Cache-Control": "private, no-store" } });
-}
-
-/** Free plan cap for multi-item sections (KNOW, DO), driven by
- * Section.freeCount — a row edit via /admin, not a code change. */
-function applyFreeLimit(content: EditionContent, freeCount: number | null): EditionContent {
-  if (!content || freeCount == null) return content;
-  if (content.kind === "know") return { ...content, items: content.items.slice(0, freeCount) };
-  if (content.kind === "do") return { ...content, tasks: content.tasks.slice(0, freeCount) };
-  return content;
 }

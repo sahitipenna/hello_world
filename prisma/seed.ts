@@ -56,6 +56,7 @@ const SECTIONS = [
   { key: "know", eyebrow: "KNOW", title: "5 things happening in the world", tagline: "a little more of what's going on, in about 5 minutes", order: 0, premium: false, enabled: true, minTimeMinutes: 5, freeCount: 3 },
   { key: "wonder", eyebrow: "WONDER", title: "Something you'll want to tell someone", tagline: "wait, really?", order: 6, premium: false, enabled: true, minTimeMinutes: 5, freeCount: null },
   { key: "do", eyebrow: "DO", title: "Five little things", tagline: "small, optional, and not about productivity", order: 7, premium: false, enabled: true, minTimeMinutes: 5, freeCount: 3 },
+  { key: "word", eyebrow: "WORD", title: "Word of the day", tagline: "one word worth knowing", order: 12, premium: false, enabled: true, minTimeMinutes: 5, freeCount: null },
   // Tier 2 (15 min) — worth sitting with for a minute or two each.
   { key: "look", eyebrow: "LOOK", title: "Artwork of the day", tagline: "one piece, looked at closely", order: 2, premium: false, enabled: true, minTimeMinutes: 15, freeCount: null },
   { key: "read", eyebrow: "READ", title: "A literary moment", tagline: "a short excerpt to sit with", order: 3, premium: false, enabled: true, minTimeMinutes: 15, freeCount: null },
@@ -168,6 +169,34 @@ const WONDERS = [
   { title: "India has no single national language", body: "India's constitution designates Hindi and English as official languages for government use, but names no single \"national language\" among the 22 scheduled languages — a deliberate choice reflecting the scale of the country's linguistic diversity.", category: "indian_culture" },
   { title: "Table tennis started as an after-dinner game", body: "Table tennis began in Victorian England as a parlor game for the upper class, played after dinner on the dining table itself — early sets used cigar box lids as paddles and a carved-off champagne cork as a ball.", category: "sports" },
   { title: "Some languages have no word for the color blue", body: "Several ancient languages, including Homeric Greek, had no distinct word for blue, describing the sea instead as \"wine-dark\" — a gap that shows up across unrelated ancient languages and has shaped decades of research into how language affects color perception.", category: "linguistics" },
+];
+
+// ---------------------------------------------------------------------------
+// WORD OF THE DAY — one word worth knowing: pronunciation, part of speech,
+// a real definition, and an example sentence that actually uses it. One
+// per interest tag, same standard the other pools were brought up to.
+// ---------------------------------------------------------------------------
+const WORDS_OF_DAY = [
+  { word: "Verisimilitude", pronunciation: "vair-uh-sim-uh-LOO-tihd", partOfSpeech: "noun", definition: "The appearance of being true or real.", example: "The novel's dialogue has a verisimilitude that makes the characters feel like real people.", category: "literature" },
+  { word: "Pentimento", pronunciation: "pen-tuh-MEN-toh", partOfSpeech: "noun", definition: "A visible trace of an earlier painting beneath a layer of paint, usually appearing as the top layer fades with age.", example: "Conservators found a pentimento beneath the portrait — the artist had originally painted the sitter's hand in a different position.", category: "art" },
+  { word: "Entropy", pronunciation: "EN-truh-pee", partOfSpeech: "noun", definition: "A measure of disorder or randomness in a system; loosely, a tendency toward gradual decline into disorder.", example: "Without regular upkeep, entropy slowly wins and the garden returns to wilderness.", category: "science" },
+  { word: "Ineffable", pronunciation: "in-EF-uh-bul", partOfSpeech: "adjective", definition: "Too great or extreme to be expressed or described in words.", example: "There was something ineffable about the view from the summit that no photograph could capture.", category: "philosophy" },
+  { word: "Confabulation", pronunciation: "kon-fab-yuh-LAY-shun", partOfSpeech: "noun", definition: "The unintentional production of fabricated or distorted memories, without any intent to deceive.", example: "Memory researchers study confabulation to understand how confidently people can misremember events that never happened.", category: "psychology" },
+  { word: "Leitmotif", pronunciation: "LYT-moh-teef", partOfSpeech: "noun", definition: "A recurring musical theme associated with a particular character, place, or idea.", example: "The composer gave the villain his own leitmotif, a low brass phrase that returns every time he's on screen.", category: "music" },
+  { word: "Cantilever", pronunciation: "KAN-tuh-lee-ver", partOfSpeech: "noun", definition: "A long projecting structure, such as a beam, supported at only one end.", example: "The museum's upper floor is a cantilever that appears to float above the entrance with no visible support.", category: "architecture" },
+  { word: "Umami", pronunciation: "oo-MAH-mee", partOfSpeech: "noun", definition: "A pleasant savory taste, considered the fifth basic taste alongside sweet, sour, salty, and bitter.", example: "Aged parmesan and soy sauce both deliver a deep umami flavor that rounds out a dish.", category: "food" },
+  { word: "Wanderlust", pronunciation: "WON-der-lust", partOfSpeech: "noun", definition: "A strong, innate desire to travel and explore the world.", example: "A single summer backpacking through Europe was enough to give her a permanent case of wanderlust.", category: "travel" },
+  { word: "Zeitgeist", pronunciation: "TSYT-gyst", partOfSpeech: "noun", definition: "The defining spirit or mood of a particular period in history, as reflected in its ideas and culture.", example: "The film captured the anxious zeitgeist of the early internet era better than any history book.", category: "history" },
+  { word: "Skeuomorph", pronunciation: "SKYOO-uh-morf", partOfSpeech: "noun", definition: "A design element that imitates the ornamental features of a similar object made from another material, even once it's no longer functionally necessary.", example: "The old calculator app's leather-stitched border was a skeuomorph, a nod to physical notebooks nobody under thirty had actually used.", category: "design" },
+  { word: "Heuristic", pronunciation: "hyoo-RIS-tik", partOfSpeech: "adjective", definition: "Enabling someone to discover or solve a problem through practical methods, not guaranteed to be optimal or perfect.", example: "Rather than checking every possible move, the program uses a heuristic to quickly find a good-enough answer.", category: "technology" },
+  { word: "Petrichor", pronunciation: "PET-rih-kor", partOfSpeech: "noun", definition: "The pleasant, earthy smell that accompanies the first rain after a long dry spell.", example: "The petrichor rising off the hot pavement was the first sign the drought had finally broken.", category: "nature" },
+  { word: "Diegetic", pronunciation: "dy-uh-JET-ik", partOfSpeech: "adjective", definition: "Describes sound in a film that originates from a source within the story's own world, audible to the characters themselves.", example: "The radio playing in the background of the scene is diegetic — the characters can hear it too, unlike the score.", category: "film" },
+  { word: "Caesura", pronunciation: "sih-ZHOOR-uh", partOfSpeech: "noun", definition: "A deliberate pause or break within a line of poetry, often marked by punctuation.", example: "The caesura right at the line's midpoint forces the reader to stop, exactly where the poem wants the silence to land.", category: "poetry" },
+  { word: "Bibliophile", pronunciation: "BIB-lee-oh-fyl", partOfSpeech: "noun", definition: "A person who loves books, especially for their content, physical qualities, or history.", example: "Only a true bibliophile would drive three hours for a used bookstore's closing sale.", category: "books" },
+  { word: "Hygge", pronunciation: "HOO-guh", partOfSpeech: "noun", definition: "A Danish concept of cozy contentment and well-being, often associated with warmth, simplicity, and togetherness.", example: "Thick socks, candlelight, and a pot of tea — the whole evening was pure hygge.", category: "world_culture" },
+  { word: "Jugaad", pronunciation: "joo-GAAD", partOfSpeech: "noun", definition: "A flexible, resourceful approach to problem-solving that makes do with limited means — a Hindi term now used more broadly.", example: "With no spare part in sight, he rigged a jugaad fix from a bicycle chain and a rubber band.", category: "indian_culture" },
+  { word: "Peloton", pronunciation: "PEL-uh-tahn", partOfSpeech: "noun", definition: "The main pack of riders in a cycling race, who conserve energy by riding close together.", example: "She broke away from the peloton on the final climb and never looked back.", category: "sports" },
+  { word: "Onomatopoeia", pronunciation: "on-uh-mat-uh-PEE-uh", partOfSpeech: "noun", definition: "A word that phonetically imitates or suggests the sound it describes, like “buzz” or “sizzle.”", example: "Comic books lean hard on onomatopoeia — “pow,” “crash,” and “boom” do a lot of the storytelling.", category: "linguistics" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -288,6 +317,10 @@ async function main() {
 
   for (const [i, w] of WONDERS.entries()) {
     await prisma.wonder.upsert({ where: { id: `wonder-${i}` }, update: w, create: { id: `wonder-${i}`, ...w } });
+  }
+
+  for (const [i, w] of WORDS_OF_DAY.entries()) {
+    await prisma.wordOfDay.upsert({ where: { id: `word-${i}` }, update: w, create: { id: `word-${i}`, ...w } });
   }
 
   for (const [i, a] of ART_SPOTLIGHT.entries()) {
@@ -416,6 +449,7 @@ async function main() {
       `${SECTIONS.length} sections`,
       `${NEWS_ITEMS.length} news items`,
       `${WONDERS.length} wonders`,
+      `${WORDS_OF_DAY.length} words of the day`,
       `${ART_SPOTLIGHT.length} artworks`,
       `${POEMS.length} literary items`,
       `${TRAVEL_VIGNETTES.length} travel items`,

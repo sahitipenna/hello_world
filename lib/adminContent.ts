@@ -138,6 +138,21 @@ const CONTENT_TYPES: ContentTypeDef[] = [
     ],
   },
   {
+    slug: "word",
+    label: "Words of the day",
+    sectionKey: "word",
+    delegate: prisma.wordOfDay,
+    fields: [
+      { key: "word", label: "Word", kind: "text", required: true },
+      { key: "pronunciation", label: "Pronunciation", kind: "text" },
+      { key: "partOfSpeech", label: "Part of speech", kind: "text" },
+      { key: "definition", label: "Definition", kind: "textarea", required: true },
+      { key: "example", label: "Example sentence", kind: "textarea" },
+      { key: "category", label: "Category", kind: "text" },
+      { key: "scheduledDate", label: "Scheduled date", kind: "date" },
+    ],
+  },
+  {
     slug: "task",
     label: "Little things to do",
     sectionKey: "do",

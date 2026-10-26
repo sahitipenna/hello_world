@@ -1,13 +1,13 @@
 import { prisma } from "./db";
 
-export const BOOKMARKABLE_TYPES = ["news", "artwork", "literary", "travel", "book", "wonder"] as const;
+export const BOOKMARKABLE_TYPES = ["news", "artwork", "literary", "travel", "book", "wonder", "word"] as const;
 export type BookmarkableType = (typeof BOOKMARKABLE_TYPES)[number];
 
 export function isBookmarkableType(v: unknown): v is BookmarkableType {
   return typeof v === "string" && (BOOKMARKABLE_TYPES as readonly string[]).includes(v);
 }
 
-/** Looks up a single content row's `category` — the same six types
+/** Looks up a single content row's `category` — the same types
  * Bookmark.contentType covers. Shared by the two places a visitor's
  * behavior (not just their onboarding picks) feeds back into
  * personalization: saving something (app/api/bookmarks) and viewing a
@@ -29,6 +29,8 @@ export async function resolveContentCategory(contentType: string, contentId: str
       return (await prisma.book.findUnique({ where: { id: contentId }, select: { category: true } }))?.category ?? null;
     case "wonder":
       return (await prisma.wonder.findUnique({ where: { id: contentId }, select: { category: true } }))?.category ?? null;
+    case "word":
+      return (await prisma.wordOfDay.findUnique({ where: { id: contentId }, select: { category: true } }))?.category ?? null;
   }
 }
 
