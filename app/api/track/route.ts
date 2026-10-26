@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOrCreateUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { isBookmarkableType, resolveContentCategory, bumpCategoryEngagement } from "@/lib/contentLookup";
 
-const VALID_TYPES = new Set(["panel_open", "bookmark_add", "quiz_complete", "session_time"]);
+const VALID_TYPES = new Set(["panel_open", "bookmark_add", "quiz_complete", "session_time", "content_view"]);
 
 /** Receives lib/track.ts's beacons and writes one UsageEvent row. No
  * response body worth reading — the caller (sendBeacon, mostly) never
@@ -21,5 +22,19 @@ export async function POST(req: NextRequest) {
     typeof body.valueMs === "number" && Number.isFinite(body.valueMs) ? Math.max(0, Math.round(body.valueMs)) : null;
 
   await prisma.usageEvent.create({ data: { userId: user.id, type: body.type, key, valueMs } }).catch(() => {});
+
+  // "content_view" is fired (see lib/track.ts's callers) when a single-item
+  // section's panel opens — the only case where opening it unambiguously
+  // means viewing that one piece of content, so it's a weaker but real
+  // companion to the save signal above: key is "contentType:contentId",
+  // the same shape a bookmark uses.
+  if (body.type === "content_view" && key) {
+    const [contentType, contentId] = key.split(":");
+    if (isBookmarkableType(contentType) && contentId) {
+      const category = await resolveContentCategory(contentType, contentId);
+      await bumpCategoryEngagement(user.id, category);
+    }
+  }
+
   return NextResponse.json({ ok: true });
 }

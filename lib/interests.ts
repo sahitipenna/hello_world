@@ -14,9 +14,13 @@ const ENGAGEMENT_WEIGHT_CAP = 3;
  * Weights every content picker uses to favor a visitor's interests (see
  * lib/personalize.ts). Two blended sources, both additive on top of the
  * uniform default of 1: interests chosen at onboarding (fixed weight), and
- * an adaptive signal from actually checking off DO tasks (grows with use,
- * capped) — so the edition can drift toward what a visitor demonstrably
- * engages with, not just what they said they liked once at signup.
+ * an adaptive CategoryEngagement signal (grows with use, capped) — so the
+ * edition can drift toward what a visitor demonstrably engages with, not
+ * just what they said they liked once at signup. That adaptive signal now
+ * has three sources feeding the same table/cap (see lib/contentLookup.ts):
+ * checking off a DO task, saving something, and opening a single-item
+ * section (an unambiguous "viewed this" — know/do's multi-item panels
+ * don't bump it, only the save buttons inside them do).
  */
 export async function getUserWeights(userId: string): Promise<Record<string, number>> {
   const [interestRows, engagementRows] = await Promise.all([

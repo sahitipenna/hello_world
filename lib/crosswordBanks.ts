@@ -746,4 +746,21 @@ export const CROSSWORD_THEMES: CrosswordTheme[] = [
       { word: "BINDER", clue: "The substance that holds pigment particles together in paint" },
     ],
   },
+  {
+    id: "mother-tongue",
+    title: "Mother Tongue",
+    category: "linguistics",
+    words: [
+      { word: "DIALECT", clue: "A regional variation of a language" },
+      { word: "SYNTAX", clue: "The rules for how words combine into sentences" },
+      { word: "PHONEME", clue: "The smallest unit of distinct sound in speech" },
+      { word: "GRAMMAR", clue: "The structural rules of a language" },
+      { word: "ACCENT", clue: "How pronunciation marks you as from somewhere" },
+      { word: "IDIOM", clue: "A phrase that means more than its literal words" },
+      { word: "VOWEL", clue: "A, E, I, O, or U, typically" },
+      { word: "FLUENT", clue: "Speaking a language easily and naturally" },
+      { word: "SLANG", clue: "Very informal, often short-lived vocabulary" },
+      { word: "ETYMOLOGY", clue: "The study of where a word came from" },
+    ],
+  },
 ];

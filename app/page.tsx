@@ -8,7 +8,7 @@ import { toISODate, dayOfYear, parseISODate } from "@/lib/dateUtils";
 import DeskHeader from "@/components/desk/DeskHeader";
 import DeskSurface from "@/components/desk/DeskSurface";
 import DeskScene from "@/components/desk/DeskScene";
-import DeskPanel from "@/components/desk/DeskPanel";
+import DeskPanel, { bookmarkTarget } from "@/components/desk/DeskPanel";
 import ArrangeDeskCard from "@/components/desk/ArrangeDeskCard";
 import { useDeskWidth } from "@/components/desk/useDeskWidth";
 import { identifyVisitor } from "@/components/PostHogProvider";
@@ -22,8 +22,11 @@ import OnboardingModal from "@/components/OnboardingModal";
 import NotifyMeButton from "@/components/NotifyMeButton";
 import LandingGate from "@/components/LandingGate";
 import ShelfModal, { ShelfItem } from "@/components/ShelfModal";
+import AccountModal from "@/components/AccountModal";
+import SettingsModal from "@/components/SettingsModal";
 
 const LANDING_SEEN_KEY = "godilly-started";
+const ONBOARDING_DAILY_KEY = "godilly-interests-shown-date";
 
 interface Tag {
   id: string;
@@ -63,6 +66,8 @@ export default function Home() {
   const [shelfOpen, setShelfOpen] = useState(false);
   const [googleConfigured, setGoogleConfigured] = useState(false);
   const [saveSignInOpen, setSaveSignInOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const savedKeys = new Set(savedItems.map((it) => `${it.contentType}:${it.contentId}`));
 
   const { ref: rootRef, width } = useDeskWidth();
@@ -121,16 +126,25 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  // Invite personalization once someone's a few visits in, per the product
-  // loop: don't ask for commitment before they've experienced the magic.
-  // Deliberately NOT on first visit — see the removed `if (!d.hasChosen)`
-  // auto-open this used to do above.
+  // Interests pops open on the first visit of each calendar day, for
+  // everyone — not just visitors who haven't chosen yet. The localStorage
+  // flag below is keyed to today's date, so it fires once per day (not on
+  // every reload) and fires again tomorrow. It opens even behind the
+  // landing gate (z-index 100 vs. this modal's z-50 — see LandingGate.tsx)
+  // on a brand-new visitor's very first load: harmless, since the gate
+  // fully covers it until dismissed, and it's then already open the moment
+  // they land on the desk, which is the point.
   useEffect(() => {
-    if (hasChosenInterests === false && visitCount >= 3) {
-      setOnboardingTrigger("auto");
-      setOnboardingOpen(true);
+    if (!dateISO || hasChosenInterests === null) return;
+    try {
+      if (localStorage.getItem(ONBOARDING_DAILY_KEY) === dateISO) return;
+      localStorage.setItem(ONBOARDING_DAILY_KEY, dateISO);
+    } catch {
+      return;
     }
-  }, [hasChosenInterests, visitCount]);
+    setOnboardingTrigger("auto");
+    setOnboardingOpen(true);
+  }, [dateISO, hasChosenInterests]);
 
   function dismissLandingGate() {
     try {
@@ -298,6 +312,14 @@ export default function Home() {
     setActiveKey(key);
     markVisited(key);
     track("panel_open", key);
+    // A single-item section's panel opening unambiguously means viewing
+    // that one piece of content — feed it into personalization the same
+    // way a save does (see app/api/track's "content_view" handling).
+    // bookmarkTarget returns null for multi-item (know/do) and
+    // non-bookmarkable (play/quiz) kinds, so this is a no-op for those.
+    const content = bundle?.sections.find((s) => s.key === key)?.content;
+    const target = content && bookmarkTarget(content);
+    if (target) track("content_view", `${target.contentType}:${target.contentId}`);
   }
 
   function openSide(id: string) {
@@ -342,11 +364,12 @@ export default function Home() {
           setOnboardingOpen(true);
         }}
         onOpenArrange={openArrange}
-        onOpenUpgrade={() => setUpgradeOpen(true)}
         onOpenShelf={() => setShelfOpen(true)}
         shelfCount={savedItems.length}
         user={viewer}
         onSignOut={handleSignOut}
+        onOpenAccount={() => setAccountOpen(true)}
+        onOpenSettings={() => setSettingsOpen(true)}
         mobile={mobile}
         wide={wide}
       />
@@ -486,6 +509,8 @@ export default function Home() {
         items={savedItems}
         onClose={() => setShelfOpen(false)}
         onRemove={toggleBookmark}
+        viewer={viewer}
+        googleConfigured={googleConfigured}
       />
 
       <UpgradeModal
@@ -496,6 +521,17 @@ export default function Home() {
         price={premiumPrice}
       />
       <SaveSignInPrompt open={saveSignInOpen} onClose={() => setSaveSignInOpen(false)} />
+      {viewer && (
+        <AccountModal
+          open={accountOpen}
+          onClose={() => setAccountOpen(false)}
+          user={viewer}
+          plan={plan}
+          onOpenUpgrade={() => setUpgradeOpen(true)}
+          onSignOut={handleSignOut}
+        />
+      )}
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} user={viewer} />
       <OnboardingModal
         open={onboardingOpen}
         tags={tags}
@@ -503,8 +539,8 @@ export default function Home() {
         initialTimeBudget={timeBudget}
         onClose={() => setOnboardingOpen(false)}
         onSave={handleSaveOnboarding}
-        kicker={onboardingTrigger === "auto" ? "You're becoming a regular" : undefined}
-        title={onboardingTrigger === "auto" ? "Want to make your Dilly yours?" : undefined}
+        kicker={onboardingTrigger === "auto" ? (hasChosenInterests ? "Good morning" : "You're becoming a regular") : undefined}
+        title={onboardingTrigger === "auto" ? (hasChosenInterests ? "Still want more of this?" : "Want to make your Dilly yours?") : undefined}
       />
     </div>
   );
