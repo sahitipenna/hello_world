@@ -13,28 +13,18 @@ export default function PenIllustration() {
           <stop offset="1" stopColor="#1f3650" />
         </linearGradient>
       </defs>
-      {/* a small flashcard, slightly tilted */}
-      <g transform="rotate(-4 47 58)">
-        <rect x="9" y="18" width="76" height="76" rx="3" fill="#e8d7a8" />
-        <rect x="7" y="15" width="76" height="76" rx="3" fill="#fbf1d2" />
-        <text x="45" y="62" textAnchor="middle" fontFamily="Spectral, serif" fontStyle="italic" fontSize="34" fontWeight="600" fill="#2d4a63">
-          Aa
-        </text>
-        <path d="M20 76 H70" stroke="#c9b98a" strokeWidth="1.4" />
-        <path d="M20 84 H58" stroke="#c9b98a" strokeWidth="1.4" />
+      {/* a fountain pen, resting at a natural diagonal */}
+      <g transform="rotate(22 47 95)">
+        <rect x="40" y="18" width="14" height="128" rx="7" fill={`url(#${u}body)`} />
+        <rect x="41.6" y="22" width="2.4" height="118" rx="1.2" fill="#6b8bab" opacity=".55" />
+        <rect x="38.5" y="4" width="18" height="20" rx="4" fill="#1f3650" />
+        <rect x="46" y="4" width="2.4" height="48" fill="#d9a02c" opacity=".9" />
+        <path d="M40 146 L54 146 L47 178Z" fill="#d9a02c" />
+        <path d="M44.5 150 L47 176 L49.5 150Z" fill="#1f3650" />
+        <circle cx="47" cy="172" r="1.6" fill="#1f3650" />
       </g>
-      {/* the pen, crossing the card diagonally */}
-      <g transform="rotate(38 47 140)">
-        <rect x="40" y="58" width="13" height="108" rx="6" fill={`url(#${u}body)`} />
-        <rect x="41.5" y="60" width="2.2" height="104" rx="1" fill="#6b8bab" opacity=".55" />
-        <path d="M40 166 L53 166 L46.5 190Z" fill="#d9a02c" />
-        <circle cx="46.5" cy="186" r="1.6" fill="#1f3650" />
-        <rect x="38.5" y="50" width="16" height="12" rx="3" fill="#1f3650" />
-        <rect x="42" y="40" width="9" height="12" rx="2.5" fill="#1f3650" />
-        <rect x="43.5" y="34" width="6" height="8" rx="2" fill="#2d4a63" />
-      </g>
-      {/* a small flourish of ink, like a just-finished underline */}
-      <path d="M12 118 q14 10 30 2" stroke="#2d4a63" strokeWidth="2" fill="none" strokeLinecap="round" opacity=".55" />
+      {/* a small flourish of ink beneath the nib */}
+      <path d="M18 150 q18 14 38 4" stroke="#2d4a63" strokeWidth="2" fill="none" strokeLinecap="round" opacity=".45" />
     </svg>
   );
 }
