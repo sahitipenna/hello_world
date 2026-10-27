@@ -117,6 +117,11 @@ const DECOR_ASPECT: Record<string, number> = {
 
 const FLOW_ROTATIONS = [-3, 2.5, -2, 3, -3.5, 2, -2.5, 3.5];
 
+// Scales a mobile card down within the slot its row/pair would otherwise
+// give it, re-centered in that slot — word's narrow pen card reads as
+// oversized at a normal column width on small screens.
+const MOBILE_WIDTH_SCALE: Record<string, number> = { word: 0.6 };
+
 /** Generates the two-column mobile "table" from whichever section keys are
  * actually visible (pairing them two at a time, in order, with
  * WIDE_MOBILE_KEYS spanning alone), with the side-object decor spread
@@ -140,8 +145,11 @@ export function mobileFlowLayout(
     return Math.round(w / aspect);
   }
   function place(key: string, x: number, w: number, rowY: number) {
-    const h = heightFor(key, w);
-    items[key] = [x, rowY, w, h, FLOW_ROTATIONS[i % FLOW_ROTATIONS.length], 3];
+    const scale = MOBILE_WIDTH_SCALE[key] ?? 1;
+    const scaledW = Math.round(w * scale);
+    const scaledX = x + Math.round((w - scaledW) / 2);
+    const h = heightFor(key, scaledW);
+    items[key] = [scaledX, rowY, scaledW, h, FLOW_ROTATIONS[i % FLOW_ROTATIONS.length], 3];
     i++;
     return h;
   }
