@@ -389,6 +389,24 @@ export default function Home() {
         Hello there. Take a little time for yourself.
       </p>
 
+      {showStartHint && (
+        <p
+          style={{
+            flex: "none",
+            textAlign: "center",
+            fontFamily: "var(--font-serif), serif",
+            fontStyle: "italic",
+            fontSize: 13,
+            color: "rgba(250,243,230,.6)",
+            background: "#2b2622",
+            margin: 0,
+            padding: "0 16px 8px",
+          }}
+        >
+          Each item on this desk tells you something that will pique your interest.
+        </p>
+      )}
+
       {hiddenByTimeBudget.length > 0 && (
         <p
           style={{
