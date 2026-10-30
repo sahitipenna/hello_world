@@ -1,4 +1,4 @@
-import { EditionSection } from "./types";
+import { EditionSection, SideObject } from "./types";
 
 export type RootStackParamList = {
   Home: undefined;
@@ -7,4 +7,5 @@ export type RootStackParamList = {
   Onboarding: { auto?: boolean } | undefined;
   Shelf: undefined;
   Arrange: undefined;
+  Decor: { object: SideObject };
 };

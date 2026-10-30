@@ -136,6 +136,22 @@ export interface EditionSection extends SectionMeta {
   content: EditionContent;
 }
 
+/** "On the side" objects — decor that's also clickable but isn't a real
+ * section: small, real-life-proportioned, rotates through a content
+ * pool by date server-side. Matches lib/deskLayout.ts's SideObject. */
+export interface SideObject {
+  id: string;
+  label: string;
+  description: string;
+  accent: string;
+  title: string;
+  sub: string;
+  body: string;
+  note: string;
+  url?: string;
+  linkLabel?: string;
+}
+
 export interface DailyEditionResponse {
   dateISO: string;
   dayOfYear: number;
@@ -143,6 +159,7 @@ export interface DailyEditionResponse {
   plan: "free" | "premium";
   timeBudgetMinutes: number | null;
   sections: EditionSection[];
+  sideObjects: SideObject[];
   todoChecks: Record<number, boolean>;
   archiveLocked?: boolean;
 }

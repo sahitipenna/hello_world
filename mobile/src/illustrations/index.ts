@@ -9,6 +9,10 @@ import FactIllustration from "./FactIllustration";
 import TodoIllustration from "./TodoIllustration";
 import QuizIllustration from "./QuizIllustration";
 import PenIllustration from "./PenIllustration";
+import MugIllustration from "./MugIllustration";
+import PlantIllustration from "./PlantIllustration";
+import HeadphonesIllustration from "./HeadphonesIllustration";
+import AppleIllustration from "./AppleIllustration";
 
 // Ported by hand from lib/deskLayout.ts's DESK_ART / MOBILE_ASPECT on web
 // — keep these two in sync if a section's illustration or aspect ratio
@@ -24,6 +28,23 @@ export const SECTION_ILLUSTRATION: Record<string, ComponentType<Record<string, u
   do: TodoIllustration,
   quiz: QuizIllustration,
   word: PenIllustration,
+};
+
+// The four "on the side" desk objects — decor that's also tappable, but
+// isn't a real section: small, real-life-proportioned, not a content
+// card. See lib/deskLayout.ts's DECOR_ART / DECOR_ASPECT on web.
+export const DECOR_ILLUSTRATION: Record<string, ComponentType> = {
+  mug: MugIllustration,
+  plant: PlantIllustration,
+  headphones: HeadphonesIllustration,
+  apple: AppleIllustration,
+};
+
+export const DECOR_ASPECT: Record<string, number> = {
+  mug: 1,
+  plant: 1,
+  headphones: 150 / 130,
+  apple: 90 / 95,
 };
 
 export const SECTION_ASPECT: Record<string, number> = {

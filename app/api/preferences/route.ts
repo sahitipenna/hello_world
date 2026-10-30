@@ -101,7 +101,7 @@ export async function PATCH(req: NextRequest) {
   if (body.timeBudgetMinutes === null || VALID_TIME_BUDGETS.includes(body.timeBudgetMinutes)) {
     data.timeBudgetMinutes = body.timeBudgetMinutes;
   }
-  if (["dark", "light", "white"].includes(body.deskSkin)) {
+  if (["dark", "light", "white", "green"].includes(body.deskSkin)) {
     data.deskSkin = body.deskSkin;
   }
 
