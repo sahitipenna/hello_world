@@ -14,6 +14,7 @@ import QuizScreen from "./src/screens/QuizScreen";
 import OnboardingScreen from "./src/screens/OnboardingScreen";
 import ShelfScreen from "./src/screens/ShelfScreen";
 import ArrangeDeskScreen from "./src/screens/ArrangeDeskScreen";
+import DecorScreen from "./src/screens/DecorScreen";
 import { hasAnsweredToday } from "./src/lib/dailyPrompt";
 import { colors, fonts } from "./src/theme";
 import type { RootStackParamList } from "./src/navigation";
@@ -114,6 +115,7 @@ export default function App() {
           />
           <Stack.Screen name="Shelf" component={ShelfScreen} options={{ title: "Your shelf" }} />
           <Stack.Screen name="Arrange" component={ArrangeDeskScreen} options={{ title: "Arrange your desk" }} />
+          <Stack.Screen name="Decor" component={DecorScreen} options={({ route }) => ({ title: route.params.object.label })} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>

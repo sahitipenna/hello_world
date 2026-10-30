@@ -22,6 +22,15 @@ const NARROW_WIDTH = "46%";
 const WIDE_WIDTH = "78%";
 const ROTATIONS = [-3, 2.5, -2, 3, -3.5, 2];
 
+// The pen's native art is a tall 95x190 (1:2) card — at the same WIDTH
+// as a squarer card like "do" (140x165) it ends up roughly twice as
+// tall, reading as oversized even though the width matches. Same fix
+// web's mobile layout already applies (lib/deskLayout.ts's
+// MOBILE_WIDTH_SCALE): shrink its width specifically, centered within
+// whatever slot it would otherwise get, which shrinks its height to
+// match since the aspect ratio stays fixed.
+const CARD_WIDTH_SCALE: Record<string, number> = { word: 0.6 };
+
 function illustrationProps(section: EditionSection): Record<string, unknown> | undefined {
   return section.key === "readnext" && section.content?.kind === "readnext" ? { title: section.content.book.title } : undefined;
 }
@@ -178,16 +187,20 @@ export default function HomeScreen({ navigation }: Props) {
                 const slotStyle =
                   sections.length === 1 ? { width: rowIsWide ? WIDE_WIDTH : NARROW_WIDTH } : styles.slotHalf;
                 const rotateDeg = ROTATIONS[rotationIndex++ % ROTATIONS.length];
+                const scale = CARD_WIDTH_SCALE[section.key];
+                const card = (
+                  <DeskCard
+                    label={section.title}
+                    visited={visited.has(section.key)}
+                    rotateDeg={rotateDeg}
+                    aspectRatio={SECTION_ASPECT[section.key] ?? 1}
+                    illustration={<Illustration {...illustrationProps(section)} />}
+                    onPress={() => openSection(section)}
+                  />
+                );
                 return (
                   <View key={section.key} style={slotStyle}>
-                    <DeskCard
-                      label={section.title}
-                      visited={visited.has(section.key)}
-                      rotateDeg={rotateDeg}
-                      aspectRatio={SECTION_ASPECT[section.key] ?? 1}
-                      illustration={<Illustration {...illustrationProps(section)} />}
-                      onPress={() => openSection(section)}
-                    />
+                    {scale ? <View style={{ width: `${scale * 100}%`, alignSelf: "center" }}>{card}</View> : card}
                   </View>
                 );
               })}
@@ -206,8 +219,8 @@ export default function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { padding: 20, paddingBottom: 48 },
-  wordmark: { fontFamily: fonts.hand, fontSize: 34, color: colors.ink, marginBottom: 4 },
-  greeting: { fontFamily: fonts.sans, fontSize: 13, marginBottom: 24 },
+  wordmark: { fontFamily: fonts.hand, fontSize: 34, color: colors.ink, marginBottom: 4, textAlign: "center" },
+  greeting: { fontFamily: fonts.sans, fontSize: 13, marginBottom: 24, textAlign: "center" },
   textLight: { color: colors.paper },
   textLightMuted: { color: "rgba(250,243,230,.75)" },
   textDarkMuted: { color: "rgba(43,38,34,.65)" },

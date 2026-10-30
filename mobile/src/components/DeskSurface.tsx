@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
+import { ReactNode, useState } from "react";
+import { LayoutChangeEvent, StyleSheet, View } from "react-native";
 import Svg, { Defs, Pattern, RadialGradient, Rect, Stop } from "react-native-svg";
 import { DESK_SKIN_COLOR, DeskSkin } from "../lib/deskPrefs";
 
@@ -14,11 +14,23 @@ const VIGNETTE_OPACITY: Record<DeskSkin, number> = { dark: 0.4, light: 0.26, whi
 const GRAIN_SKINS = new Set<DeskSkin>(["dark", "light"]);
 
 export default function DeskSurface({ skin, children }: { skin: DeskSkin; children: ReactNode }) {
+  // react-native-svg's percentage width/height on the root <Svg> resolve
+  // against the viewport at mount time, not the full scrollable content
+  // height that grows in afterward -- which is why the texture used to
+  // cut off partway down. Measuring the wrapper's own laid-out size and
+  // feeding it in as explicit numbers avoids that entirely.
+  const [size, setSize] = useState({ width: 0, height: 0 });
   const showGrain = GRAIN_SKINS.has(skin);
+
+  function onLayout(e: LayoutChangeEvent) {
+    const { width, height } = e.nativeEvent.layout;
+    setSize({ width, height });
+  }
+
   return (
-    <View style={[styles.wrap, { backgroundColor: DESK_SKIN_COLOR[skin] }]}>
-      {skin !== "green" && (
-        <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
+    <View style={[styles.wrap, { backgroundColor: DESK_SKIN_COLOR[skin] }]} onLayout={onLayout}>
+      {skin !== "green" && size.width > 0 && size.height > 0 && (
+        <Svg style={StyleSheet.absoluteFill} width={size.width} height={size.height}>
           <Defs>
             <RadialGradient id="hl" cx="10%" cy="0%" r="75%">
               <Stop offset="0" stopColor="#ffd696" stopOpacity={HIGHLIGHT_OPACITY[skin]} />
@@ -36,9 +48,9 @@ export default function DeskSurface({ skin, children }: { skin: DeskSkin; childr
               </Pattern>
             )}
           </Defs>
-          <Rect width="100%" height="100%" fill="url(#hl)" />
-          <Rect width="100%" height="100%" fill="url(#vg)" />
-          {showGrain && <Rect width="100%" height="100%" fill="url(#grain)" />}
+          <Rect width={size.width} height={size.height} fill="url(#hl)" />
+          <Rect width={size.width} height={size.height} fill="url(#vg)" />
+          {showGrain && <Rect width={size.width} height={size.height} fill="url(#grain)" />}
         </Svg>
       )}
       {children}
