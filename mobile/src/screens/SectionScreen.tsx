@@ -214,10 +214,10 @@ const styles = StyleSheet.create({
   },
   artImage: { width: "100%", height: "100%" },
   noImage: { fontFamily: fonts.sans, fontSize: 12, color: "rgba(43,38,34,.3)" },
-  noImageSmall: { fontFamily: fonts.sans, fontSize: 9, color: "rgba(43,38,34,.3)", textAlign: "center", paddingHorizontal: 4 },
+  noImageSmall: { fontFamily: fonts.sans, fontSize: 10.5, color: "rgba(43,38,34,.3)", textAlign: "center", paddingHorizontal: 4 },
   bookRow: { flexDirection: "row", gap: 14, marginBottom: 12 },
   bookCoverFrame: {
-    width: 64,
+    width: 108,
     aspectRatio: 2 / 3,
     backgroundColor: colors.paper2,
     borderRadius: 6,
