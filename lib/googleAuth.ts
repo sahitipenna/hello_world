@@ -1,11 +1,22 @@
 import { randomBytes } from "crypto";
+import { prisma } from "./db";
+import { mergeUserInto } from "./userMerge";
+import { setUserCookie } from "./auth";
 
 const AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const USERINFO_ENDPOINT = "https://www.googleapis.com/oauth2/v3/userinfo";
+const TOKENINFO_ENDPOINT = "https://oauth2.googleapis.com/tokeninfo";
 
 export function googleConfigured() {
   return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+}
+
+/** The iOS app's own OAuth client (type "iOS", no secret — a public
+ * native client, separate from the web client above) — set up once in
+ * Google Cloud Console for this app's bundle id, see mobile/README.md. */
+export function mobileGoogleConfigured() {
+  return Boolean(process.env.GOOGLE_IOS_CLIENT_ID);
 }
 
 export function generateState() {
@@ -65,4 +76,65 @@ export async function fetchGoogleProfile(code: string, origin: string): Promise<
   });
   if (!profileRes.ok) throw new Error(`Google userinfo fetch failed: ${profileRes.status}`);
   return profileRes.json();
+}
+
+/** Verifies an ID token the mobile app got directly from Google (native
+ * sign-in, no server round-trip for the OAuth dance itself — see
+ * app/api/auth/google/mobile/route.ts) and returns the same profile
+ * shape the web flow's code-exchange produces. Uses Google's tokeninfo
+ * endpoint rather than verifying the JWT signature ourselves, same
+ * simplicity tradeoff as fetchGoogleProfile's comment above — this
+ * endpoint validates signature/expiry server-side on Google's end, we
+ * just have to additionally check the audience ourselves. */
+export async function verifyMobileIdToken(idToken: string): Promise<GoogleProfile> {
+  const res = await fetch(`${TOKENINFO_ENDPOINT}?id_token=${encodeURIComponent(idToken)}`);
+  if (!res.ok) throw new Error(`Google tokeninfo fetch failed: ${res.status}`);
+  const claims = await res.json();
+  if (claims.aud !== process.env.GOOGLE_IOS_CLIENT_ID) {
+    throw new Error("ID token was not issued for this app");
+  }
+  return {
+    sub: claims.sub,
+    email: claims.email,
+    email_verified: claims.email_verified === "true" || claims.email_verified === true,
+    name: claims.name,
+    picture: claims.picture,
+  };
+}
+
+/** The actual "attach this Google identity to a visitor" logic, shared
+ * by the web redirect callback and the mobile JSON endpoint — only how
+ * each gets the verified GoogleProfile, and how each responds afterward
+ * (a redirect vs. a JSON body), differs between them. Switches this
+ * request's identity cookie to the resulting row itself when it
+ * changed, so neither caller needs its own cookies()-handling copy of
+ * that logic; returns the final user id either way. */
+export async function linkGoogleProfile(currentUserId: string, profile: GoogleProfile): Promise<string> {
+  if (!profile.email) throw new Error("Google profile has no email");
+
+  const existing = await prisma.user.findUnique({ where: { googleId: profile.sub } });
+
+  if (existing && existing.id !== currentUserId) {
+    await mergeUserInto(currentUserId, existing.id);
+    await setUserCookie(existing.id);
+    return existing.id;
+  }
+  if (!existing) {
+    try {
+      await prisma.user.update({
+        where: { id: currentUserId },
+        data: { googleId: profile.sub, email: profile.email, name: profile.name ?? null, image: profile.picture ?? null },
+      });
+    } catch {
+      // Race: another request linked this googleId/email between our
+      // check and this write. Fall back to whichever row now holds it.
+      const winner = await prisma.user.findUnique({ where: { googleId: profile.sub } });
+      if (winner && winner.id !== currentUserId) {
+        await mergeUserInto(currentUserId, winner.id);
+        await setUserCookie(winner.id);
+        return winner.id;
+      }
+    }
+  }
+  return currentUserId;
 }

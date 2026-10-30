@@ -3,7 +3,7 @@ import { getOrCreateUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getEnabledSections } from "@/lib/sections";
 import { SectionMeta } from "@/lib/types";
-import { googleConfigured } from "@/lib/googleAuth";
+import { googleConfigured, mobileGoogleConfigured } from "@/lib/googleAuth";
 
 function parseJsonArray(raw: string | null): string[] | null {
   if (!raw) return null;
@@ -59,6 +59,10 @@ export async function GET() {
       // sign-in link that 503s because Google isn't configured on this
       // deploy would be worse than not offering it at all.
       googleConfigured: googleConfigured(),
+      // Same idea, for the mobile app's native sign-in button — separate
+      // flag since it depends on a different env var (the iOS OAuth
+      // client id, not the web client/secret pair).
+      mobileGoogleConfigured: mobileGoogleConfigured(),
       // Distinct calendar days this visitor has been seen on (lib/auth.ts)
       // — drives the first-visit landing gate and the delayed invitation
       // to personalize after a few visits, see app/page.tsx.
