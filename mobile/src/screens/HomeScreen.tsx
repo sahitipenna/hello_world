@@ -29,7 +29,7 @@ const ROTATIONS = [-3, 2.5, -2, 3, -3.5, 2];
 // MOBILE_WIDTH_SCALE): shrink its width specifically, centered within
 // whatever slot it would otherwise get, which shrinks its height to
 // match since the aspect ratio stays fixed.
-const CARD_WIDTH_SCALE: Record<string, number> = { word: 0.6 };
+const CARD_WIDTH_SCALE: Record<string, number> = { word: 0.2 };
 
 function illustrationProps(section: EditionSection): Record<string, unknown> | undefined {
   return section.key === "readnext" && section.content?.kind === "readnext" ? { title: section.content.book.title } : undefined;
