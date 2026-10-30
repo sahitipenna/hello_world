@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { fetchInterests, fetchPreferences, saveInterests, Tag, updateTimeBudget } from "../api/interests";
+import { markAnsweredToday } from "../lib/dailyPrompt";
 import { colors, fonts } from "../theme";
 import type { RootStackParamList } from "../navigation";
 
@@ -13,7 +14,6 @@ export default function OnboardingScreen({ navigation, route }: Props) {
   const [tags, setTags] = useState<Tag[] | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [timeBudget, setTimeBudget] = useState<number | null>(null);
-  const [hasChosenBefore, setHasChosenBefore] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -21,7 +21,6 @@ export default function OnboardingScreen({ navigation, route }: Props) {
       .then(([interests, prefs]) => {
         setTags(interests.tags);
         setSelected(new Set(interests.selected));
-        setHasChosenBefore(interests.hasChosen);
         setTimeBudget(prefs.timeBudgetMinutes);
       })
       .catch(() => setTags([]));
@@ -36,6 +35,10 @@ export default function OnboardingScreen({ navigation, route }: Props) {
     });
   }
 
+  // Tapping either button — Save or Skip — counts as "answered" for
+  // today, same rule either way: don't show the prompt again until
+  // tomorrow. Backgrounding or force-quitting without tapping either
+  // never reaches here, so it's still unanswered next launch.
   async function save() {
     setSaving(true);
     try {
@@ -44,6 +47,7 @@ export default function OnboardingScreen({ navigation, route }: Props) {
       // The app still works with defaults even if this write failed —
       // worth retrying from the Interests screen rather than blocking here.
     } finally {
+      await markAnsweredToday();
       setSaving(false);
       if (route.params?.auto) {
         navigation.replace("Home");
@@ -57,9 +61,8 @@ export default function OnboardingScreen({ navigation, route }: Props) {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.kicker}>{hasChosenBefore ? "Your interests" : "You're becoming a regular"}</Text>
-      <Text style={styles.title}>Want to make your Dilly yours?</Text>
-      <Text style={styles.subtitle}>Pick what you'd like more of — we'll lean your edition that way. Change this anytime.</Text>
+      <Text style={styles.title}>What are you curious about today?</Text>
+      <Text style={styles.subtitle}>Pick what's pulling your attention right now — we'll lean today's Dilly that way.</Text>
 
       {!tags ? (
         <ActivityIndicator color={colors.ink} style={{ marginTop: 30 }} />
@@ -105,7 +108,6 @@ export default function OnboardingScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.paper },
   content: { padding: 20, paddingBottom: 48 },
-  kicker: { fontFamily: fonts.sansSemiBold, fontSize: 11, letterSpacing: 1.4, textTransform: "uppercase", color: colors.terracotta, marginBottom: 8 },
   title: { fontFamily: fonts.serifSemiBold, fontSize: 24, color: colors.ink, marginBottom: 8 },
   subtitle: { fontFamily: fonts.sans, fontSize: 13.5, color: colors.inkMuted, marginBottom: 16, lineHeight: 19 },
   sectionLabel: { fontFamily: fonts.serifSemiBold, fontSize: 17, color: colors.ink, marginTop: 10, marginBottom: 4 },

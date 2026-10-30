@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AppState, Text, TouchableOpacity, View } from "react-native";
+import { NavigationContainer, useNavigationContainerRef } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts as useHankenFonts, HankenGrotesk_400Regular, HankenGrotesk_500Medium, HankenGrotesk_600SemiBold } from "@expo-google-fonts/hanken-grotesk";
@@ -12,7 +12,7 @@ import HomeScreen from "./src/screens/HomeScreen";
 import SectionScreen from "./src/screens/SectionScreen";
 import QuizScreen from "./src/screens/QuizScreen";
 import OnboardingScreen from "./src/screens/OnboardingScreen";
-import { fetchInterests } from "./src/api/interests";
+import { hasAnsweredToday } from "./src/lib/dailyPrompt";
 import { colors, fonts } from "./src/theme";
 import type { RootStackParamList } from "./src/navigation";
 
@@ -24,21 +24,42 @@ export default function App() {
   const [hankenLoaded] = useHankenFonts({ HankenGrotesk_400Regular, HankenGrotesk_500Medium, HankenGrotesk_600SemiBold });
   const [spectralLoaded] = useSpectralFonts({ Spectral_400Regular, Spectral_400Regular_Italic, Spectral_500Medium, Spectral_600SemiBold });
   const [handLoaded] = useHandFonts({ LaBelleAurore_400Regular });
-  // Whether the very first screen should be the interest/time-budget
-  // picker — decided once, from whether this visitor has ever chosen
-  // interests before (same "hasChosen" the web app's auto-invite uses),
-  // not re-checked on every launch.
+  // Whether the very first screen should be the "what are you curious
+  // about today" prompt — once per day, decided from AsyncStorage (see
+  // src/lib/dailyPrompt.ts), not from the server's one-time "has ever
+  // chosen interests" flag.
   const [initialRoute, setInitialRoute] = useState<"Home" | "Onboarding" | null>(null);
+  const navigationRef = useNavigationContainerRef<RootStackParamList>();
 
   const fontsLoaded = hankenLoaded && spectralLoaded && handLoaded;
 
   useEffect(() => {
     if (!fontsLoaded) return;
-    fetchInterests()
-      .then((d) => setInitialRoute(d.hasChosen ? "Home" : "Onboarding"))
+    hasAnsweredToday()
+      .then((answered) => setInitialRoute(answered ? "Home" : "Onboarding"))
       .catch(() => setInitialRoute("Home"))
       .finally(() => SplashScreen.hideAsync().catch(() => {}));
   }, [fontsLoaded]);
+
+  // Catches the case where the app was never force-quit across a day
+  // boundary — a cold start only re-checks once, but resuming from the
+  // background should also re-offer the prompt the first time that
+  // happens on a new day. Skips it if some other screen (Section, Quiz)
+  // is already on top, so a resume mid-article doesn't yank the reader
+  // away from what they were doing.
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state !== "active") return;
+      hasAnsweredToday().then((answered) => {
+        if (answered) return;
+        const current = navigationRef.current?.getCurrentRoute()?.name;
+        if (current && current !== "Onboarding") {
+          navigationRef.current?.navigate("Onboarding", { auto: true });
+        }
+      });
+    });
+    return () => sub.remove();
+  }, [navigationRef]);
 
   const onLayout = useCallback(() => {}, []);
 
@@ -47,7 +68,7 @@ export default function App() {
   return (
     <View style={{ flex: 1 }} onLayout={onLayout}>
       <StatusBar style="light" />
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
         <Stack.Navigator
           initialRouteName={initialRoute}
           screenOptions={{
