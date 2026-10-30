@@ -1,23 +1,13 @@
 import { prisma } from "./db";
 import { QuizDifficulty } from "./types";
 
-const TIERS: QuizDifficulty[] = ["easy", "medium", "hard"];
-
-/** Easy is always unlocked; each further tier unlocks once the one before it is completed. */
+/** Easy and medium are open to anyone; hard unlocks once medium is completed. */
 export async function getUnlockedDifficulties(userId: string, genre: string): Promise<QuizDifficulty[]> {
   const completed = await prisma.quizProgress.findMany({
-    where: { userId, genre },
+    where: { userId, genre, difficulty: "medium" },
     select: { difficulty: true },
   });
-  const completedSet = new Set(completed.map((c) => c.difficulty));
-
-  const unlocked: QuizDifficulty[] = ["easy"];
-  for (let i = 1; i < TIERS.length; i++) {
-    if (completedSet.has(TIERS[i - 1])) {
-      unlocked.push(TIERS[i]);
-    } else {
-      break;
-    }
-  }
+  const unlocked: QuizDifficulty[] = ["easy", "medium"];
+  if (completed.length > 0) unlocked.push("hard");
   return unlocked;
 }
