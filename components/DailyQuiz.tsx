@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EditPencil from "./EditPencil";
 import { QuizDifficulty } from "@/lib/types";
 import { track } from "@/lib/track";
@@ -61,10 +61,24 @@ export default function DailyQuiz() {
   const [draftQ, setDraftQ] = useState("");
   const [draftA, setDraftA] = useState("");
   const [saving, setSaving] = useState(false);
+  const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     loadGenres();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
+    };
+  }, []);
+
+  function clearAutoAdvance() {
+    if (autoAdvanceTimer.current) {
+      clearTimeout(autoAdvanceTimer.current);
+      autoAdvanceTimer.current = null;
+    }
+  }
 
   function loadGenres() {
     fetch("/api/quiz/genres")
@@ -105,6 +119,7 @@ export default function DailyQuiz() {
   }
 
   function resetAnswerState() {
+    clearAutoAdvance();
     setTyped("");
     setChecked(false);
     setCorrect(false);
@@ -114,8 +129,18 @@ export default function DailyQuiz() {
   function checkAnswer() {
     if (!questions) return;
     const q = questions[current];
-    setCorrect(isLikelyCorrect(typed, q.answer));
+    const isCorrect = isLikelyCorrect(typed, q.answer);
+    setCorrect(isCorrect);
     setChecked(true);
+    clearAutoAdvance();
+    if (isCorrect) {
+      // Brief pause so "Correct!" is visible before moving on — a wrong
+      // answer instead reveals the right one and waits for Next.
+      autoAdvanceTimer.current = setTimeout(() => {
+        autoAdvanceTimer.current = null;
+        go(1);
+      }, 900);
+    }
   }
 
   async function go(delta: number) {
@@ -131,8 +156,11 @@ export default function DailyQuiz() {
         track("quiz_complete", genre.slug);
         const data = await res.json();
         const idx = TIERS.indexOf(difficulty);
-        const newlyUnlocked = idx >= 0 && idx + 1 < TIERS.length && data.unlocked?.includes(TIERS[idx + 1]);
-        setJustFinished(newlyUnlocked ? TIERS[idx + 1] : null);
+        const nextTier = idx >= 0 && idx + 1 < TIERS.length ? TIERS[idx + 1] : undefined;
+        // Easy and medium are open from the start — finishing easy never
+        // "newly" unlocks medium. Only hard is actually gated, behind medium.
+        const newlyUnlocked = difficulty === "medium" && nextTier && data.unlocked?.includes(nextTier);
+        setJustFinished(newlyUnlocked ? nextTier! : null);
         setUnlockedAfterComplete(data.unlocked ?? null);
         loadGenres();
       }
@@ -327,6 +355,7 @@ export default function DailyQuiz() {
               onChange={(e) => {
                 setTyped(e.target.value);
                 setChecked(false);
+                clearAutoAdvance();
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -345,16 +374,28 @@ export default function DailyQuiz() {
             </button>
           </div>
           {checked && (
-            <p className={`text-sm mb-3 ${correct ? "text-sage" : "text-terracotta"}`}>
-              {correct ? "✓ Correct! " : "Not quite. "}
-              <span className="text-ink/70">The answer: {q.answer}</span>
+            <p className="text-sm mb-3">
+              {correct ? (
+                <span className="text-sage">{"✓ Correct! "}</span>
+              ) : (
+                <>
+                  <span className="text-rust">Not quite. </span>
+                  <span className="text-rust font-medium">The answer: {q.answer}</span>
+                </>
+              )}
             </p>
           )}
           <div className="flex items-center justify-between mt-4">
             <button onClick={() => go(-1)} className="text-sm font-medium text-ink/60 hover:text-ink">
               {"←"} Prev
             </button>
-            <button onClick={() => go(1)} className="text-sm font-medium text-ink/60 hover:text-ink">
+            <button
+              onClick={() => go(1)}
+              disabled={!checked}
+              className={`text-sm font-medium transition-colors ${
+                checked ? "text-ink/60 hover:text-ink cursor-pointer" : "text-ink/25 cursor-not-allowed"
+              }`}
+            >
               {current === questions.length - 1 ? "Finish" : "Next"} {"→"}
             </button>
           </div>
