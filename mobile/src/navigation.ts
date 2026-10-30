@@ -6,4 +6,5 @@ export type RootStackParamList = {
   Quiz: undefined;
   Onboarding: { auto?: boolean } | undefined;
   Shelf: undefined;
+  Arrange: undefined;
 };

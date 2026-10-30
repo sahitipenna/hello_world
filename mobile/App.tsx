@@ -13,6 +13,7 @@ import SectionScreen from "./src/screens/SectionScreen";
 import QuizScreen from "./src/screens/QuizScreen";
 import OnboardingScreen from "./src/screens/OnboardingScreen";
 import ShelfScreen from "./src/screens/ShelfScreen";
+import ArrangeDeskScreen from "./src/screens/ArrangeDeskScreen";
 import { hasAnsweredToday } from "./src/lib/dailyPrompt";
 import { colors, fonts } from "./src/theme";
 import type { RootStackParamList } from "./src/navigation";
@@ -85,7 +86,10 @@ export default function App() {
             options={({ navigation }) => ({
               title: "Go Dilly",
               headerRight: () => (
-                <View style={{ flexDirection: "row", gap: 16 }}>
+                <View style={{ flexDirection: "row", gap: 11 }}>
+                  <TouchableOpacity onPress={() => navigation.navigate("Arrange")}>
+                    <Text style={styles.headerLink}>Arrange</Text>
+                  </TouchableOpacity>
                   <TouchableOpacity onPress={() => navigation.navigate("Shelf")}>
                     <Text style={styles.headerLink}>Shelf</Text>
                   </TouchableOpacity>
@@ -109,6 +113,7 @@ export default function App() {
             options={{ title: "Your interests", presentation: "modal" }}
           />
           <Stack.Screen name="Shelf" component={ShelfScreen} options={{ title: "Your shelf" }} />
+          <Stack.Screen name="Arrange" component={ArrangeDeskScreen} options={{ title: "Arrange your desk" }} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>
@@ -116,5 +121,5 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  headerLink: { color: colors.paper, fontFamily: fonts.sansMedium, fontSize: 14 },
+  headerLink: { color: colors.paper, fontFamily: fonts.sansMedium, fontSize: 12.5 },
 });
