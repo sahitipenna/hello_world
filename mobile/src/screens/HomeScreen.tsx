@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { fetchDaily } from "../api/daily";
 import { colors, fonts, sectionAccent } from "../theme";
@@ -47,9 +48,15 @@ export default function HomeScreen({ navigation }: Props) {
       .catch(() => setError("Couldn't reach Go Dilly. Check your connection and try again."));
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  // Refetches every time Home regains focus — not just on mount — so
+  // saving interests/time-budget on the Onboarding screen (or coming
+  // back from a section) is reflected immediately rather than stale
+  // until a manual pull-to-refresh.
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   async function onRefresh() {
     setRefreshing(true);

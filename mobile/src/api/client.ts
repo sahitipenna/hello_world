@@ -21,33 +21,18 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiGet<T>(path: string): Promise<T> {
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
-    credentials: "include",
-    headers: { Accept: "application/json" },
-  });
-  if (!res.ok) throw new ApiError(res.status, `GET ${path} failed: ${res.status}`);
-  return res.json();
-}
-
-export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "POST",
+    method,
     credentials: "include",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
-  if (!res.ok) throw new ApiError(res.status, `POST ${path} failed: ${res.status}`);
+  if (!res.ok) throw new ApiError(res.status, `${method} ${path} failed: ${res.status}`);
   return res.json();
 }
 
-export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: "PATCH",
-    credentials: "include",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) throw new ApiError(res.status, `PATCH ${path} failed: ${res.status}`);
-  return res.json();
-}
+export const apiGet = <T>(path: string) => request<T>("GET", path);
+export const apiPost = <T>(path: string, body?: unknown) => request<T>("POST", path, body);
+export const apiPatch = <T>(path: string, body?: unknown) => request<T>("PATCH", path, body);
+export const apiPut = <T>(path: string, body?: unknown) => request<T>("PUT", path, body);
