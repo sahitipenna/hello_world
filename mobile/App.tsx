@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, Text, TouchableOpacity, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { AppState, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { NavigationContainer, useNavigationContainerRef } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -12,6 +12,7 @@ import HomeScreen from "./src/screens/HomeScreen";
 import SectionScreen from "./src/screens/SectionScreen";
 import QuizScreen from "./src/screens/QuizScreen";
 import OnboardingScreen from "./src/screens/OnboardingScreen";
+import ShelfScreen from "./src/screens/ShelfScreen";
 import { hasAnsweredToday } from "./src/lib/dailyPrompt";
 import { colors, fonts } from "./src/theme";
 import type { RootStackParamList } from "./src/navigation";
@@ -84,9 +85,14 @@ export default function App() {
             options={({ navigation }) => ({
               title: "Go Dilly",
               headerRight: () => (
-                <TouchableOpacity onPress={() => navigation.navigate("Onboarding", { auto: false })}>
-                  <Text style={{ color: colors.paper, fontFamily: fonts.sansMedium, fontSize: 14 }}>Interests</Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: "row", gap: 16 }}>
+                  <TouchableOpacity onPress={() => navigation.navigate("Shelf")}>
+                    <Text style={styles.headerLink}>Shelf</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => navigation.navigate("Onboarding", { auto: false })}>
+                    <Text style={styles.headerLink}>Interests</Text>
+                  </TouchableOpacity>
+                </View>
               ),
             })}
           />
@@ -102,8 +108,13 @@ export default function App() {
             initialParams={{ auto: initialRoute === "Onboarding" }}
             options={{ title: "Your interests", presentation: "modal" }}
           />
+          <Stack.Screen name="Shelf" component={ShelfScreen} options={{ title: "Your shelf" }} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  headerLink: { color: colors.paper, fontFamily: fonts.sansMedium, fontSize: 14 },
+});

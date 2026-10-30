@@ -5,6 +5,9 @@ import { colors, fonts, sectionAccent } from "../theme";
 import type { RootStackParamList } from "../navigation";
 import { resolveArt, resolveBookCover, ArtResolution, BookCoverResolution } from "../api/extras";
 import { apiPatch } from "../api/client";
+import { addBookmark, fetchBookmarks, removeBookmark } from "../api/bookmarks";
+import { EditionContent } from "../types";
+import SaveButton from "../components/SaveButton";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Section">;
 
@@ -14,6 +17,30 @@ function LinkText({ url, children }: { url: string; children: string }) {
       <Text style={styles.link}>{children}</Text>
     </TouchableOpacity>
   );
+}
+
+/** Which single-item content kinds are bookmarkable, and the
+ * {contentType, contentId} /api/bookmarks identifies them by — matches
+ * lib/contentLookup.ts's BOOKMARKABLE_TYPES. "know" is handled
+ * separately below since it's several items, not one. */
+function bookmarkTarget(content: EditionContent): { contentType: string; contentId: string } | null {
+  if (!content) return null;
+  switch (content.kind) {
+    case "look":
+      return { contentType: "artwork", contentId: content.artworkId };
+    case "read":
+      return content.poem.id ? { contentType: "literary", contentId: content.poem.id } : null;
+    case "wander":
+      return content.travel.id ? { contentType: "travel", contentId: content.travel.id } : null;
+    case "readnext":
+      return content.book.id ? { contentType: "book", contentId: content.book.id } : null;
+    case "wonder":
+      return { contentType: "wonder", contentId: content.wonder.id };
+    case "word":
+      return { contentType: "word", contentId: content.word.id };
+    default:
+      return null;
+  }
 }
 
 export default function SectionScreen({ route }: Props) {
@@ -29,6 +56,39 @@ export default function SectionScreen({ route }: Props) {
   const [artLoading, setArtLoading] = useState(false);
   const [bookCover, setBookCover] = useState<BookCoverResolution | null>(null);
   const [checks, setChecks] = useState<Record<number, boolean>>(initialTodoChecks);
+  const [savedKeys, setSavedKeys] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    fetchBookmarks()
+      .then((d) => setSavedKeys(new Set(d.items.map((it) => `${it.contentType}:${it.contentId}`))))
+      .catch(() => {});
+  }, []);
+
+  function toggleSave(contentType: string, contentId: string) {
+    const key = `${contentType}:${contentId}`;
+    const alreadySaved = savedKeys.has(key);
+    setSavedKeys((prev) => {
+      const next = new Set(prev);
+      if (alreadySaved) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+    const call = alreadySaved ? removeBookmark(contentType, contentId) : addBookmark(contentType, contentId);
+    call.catch(() => {
+      // Revert optimistic update on failure.
+      setSavedKeys((prev) => {
+        const next = new Set(prev);
+        if (alreadySaved) next.add(key);
+        else next.delete(key);
+        return next;
+      });
+    });
+  }
+
+  const target = bookmarkTarget(c);
+  const saveRow = target ? (
+    <SaveButton saved={savedKeys.has(`${target.contentType}:${target.contentId}`)} onToggle={() => toggleSave(target.contentType, target.contentId)} />
+  ) : null;
 
   useEffect(() => {
     if (c?.kind === "look" && !c.custom) {
@@ -68,9 +128,12 @@ export default function SectionScreen({ route }: Props) {
             <View key={item.id} style={styles.subCard}>
               <Text style={styles.itemTitle}>{item.title}</Text>
               <Text style={styles.body}>{item.summary}</Text>
-              <Text style={styles.meta}>
-                {item.source} · {item.readingTimeMin} min
-              </Text>
+              <View style={styles.knowItemFooter}>
+                <Text style={[styles.meta, { marginBottom: 0 }]}>
+                  {item.source} · {item.readingTimeMin} min
+                </Text>
+                <SaveButton small saved={savedKeys.has(`news:${item.id}`)} onToggle={() => toggleSave("news", item.id)} />
+              </View>
             </View>
           ))}
         </View>
@@ -78,6 +141,7 @@ export default function SectionScreen({ route }: Props) {
 
       {c?.kind === "look" && (
         <>
+          {saveRow}
           <View style={styles.artFrame}>
             {c.custom?.image || art?.image ? (
               <Image source={{ uri: c.custom?.image ?? art?.image }} style={styles.artImage} resizeMode="cover" />
@@ -98,6 +162,7 @@ export default function SectionScreen({ route }: Props) {
 
       {c?.kind === "read" && (
         <>
+          {saveRow}
           <View style={{ marginBottom: 14 }}>
             {c.poem.lines.map((line, i) => (
               <Text key={i} style={styles.poemLine}>
@@ -117,6 +182,7 @@ export default function SectionScreen({ route }: Props) {
 
       {c?.kind === "wander" && (
         <>
+          {saveRow}
           <Text style={styles.itemTitle}>{c.travel.title}</Text>
           <Text style={styles.meta}>{c.travel.place}</Text>
           <Text style={styles.body}>{c.travel.body}</Text>
@@ -125,6 +191,7 @@ export default function SectionScreen({ route }: Props) {
 
       {c?.kind === "readnext" && (
         <>
+          {saveRow}
           <View style={styles.bookRow}>
             <View style={styles.bookCoverFrame}>
               {bookCover?.cover ? (
@@ -145,6 +212,7 @@ export default function SectionScreen({ route }: Props) {
 
       {c?.kind === "wonder" && (
         <>
+          {saveRow}
           <Text style={styles.itemTitle}>{c.wonder.title}</Text>
           <Text style={styles.body}>{c.wonder.body}</Text>
           {c.wonder.source ? <Text style={styles.meta}>{c.wonder.source}</Text> : null}
@@ -153,6 +221,7 @@ export default function SectionScreen({ route }: Props) {
 
       {c?.kind === "word" && (
         <>
+          {saveRow}
           <Text style={styles.itemTitle}>{c.word.word}</Text>
           <Text style={styles.meta}>
             {c.word.pronunciation} · {c.word.partOfSpeech}
@@ -201,6 +270,7 @@ const styles = StyleSheet.create({
   bodyItalic: { fontFamily: fonts.serifItalic, fontSize: 14, color: colors.inkMuted, marginTop: 4, marginBottom: 8, lineHeight: 20 },
   poemLine: { fontFamily: fonts.serifItalic, fontSize: 17, color: colors.inkSoft, lineHeight: 27 },
   subCard: { borderBottomWidth: 1, borderBottomColor: "rgba(43,38,34,.1)", paddingBottom: 16 },
+  knowItemFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 2 },
   link: { fontFamily: fonts.sansMedium, fontSize: 13.5, color: colors.sky, marginTop: 4 },
   artFrame: {
     width: "100%",
