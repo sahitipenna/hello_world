@@ -60,8 +60,8 @@ export default function HomeScreen({ navigation }: Props) {
   function openSection(section: EditionSection) {
     if (section.key === "quiz") {
       navigation.navigate("Quiz");
-    } else {
-      navigation.navigate("Section", { section });
+    } else if (data) {
+      navigation.navigate("Section", { section, dateISO: data.dateISO, initialTodoChecks: data.todoChecks ?? {} });
     }
   }
 

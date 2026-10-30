@@ -40,3 +40,14 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   if (!res.ok) throw new ApiError(res.status, `POST ${path} failed: ${res.status}`);
   return res.json();
 }
+
+export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) throw new ApiError(res.status, `PATCH ${path} failed: ${res.status}`);
+  return res.json();
+}

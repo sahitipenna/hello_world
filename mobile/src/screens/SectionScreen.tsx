@@ -1,14 +1,59 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { colors, fonts, sectionAccent } from "../theme";
 import type { RootStackParamList } from "../navigation";
+import { resolveArt, resolveBookCover, ArtResolution, BookCoverResolution } from "../api/extras";
+import { apiPatch } from "../api/client";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Section">;
 
+function LinkText({ url, children }: { url: string; children: string }) {
+  return (
+    <TouchableOpacity onPress={() => Linking.openURL(url).catch(() => {})}>
+      <Text style={styles.link}>{children}</Text>
+    </TouchableOpacity>
+  );
+}
+
 export default function SectionScreen({ route }: Props) {
-  const { section } = route.params;
+  const { section, dateISO, initialTodoChecks } = route.params;
   const accent = sectionAccent[section.key] ?? colors.terracotta;
   const c = section.content;
+
+  // Live resolutions the server doesn't inline into /api/daily — the same
+  // client-side calls components/ArtCard.tsx and BookRecommendation.tsx
+  // make on web (see mobile/README.md's "not yet ported" note, which this
+  // closes for these two).
+  const [art, setArt] = useState<ArtResolution | null>(null);
+  const [artLoading, setArtLoading] = useState(false);
+  const [bookCover, setBookCover] = useState<BookCoverResolution | null>(null);
+  const [checks, setChecks] = useState<Record<number, boolean>>(initialTodoChecks);
+
+  useEffect(() => {
+    if (c?.kind === "look" && !c.custom) {
+      setArtLoading(true);
+      resolveArt(c.query, c.artworkId)
+        .then(setArt)
+        .catch(() => setArt(null))
+        .finally(() => setArtLoading(false));
+    }
+  }, [c]);
+
+  useEffect(() => {
+    if (c?.kind === "readnext") {
+      resolveBookCover(c.book.title, c.book.author)
+        .then(setBookCover)
+        .catch(() => setBookCover(null));
+    }
+  }, [c]);
+
+  function toggleTask(i: number, category: string) {
+    const done = !checks[i];
+    const next = { ...checks, [i]: done };
+    setChecks(next);
+    apiPatch("/api/todos/checks", { dateISO, index: i, done, category }).catch(() => {});
+  }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -33,23 +78,40 @@ export default function SectionScreen({ route }: Props) {
 
       {c?.kind === "look" && (
         <>
-          <Text style={styles.itemTitle}>{c.custom?.title ?? c.query}</Text>
-          {c.custom?.artist ? <Text style={styles.meta}>{c.custom.artist}</Text> : null}
+          <View style={styles.artFrame}>
+            {c.custom?.image || art?.image ? (
+              <Image source={{ uri: c.custom?.image ?? art?.image }} style={styles.artImage} resizeMode="cover" />
+            ) : artLoading ? (
+              <ActivityIndicator color={colors.inkMuted} />
+            ) : (
+              <Text style={styles.noImage}>no image found</Text>
+            )}
+          </View>
+          <Text style={styles.itemTitle}>{c.custom?.title ?? art?.title ?? c.query}</Text>
+          {c.custom?.artist ?? art?.artist ? <Text style={styles.meta}>{c.custom?.artist ?? art?.artist}</Text> : null}
           <Text style={styles.body}>{c.analysis}</Text>
+          {(c.custom?.sourceUrl ?? art?.sourceUrl) ? (
+            <LinkText url={(c.custom?.sourceUrl ?? art?.sourceUrl)!}>See it at the museum ↗</LinkText>
+          ) : null}
         </>
       )}
 
       {c?.kind === "read" && (
         <>
-          <Text style={styles.itemTitle}>{c.poem.title}</Text>
-          <Text style={styles.meta}>{c.poem.poet}</Text>
-          <View style={{ marginTop: 10 }}>
+          <View style={{ marginBottom: 14 }}>
             {c.poem.lines.map((line, i) => (
               <Text key={i} style={styles.poemLine}>
                 {line || " "}
               </Text>
             ))}
           </View>
+          <Text style={styles.itemTitle}>{c.poem.title}</Text>
+          <Text style={styles.meta}>
+            {c.poem.poet}
+            {c.poem.year ? `, ${c.poem.year}` : ""}
+          </Text>
+          {c.poem.context ? <Text style={styles.bodyItalic}>{c.poem.context}</Text> : null}
+          {c.poem.sourceUrl ? <LinkText url={c.poem.sourceUrl}>Read the full work ↗</LinkText> : null}
         </>
       )}
 
@@ -63,9 +125,21 @@ export default function SectionScreen({ route }: Props) {
 
       {c?.kind === "readnext" && (
         <>
-          <Text style={styles.itemTitle}>{c.book.title}</Text>
-          <Text style={styles.meta}>{c.book.author}</Text>
+          <View style={styles.bookRow}>
+            <View style={styles.bookCoverFrame}>
+              {bookCover?.cover ? (
+                <Image source={{ uri: bookCover.cover }} style={styles.bookCoverImage} resizeMode="cover" />
+              ) : (
+                <Text style={styles.noImageSmall}>no cover</Text>
+              )}
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.itemTitle}>{c.book.title}</Text>
+              <Text style={styles.meta}>{c.book.author}</Text>
+            </View>
+          </View>
           <Text style={styles.body}>{c.book.reason}</Text>
+          {bookCover?.sourceUrl ? <LinkText url={bookCover.sourceUrl}>Find it ↗</LinkText> : null}
         </>
       )}
 
@@ -89,12 +163,21 @@ export default function SectionScreen({ route }: Props) {
       )}
 
       {c?.kind === "do" && (
-        <View style={{ gap: 10 }}>
-          {c.tasks.map((task, i) => (
-            <Text key={i} style={styles.body}>
-              ☐ {task.title}
-            </Text>
-          ))}
+        <View style={{ gap: 12 }}>
+          {c.tasks.map((task, i) => {
+            const done = !!checks[i];
+            return (
+              <TouchableOpacity key={i} style={styles.taskRow} onPress={() => toggleTask(i, task.category)} activeOpacity={0.7}>
+                <View style={[styles.checkbox, done && styles.checkboxDone]}>
+                  {done && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={[styles.body, done && styles.taskDone, { flex: 1 }]}>{task.title}</Text>
+              </TouchableOpacity>
+            );
+          })}
+          <Text style={styles.meta}>
+            {Object.values(checks).filter(Boolean).length} of {c.tasks.length} done
+          </Text>
         </View>
       )}
 
@@ -115,7 +198,46 @@ const styles = StyleSheet.create({
   itemTitle: { fontFamily: fonts.serifSemiBold, fontSize: 19, color: colors.ink, marginBottom: 4 },
   meta: { fontFamily: fonts.sans, fontSize: 12.5, color: colors.inkMuted, marginBottom: 10 },
   body: { fontFamily: fonts.serif, fontSize: 16, color: colors.inkSoft, lineHeight: 24 },
-  bodyItalic: { fontFamily: fonts.serifItalic, fontSize: 15, color: colors.inkMuted, marginTop: 10, lineHeight: 22 },
-  poemLine: { fontFamily: fonts.serif, fontSize: 16, color: colors.inkSoft, lineHeight: 26 },
+  bodyItalic: { fontFamily: fonts.serifItalic, fontSize: 14, color: colors.inkMuted, marginTop: 4, marginBottom: 8, lineHeight: 20 },
+  poemLine: { fontFamily: fonts.serifItalic, fontSize: 17, color: colors.inkSoft, lineHeight: 27 },
   subCard: { borderBottomWidth: 1, borderBottomColor: "rgba(43,38,34,.1)", paddingBottom: 16 },
+  link: { fontFamily: fonts.sansMedium, fontSize: 13.5, color: colors.sky, marginTop: 4 },
+  artFrame: {
+    width: "100%",
+    aspectRatio: 1.2,
+    backgroundColor: colors.paper2,
+    borderRadius: 8,
+    marginBottom: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  artImage: { width: "100%", height: "100%" },
+  noImage: { fontFamily: fonts.sans, fontSize: 12, color: "rgba(43,38,34,.3)" },
+  noImageSmall: { fontFamily: fonts.sans, fontSize: 9, color: "rgba(43,38,34,.3)", textAlign: "center", paddingHorizontal: 4 },
+  bookRow: { flexDirection: "row", gap: 14, marginBottom: 12 },
+  bookCoverFrame: {
+    width: 64,
+    aspectRatio: 2 / 3,
+    backgroundColor: colors.paper2,
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  bookCoverImage: { width: "100%", height: "100%" },
+  taskRow: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: "rgba(43,38,34,.3)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 1,
+  },
+  checkboxDone: { backgroundColor: colors.sage, borderColor: colors.sage },
+  checkmark: { color: colors.paperHi, fontSize: 13, fontFamily: fonts.sansSemiBold },
+  taskDone: { textDecorationLine: "line-through", color: "rgba(43,38,34,.4)" },
 });

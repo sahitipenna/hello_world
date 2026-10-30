@@ -143,6 +143,7 @@ export interface DailyEditionResponse {
   plan: "free" | "premium";
   timeBudgetMinutes: number | null;
   sections: EditionSection[];
+  todoChecks: Record<number, boolean>;
   archiveLocked?: boolean;
 }
 
