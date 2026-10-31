@@ -51,6 +51,7 @@ model User {
   categoryEngagement  CategoryEngagement[]
   pushSubscriptions   PushSubscription[]
   usageEvents         UsageEvent[]
+  creativeResponses   CreativeResponse[]
 }
 
 /// A generic usage-event log — every panel open (section or side-object),
@@ -373,6 +374,28 @@ model Bookmark {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, contentType, contentId])
+}
+
+// ---------------------------------------------------------------------------
+// The daily creative-activity prompt — the opening gesture before the desk
+// itself (see the two-step "what are you curious about" -> "one small
+// creative act" popup in app/page.tsx), not the paywall-era "respond to
+// consume" afterthought. One response per visitor per day; `isKeyMemory`
+// is the only hook the future visual archive/map needs from this for now.
+// ---------------------------------------------------------------------------
+
+model CreativeResponse {
+  id          String   @id @default(cuid())
+  userId      String
+  dateISO     String
+  promptText  String
+  text        String
+  isKeyMemory Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dateISO])
 }
 
 // ---------------------------------------------------------------------------

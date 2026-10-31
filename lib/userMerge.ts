@@ -10,6 +10,7 @@ import type {
   QuizProgress,
   QuizEdit,
   PushSubscription,
+  CreativeResponse,
 } from "@prisma/client";
 
 /** Moves every `fromId` row in a user-scoped table to `toId`, skipping any
@@ -95,6 +96,14 @@ export async function mergeUserInto(fromId: string, toId: string): Promise<void>
       toId,
       (r) => `${r.dateISO}:${r.index}`,
       (r) => ({ userId: toId, dateISO: r.dateISO, index: r.index, done: r.done })
+    );
+
+    await moveTable<CreativeResponse>(
+      tx.creativeResponse,
+      fromId,
+      toId,
+      (r) => r.dateISO,
+      (r) => ({ userId: toId, dateISO: r.dateISO, promptText: r.promptText, text: r.text, isKeyMemory: r.isKeyMemory })
     );
 
     await moveTable<PromptEdit>(

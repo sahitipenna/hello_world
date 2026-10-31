@@ -62,6 +62,9 @@ export default function Home() {
   const [showLandingGate, setShowLandingGate] = useState(false);
   const [visitCount, setVisitCount] = useState(0);
   const [hasChosenInterests, setHasChosenInterests] = useState<boolean | null>(null);
+  const [creativePrompt, setCreativePrompt] = useState("");
+  const [creativeAnsweredToday, setCreativeAnsweredToday] = useState(false);
+  const [creativeResponse, setCreativeResponse] = useState<{ text: string; isKeyMemory: boolean } | null>(null);
   const [savedItems, setSavedItems] = useState<ShelfItem[]>([]);
   const [shelfOpen, setShelfOpen] = useState(false);
   const [googleConfigured, setGoogleConfigured] = useState(false);
@@ -123,6 +126,15 @@ export default function Home() {
     fetch("/api/bookmarks")
       .then((r) => r.json())
       .then((d) => setSavedItems(d.items ?? []))
+      .catch(() => {});
+
+    fetch("/api/creative")
+      .then((r) => r.json())
+      .then((d) => {
+        setCreativePrompt(d.promptText ?? "");
+        setCreativeAnsweredToday(Boolean(d.answeredToday));
+        setCreativeResponse(d.response ?? null);
+      })
       .catch(() => {});
   }, []);
 
@@ -246,8 +258,27 @@ export default function Home() {
     if (Array.isArray(interestsRes?.hiddenSections)) {
       setHidden(interestsRes.hiddenSections);
     }
-    setOnboardingOpen(false);
+    // Doesn't close the modal itself — OnboardingModal decides whether to
+    // slide into the creative-activity step or close, based on
+    // showCreativeStep (see its JSX props below).
     if (dateISO) fetch(`/api/daily?date=${dateISO}`).then((r) => r.json()).then(setBundle).catch(() => {});
+  }
+
+  async function handleSaveCreative(text: string, isKeyMemory: boolean) {
+    const res = await fetch("/api/creative", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, isKeyMemory }),
+    }).then((r) => r.json());
+    if (res?.response) {
+      setCreativeResponse(res.response);
+      setCreativeAnsweredToday(true);
+    }
+    setOnboardingOpen(false);
+  }
+
+  function handleSkipCreative() {
+    setOnboardingOpen(false);
   }
 
   function handleTodoChecksChange(checks: Record<number, boolean>) {
@@ -556,7 +587,13 @@ export default function Home() {
         initialSelected={selectedInterests}
         initialTimeBudget={timeBudget}
         onClose={() => setOnboardingOpen(false)}
-        onSave={handleSaveOnboarding}
+        onSaveInterests={handleSaveOnboarding}
+        showCreativeStep={onboardingTrigger === "auto" && !creativeAnsweredToday}
+        creativePrompt={creativePrompt}
+        initialCreativeText={creativeResponse?.text ?? ""}
+        initialCreativeKeyMemory={creativeResponse?.isKeyMemory ?? false}
+        onSaveCreative={handleSaveCreative}
+        onSkipCreative={handleSkipCreative}
         kicker={onboardingTrigger === "auto" ? (hasChosenInterests ? "Hello there" : "You're becoming a regular") : undefined}
         title={onboardingTrigger === "auto" ? (hasChosenInterests ? "Still want more of this?" : "Want to make your Dilly yours?") : undefined}
       />
