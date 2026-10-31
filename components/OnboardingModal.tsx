@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import CreativeActivityCard from "./CreativeActivityCard";
 
 interface Tag {
   id: string;
@@ -56,9 +57,6 @@ export default function OnboardingModal({
   const [selected, setSelected] = useState<Set<string>>(new Set(initialSelected));
   const [timeBudget, setTimeBudget] = useState<number | null>(initialTimeBudget);
   const [saving, setSaving] = useState(false);
-  const [creativeText, setCreativeText] = useState(initialCreativeText);
-  const [keyMemory, setKeyMemory] = useState(initialCreativeKeyMemory);
-  const [savingCreative, setSavingCreative] = useState(false);
 
   if (!open) return null;
 
@@ -82,16 +80,6 @@ export default function OnboardingModal({
       }
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function saveCreativeStep() {
-    if (!creativeText.trim()) return;
-    setSavingCreative(true);
-    try {
-      await onSaveCreative(creativeText.trim(), keyMemory);
-    } finally {
-      setSavingCreative(false);
     }
   }
 
@@ -181,42 +169,13 @@ export default function OnboardingModal({
                 have to be a little unproductive first." Only reachable
                 from step 1, never shown standalone. */}
             <div className="w-full shrink-0 px-6 sm:px-7 overflow-y-auto max-h-[calc(90vh-80px)]">
-              <p className="text-xs font-semibold uppercase tracking-wide text-sage mb-2">One small thing, first</p>
-              <h2 className="font-serif text-2xl mb-2" style={{ fontFamily: "var(--font-serif), serif" }}>
-                To be productive, you have to be a little unproductive first.
-              </h2>
-              <p className="text-sm text-ink/60 mb-5">Two minutes, nothing to get right. Then the rest of today is yours.</p>
-
-              <p className="font-serif text-lg mb-3" style={{ fontFamily: "var(--font-serif), serif" }}>
-                {creativePrompt}
-              </p>
-              <textarea
-                value={creativeText}
-                onChange={(e) => setCreativeText(e.target.value)}
-                rows={3}
-                placeholder="Type whatever comes to mind…"
-                className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-[15px] outline-none focus:border-terracotta resize-none mb-3"
+              <CreativeActivityCard
+                prompt={creativePrompt}
+                initialText={initialCreativeText}
+                initialKeyMemory={initialCreativeKeyMemory}
+                onSave={onSaveCreative}
+                secondaryAction={{ label: "Not today", onClick: onSkipCreative }}
               />
-              <label className="flex items-center gap-2 text-sm text-ink/70 mb-6 cursor-pointer select-none">
-                <input type="checkbox" checked={keyMemory} onChange={(e) => setKeyMemory(e.target.checked)} className="accent-terracotta" />
-                ⭐ Keep this as a key memory
-              </label>
-
-              <div className="flex items-center gap-3 pb-1">
-                <button
-                  onClick={onSkipCreative}
-                  className="text-sm font-medium text-ink/50 hover:text-ink px-2"
-                >
-                  Not today
-                </button>
-                <button
-                  onClick={saveCreativeStep}
-                  disabled={savingCreative || !creativeText.trim()}
-                  className="flex-1 text-sm font-semibold bg-ink text-paper rounded-full px-4 py-2.5 hover:bg-ink/85 transition-colors disabled:opacity-50"
-                >
-                  Save to my archive
-                </button>
-              </div>
             </div>
           </div>
         </div>

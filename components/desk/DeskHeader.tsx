@@ -20,6 +20,8 @@ export default function DeskHeader({
   onOpenArrange,
   onOpenShelf,
   shelfCount,
+  onOpenCreative,
+  showCreativeLink,
   user,
   onSignOut,
   onOpenAccount,
@@ -36,6 +38,10 @@ export default function DeskHeader({
   onOpenArrange: () => void;
   onOpenShelf: () => void;
   shelfCount: number;
+  // Only shown while today's creative-activity prompt is still
+  // unanswered, so a visitor who hit "Not today" has a way back to it.
+  onOpenCreative: () => void;
+  showCreativeLink: boolean;
   user: Viewer | null;
   onSignOut: () => void;
   onOpenAccount: () => void;
@@ -136,6 +142,23 @@ export default function DeskHeader({
         >
           Your shelf{shelfCount > 0 ? ` (${shelfCount})` : ""}
         </button>
+        {showCreativeLink && (
+          <button
+            onClick={onOpenCreative}
+            className="dd-linklike"
+            style={{
+              background: "transparent",
+              border: 0,
+              padding: "6px 2px",
+              fontFamily: "var(--font-sans), sans-serif",
+              fontSize: 14,
+              whiteSpace: "nowrap",
+              cursor: "pointer",
+            }}
+          >
+            Today&apos;s thought
+          </button>
+        )}
         {/* The "Member" badge that used to sit here now lives inside the
             account menu / "My account" modal instead — a signed-in-only
             status belongs behind the signed-in-only avatar, not loose in

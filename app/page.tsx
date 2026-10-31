@@ -19,6 +19,7 @@ import { isWithinFreeArchive } from "@/lib/archive";
 import UpgradeModal from "@/components/UpgradeModal";
 import SaveSignInPrompt from "@/components/SaveSignInPrompt";
 import OnboardingModal from "@/components/OnboardingModal";
+import CreativeActivityModal from "@/components/CreativeActivityModal";
 import NotifyMeButton from "@/components/NotifyMeButton";
 import LandingGate from "@/components/LandingGate";
 import ShelfModal, { ShelfItem } from "@/components/ShelfModal";
@@ -65,6 +66,7 @@ export default function Home() {
   const [creativePrompt, setCreativePrompt] = useState("");
   const [creativeAnsweredToday, setCreativeAnsweredToday] = useState(false);
   const [creativeResponse, setCreativeResponse] = useState<{ text: string; isKeyMemory: boolean } | null>(null);
+  const [creativeModalOpen, setCreativeModalOpen] = useState(false);
   const [savedItems, setSavedItems] = useState<ShelfItem[]>([]);
   const [shelfOpen, setShelfOpen] = useState(false);
   const [googleConfigured, setGoogleConfigured] = useState(false);
@@ -264,7 +266,12 @@ export default function Home() {
     if (dateISO) fetch(`/api/daily?date=${dateISO}`).then((r) => r.json()).then(setBundle).catch(() => {});
   }
 
-  async function handleSaveCreative(text: string, isKeyMemory: boolean) {
+  // Shared by both places the creative prompt can be saved from: the
+  // onboarding popup's second slide, and the standalone reopen modal a
+  // visitor reaches later via the header's "Today's thought" link after
+  // hitting "Not today" earlier. Neither this function nor its callers
+  // here close the onboarding modal — only handleSaveCreative does that.
+  async function saveCreativeResponse(text: string, isKeyMemory: boolean) {
     const res = await fetch("/api/creative", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -274,6 +281,10 @@ export default function Home() {
       setCreativeResponse(res.response);
       setCreativeAnsweredToday(true);
     }
+  }
+
+  async function handleSaveCreative(text: string, isKeyMemory: boolean) {
+    await saveCreativeResponse(text, isKeyMemory);
     setOnboardingOpen(false);
   }
 
@@ -397,6 +408,8 @@ export default function Home() {
         onOpenArrange={openArrange}
         onOpenShelf={() => setShelfOpen(true)}
         shelfCount={savedItems.length}
+        onOpenCreative={() => setCreativeModalOpen(true)}
+        showCreativeLink={!creativeAnsweredToday}
         user={viewer}
         onSignOut={handleSignOut}
         onOpenAccount={() => setAccountOpen(true)}
@@ -596,6 +609,12 @@ export default function Home() {
         onSkipCreative={handleSkipCreative}
         kicker={onboardingTrigger === "auto" ? (hasChosenInterests ? "Hello there" : "You're becoming a regular") : undefined}
         title={onboardingTrigger === "auto" ? (hasChosenInterests ? "Still want more of this?" : "Want to make your Dilly yours?") : undefined}
+      />
+      <CreativeActivityModal
+        open={creativeModalOpen}
+        prompt={creativePrompt}
+        onClose={() => setCreativeModalOpen(false)}
+        onSave={saveCreativeResponse}
       />
     </div>
   );
